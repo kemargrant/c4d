@@ -3,8 +3,10 @@
 C4D is a node.js cryptocurrency arbitrage bot for use on the Bittrex exchange.
 
 Using the BTC/USDT markets on Bittrex the bot conducts triangular arbitrage. The bot's wallet requires a sufficient amount of each currency to perform the three trades in parallel.
+
 Exmaple Arbitrage 1:
 XXX => USDT => BTC => XXX
+
 Example Arbitrage 2:
 BTC => USDT => XXX => BTC
 
