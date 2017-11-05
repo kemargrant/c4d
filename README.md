@@ -3,17 +3,20 @@
 C4D is a node.js cryptocurrency arbitrage bot for use on the Bittrex exchange.
 
 Using the BTC/USDT markets on Bittrex the bot conducts triangular arbitrage. The bot's wallet requires a sufficient amount of each currency to perform the three trades in parallel.
+
 Exmaple Arbitrage 1:
 XXX => USDT => BTC => XXX
+
 Example Arbitrage 2:
 BTC => USDT => XXX => BTC
 
 Sample Bittrex Wallet 
-| Currency| (BTC)Value | 
-| ------ | ------ | 
-|BTC| 2|
-|USDT| 2|
-|XXX| 1|
+
+| Currency| (BTC)Value 
+| ------ | ------ |
+|BTC| 2
+|USDT| 2
+|XXX| 1
 
 So for every 1 unit of your target currency you should have double the btc value. When configuring for BTC arbitrage in this scenario set percentage2 in the config file to be less than or equal to 0.5
 to ensure you can convert from BTC/USDT to your target currency.
@@ -26,7 +29,7 @@ npm install
 node c4d.js
 ```
 After starting the command line script connect to the websocket port with a web socket [client](https://chrome.google.com/webstore/detail/simple-websocket-client/pfdhoblngboilpfeibdedpjgfnlcodoo) to start the program.
-* Web GUI Coming  Soon *
+* Web GUI Coming  Soon
 [Preview 1](https://i.imgur.com/g8RofSN.jpg) [Preview 2](https://i.imgur.com/2nxkbQE.jpg)
 
 ## Configuration
@@ -81,7 +84,7 @@ Bot settings are controlled by the 'config.json' file
 | Config.percentage1 | Percentage of XXX currency to use when performing trades | String
 | Config.percentage2 | Percentage of BTC to use when performing BTC=>BTC trade | String
 | Config.polling | The default milliseconds for the bot to query the Bittrex ticker | Number
-| Config.port |Websocket port number | Number# Description
+| Config.port |Websocket port number | Number
 
 ## Disclaimer
 
