@@ -373,7 +373,7 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3)
 								Transactions[e1+'_status'] = this.balance[e1] > Transactions[e1];
 								Transactions[b3+'_status'] = this.balance[b3] > Transactions[b3];
 								Transactions[u2+'_status'] = this.balance[u2] > Transactions[u2];
-								this.broadcastMessage({"type":"log","log":message + "eth status:"+ Transactions[e1+'_status']+"| btc status:"+Transactions[b3+'_status']+ "| usdt status:"+Transactions[u2+'_status']});
+								this.broadcastMessage({"type":"log","log":message + e1+" status:"+ Transactions[e1+'_status']+"| "+b3+" status:"+Transactions[b3+'_status']+ "| "+u2+" status:"+Transactions[u2+'_status']});
 								console.log(message + "eth status:"+ Transactions[e1+'_status']+"| btc status:"+Transactions[b3+'_status']+ "| usdt status:"+Transactions[u2+'_status']);
 								if(percentage > 100.75 && percentage < 101.9 && Transactions[u2+'_amount'] > Transactions[u2] && Transactions[b3+'_amount'] > Transactions[b3] && Transactions[e1+'_amount'] > Transactions[e1+'_amount'])
 									{
