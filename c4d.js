@@ -362,59 +362,58 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3){
 					}	
 				}
 			}
-			if(percentage > 100)
-				{
-					Transactions[b3] =  Number((this.balance[b3] * this.p2).toFixed(8));
-					Transactions[u2] = 0.9975 * Transactions[b3] * b;
-					Transactions[e1] = 0.9975*(Transactions[u2]/c);
-					Transactions[_b3] = (0.9975 * Transactions[e1]*a).toFixed(8);
-					message = percentage.toFixed(3)+"% \n";
-					message = message + Transactions[b3] + b3 +" => "+Transactions[u2].toFixed(8)+" "+u2+" @" + b + '\n';
-					message = message + Transactions[u2].toFixed(8) + u2+" => " + Transactions[e1].toFixed(8) + e1+" @"+c +'\n';
-					message = message + Transactions[e1].toFixed(8) + e1+" => " + Transactions[_b3] +" "+b3+" @"+a +'\n';
-					Transactions[e1+'_status'] = this.balance[e1] > Transactions[e1];
-					Transactions[b3+'_status'] = this.balance[b3] > Transactions[b3];
-					Transactions[u2+'_status'] = this.balance[u2] > Transactions[u2];
-					this.broadcastMessage({"type":"log","log":message + e1+" status:"+ Transactions[e1+'_status']+"| "+b3+" status:"+Transactions[b3+'_status']+ "| "+u2+" status:"+Transactions[u2+'_status']});
-					console.log(message + "eth status:"+ Transactions[e1+'_status']+"| btc status:"+Transactions[b3+'_status']+ "| usdt status:"+Transactions[u2+'_status']);
-					if(percentage > 100.75 && percentage < 101.9 && Transactions[u2+'_amount'] > Transactions[u2] && Transactions[b3+'_amount'] > Transactions[b3] && Transactions[e1+'_amount'] > Transactions[e1+'_amount']){
-						if(Transactions[e1+'_status'] && Transactions[b3+'_status'] && Transactions[u2+'_status']){	
-							if(Transactions.btc < 0.0005){
-								this.slackMessage("Server error  ("+Transactions.btc+") BTC  is less than 0.0005");
-								return setTimeout(()=>{this.bittrexArbitrage(pair1,pair2,pair3).catch((e)=>{console.log(e);});},this.rate);
-							}										
-							console.log("Starting Trades");
-							try{this.slackMessage(message);}catch(e){console.log(e);}
-							return this.bittrexTrade("sell",pair2,Transactions[b3],b).then(()=>{
-								this.bittrexTrade("buy",pair3,Transactions[e1].toFixed(8),c).catch((e)=>{
-									this.slackMessage("Retrying buying:"+Transactions[e1].toFixed(8)+u2+" =>"+e1+" @"+c);
-									setTimeout(()=>{this.bittrexTrade("buy",pair3,Transactions[e1].toFixed(8),c).catch((e)=>{this.slackMessage(e);});},3000);
-								});
-							})
-							.then(()=>{
-								this.bittrexTrade("sell",pair1,Transactions[e1].toFixed(8),a).catch((e)=>{
-									this.slackMessage("Retrying selling:"+Transactions[e1].toFixed(8)+e1+" =>"+e1+" @"+a);
-									setTimeout(()=>{this.bittrexTrade("sell",pair1,Transactions[e1].toFixed(8),a).catch((e)=>{this.slackMessage(e);});},3000);
-								});		
-							})
-							.then(()=>{
-								return setTimeout(()=>{
-									this.bittrexCompleteArbitrage();
-									this.saveDB("trade",{"Time":new Date().getTime(),"Percent":percentage,"Before":Transactions[b3],"After":Number(Transactions[_b3]),"Profit":Number(Transactions[_b3])/Transactions[b3]})
-								},20000);
-							}).catch((e)=>{
-								console.log(e);
-								this.slackMessage("Selling:"+Transactions[b3]+b3+" =>"+u2+" @"+b+" Failed");
-							})
-						}
-						else{
-							console.log("Current balances not enough to perform trades",Transactions);
-						}
+			if(percentage > 100){
+				Transactions[b3] =  Number((this.balance[b3] * this.p2).toFixed(8));
+				Transactions[u2] = 0.9975 * Transactions[b3] * b;
+				Transactions[e1] = 0.9975*(Transactions[u2]/c);
+				Transactions[_b3] = (0.9975 * Transactions[e1]*a).toFixed(8);
+				message = percentage.toFixed(3)+"% \n";
+				message = message + Transactions[b3] + b3 +" => "+Transactions[u2].toFixed(8)+" "+u2+" @" + b + '\n';
+				message = message + Transactions[u2].toFixed(8) + u2+" => " + Transactions[e1].toFixed(8) + e1+" @"+c +'\n';
+				message = message + Transactions[e1].toFixed(8) + e1+" => " + Transactions[_b3] +" "+b3+" @"+a +'\n';
+				Transactions[e1+'_status'] = this.balance[e1] > Transactions[e1];
+				Transactions[b3+'_status'] = this.balance[b3] > Transactions[b3];
+				Transactions[u2+'_status'] = this.balance[u2] > Transactions[u2];
+				this.broadcastMessage({"type":"log","log":message + e1+" status:"+ Transactions[e1+'_status']+"| "+b3+" status:"+Transactions[b3+'_status']+ "| "+u2+" status:"+Transactions[u2+'_status']});
+				console.log(message + "eth status:"+ Transactions[e1+'_status']+"| btc status:"+Transactions[b3+'_status']+ "| usdt status:"+Transactions[u2+'_status']);
+				if(percentage > 100.75 && percentage < 101.9 && Transactions[u2+'_amount'] > Transactions[u2] && Transactions[b3+'_amount'] > Transactions[b3] && Transactions[e1+'_amount'] > Transactions[e1]){
+					if(Transactions[e1+'_status'] && Transactions[b3+'_status'] && Transactions[u2+'_status']){	
+						if(Transactions.btc < 0.0005){
+							this.slackMessage("Server error  ("+Transactions.btc+") BTC  is less than 0.0005");
+							return setTimeout(()=>{this.bittrexArbitrage(pair1,pair2,pair3).catch((e)=>{console.log(e);});},this.rate);
+						}										
+						console.log("Starting Trades");
+						try{this.slackMessage(message);}catch(e){console.log(e);}
+						return this.bittrexTrade("sell",pair2,Transactions[b3],b).then(()=>{
+							this.bittrexTrade("buy",pair3,Transactions[e1].toFixed(8),c).catch((e)=>{
+								this.slackMessage("Retrying buying:"+Transactions[e1].toFixed(8)+u2+" =>"+e1+" @"+c);
+								setTimeout(()=>{this.bittrexTrade("buy",pair3,Transactions[e1].toFixed(8),c).catch((e)=>{this.slackMessage(e);});},3000);
+							});
+						})
+						.then(()=>{
+							this.bittrexTrade("sell",pair1,Transactions[e1].toFixed(8),a).catch((e)=>{
+								this.slackMessage("Retrying selling:"+Transactions[e1].toFixed(8)+e1+" =>"+e1+" @"+a);
+								setTimeout(()=>{this.bittrexTrade("sell",pair1,Transactions[e1].toFixed(8),a).catch((e)=>{this.slackMessage(e);});},3000);
+							});		
+						})
+						.then(()=>{
+							return setTimeout(()=>{
+								this.bittrexCompleteArbitrage();
+								this.saveDB("trade",{"Time":new Date().getTime(),"Percent":percentage,"Before":Transactions[b3],"After":Number(Transactions[_b3]),"Profit":Number(Transactions[_b3])/Transactions[b3]})
+							},20000);
+						}).catch((e)=>{
+							console.log(e);
+							this.slackMessage("Selling:"+Transactions[b3]+b3+" =>"+u2+" @"+b+" Failed");
+						})
 					}
 					else{
-						console.log("Conditions Not Met",Transactions);
-					}									
+						console.log("Current balances not enough to perform trades",Transactions);
+					}
 				}
+				else{
+					console.log("Conditions Not Met",Transactions);
+				}									
+			}
 			return resolve(setTimeout(()=>{this.bittrexArbitrage(pair1,pair2,pair3).catch((e)=>{console.log(e);});},this.rate));	
 		}).catch((e)=>{
 				console.log("Error Performing Arbitage:",e);
