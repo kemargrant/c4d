@@ -261,7 +261,14 @@ CryptoBot.prototype.bittrexAccount = function(){
 			});
 			this.balance.account = "BITTREX";
 			this.broadcastMessage({"type":"balance","balance":this.balance,"p1":this.p1,"p2":this.p2});
-			this.saveDB("balance",{"Time":new Date().getTime(),"BTC":this.balance.btc,"ETH":this.balance.eth,"USDT":this.balance.usdt});
+			var balance = {};
+			for(var i = 0;i < list.length;i++){
+				if(this.balance[list[i].Currency.toLowerCase()] > 0){
+					balance[list[i].Currency] = this.balance[list[i].Currency.toLowerCase()];
+				}
+			}
+			balance.Time = new Date().getTime();
+			this.saveDB("balance",balance);
 			console.log("Balance:",this.balance);				
 			return resolve(true);				
 		}).catch((e)=>{
