@@ -19,14 +19,20 @@
 		{
 			"addr":"Recipient Email Address",
 			"host_smtp":"Email SMTP IP Address",
+			"use":false,
 			"usr":"Email Account Address",
-			"pwd":"Email Password"			
+			"pwd":"Email Password"		
 		},
-	"MongoDB":{"db_string":"mongodb://xxxx:xxxxxxxx@ip_address:port/database","connect":false},	
+	"MongoDB":
+		{
+			"db_string":"mongodb://xxxx:xxxxxxxx@ip_address:port/database",
+			"connect":false
+		},	
 	"Slack":
 		{
 			"channel":"Slack Channel",
 			"hook":"Slack Webhook",
+			"use":false,
 			"usr":"Slack user to notify",
 			"img":"Image url"
 		}
