@@ -318,9 +318,9 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3){
 				Transactions[b3] = 0.9975*Transactions[u2]/b;	
 				Transactions[_e1] = Transactions[b3]/a * 0.9975;
 				message += percentage.toFixed(2) +"%\n";
-				message += Transactions[e1] + e1+ " => "+ Transactions[u2].toFixed(8) + pair3.split('-')[0] + "\n@"+c+"\n";
-				message += Transactions[u2].toFixed(8)+ pair3.split('-')[0] + " => " +Transactions[b3].toFixed(8)+pair2.split('-')[1]  +"\n@"+b+"\n";
-				message +=Transactions[b3].toFixed(8)+pair2.split('-')[1] +" => "+Transactions[_e1].toFixed(8) + pair1.split('-')[1] +"\n @"+a;							
+				message += Transactions[e1] + e1+ " => "+ Transactions[u2].toFixed(8) + pair3.split('-')[0] + " @"+c+"\n";
+				message += Transactions[u2].toFixed(8)+ pair3.split('-')[0] + " => " +Transactions[b3].toFixed(8)+pair2.split('-')[1]  +" @"+b+"\n";
+				message +=Transactions[b3].toFixed(8)+pair2.split('-')[1] +" => "+Transactions[_e1].toFixed(8) + pair1.split('-')[1] +" @"+a;							
 				Transactions[e1+'_status'] = this.balance[e1] >= Transactions[e1];
 				Transactions[b3+'_status'] = this.balance[b3] > Transactions[b3];
 				Transactions[u2+'_status'] = this.balance[u2] > Transactions[u2];
@@ -377,7 +377,7 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3){
 				message = message + percentage.toFixed(2)+"% \n";
 				message = message + Transactions[b3] + b3 +" => "+Transactions[u2].toFixed(8)+" "+u2+" @" + b + '\n';
 				message = message + Transactions[u2].toFixed(8) + u2+" => " + Transactions[e1].toFixed(8) + e1+" @"+c +'\n';
-				message = message + Transactions[e1].toFixed(8) + e1+" => " + Transactions[_b3] +" "+b3+"\n @"+a;
+				message = message + Transactions[e1].toFixed(8) + e1+" => " + Transactions[_b3] +" "+b3+" @"+a;
 				Transactions[e1+'_status'] = this.balance[e1] > Transactions[e1];
 				Transactions[b3+'_status'] = this.balance[b3] > Transactions[b3];
 				Transactions[u2+'_status'] = this.balance[u2] > Transactions[u2];
