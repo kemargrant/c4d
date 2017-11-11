@@ -155,25 +155,25 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3){
 					if(Transactions[u2+'_amount'] > Transactions[u2] && Transactions[b3+'_amount'] > Transactions[b3] && Transactions[e1+'_amount'] > Transactions[e1]){
 						if(Transactions[e1+'_status'] && Transactions[b3+'_status'] && Transactions[u2+'_status']){
 							if(Transactions.btc < 0.0005){
-									this.slackMessage("Server error  ("+Transactions.btc+") BTC  is less than 0.0005");
+									this.notify("Server error  ("+Transactions.btc+") BTC  is less than 0.0005");
 									return setTimeout(()=>{this.bittrexArbitrage(pair1,pair2,pair3).catch((e)=>{console.log(e);});},this.rate);
 							}
 							console.log("Starting Trades");														
 							try{
-								this.slackMessage(message);
+								this.notify(message);
 							}
 							catch(e){
 								console.log(e);
 							}
 							return this.bittrexTrade("sell",pair3,Transactions[e1],c).then(()=>{
 								this.bittrexTrade("buy",pair2,Number(Transactions[b3].toFixed(8)),b).catch((e)=>{
-									this.slackMessage("Retrying buying:"+Transactions[b3].toFixed(8)+" btc @"+b);
-									setTimeout(()=>{this.bittrexTrade("buy",pair2,Number(Transactions[b3].toFixed(8)),b).catch((e)=>{this.slackMessage(e);})},2000);
+									this.notify("Retrying buying:"+Transactions[b3].toFixed(8)+" btc @"+b);
+									setTimeout(()=>{this.bittrexTrade("buy",pair2,Number(Transactions[b3].toFixed(8)),b).catch((e)=>{this.notify(e);})},2000);
 								});
 							}).then(()=>{
 								this.bittrexTrade("buy",pair1,Transactions[_e1].toFixed(8),a).catch((e)=>{
-									this.slackMessage("Retrying buying:"+Transactions[_e1].toFixed(8)+" "+e1+" @"+a);
-									setTimeout(()=>{this.bittrexTrade("buy",pair1,Transactions[_e1].toFixed(8),a).catch((e)=>{this.slackMessage(e);})},3000);
+									this.notify("Retrying buying:"+Transactions[_e1].toFixed(8)+" "+e1+" @"+a);
+									setTimeout(()=>{this.bittrexTrade("buy",pair1,Transactions[_e1].toFixed(8),a).catch((e)=>{this.notify(e);})},3000);
 								});
 							}).then(()=>{
 								return setTimeout(()=>{
@@ -182,7 +182,7 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3){
 								},20000);
 							}).catch((e)=>{
 								console.log(e);
-								this.slackMessage("Selling: "+Transactions[e1]+pair3.replace('-','<=  @')+c +" Failed");
+								this.notify("Selling: "+Transactions[e1]+pair3.replace('-','<=  @')+c +" Failed");
 							});
 						}
 						else{
@@ -211,21 +211,21 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3){
 				if(percentage > 100.7524 && percentage < 101.9 && Transactions[u2+'_amount'] > Transactions[u2] && Transactions[b3+'_amount'] > Transactions[b3] && Transactions[e1+'_amount'] > Transactions[e1]){
 					if(Transactions[e1+'_status'] && Transactions[b3+'_status'] && Transactions[u2+'_status']){	
 						if(Transactions.btc < 0.0005){
-							this.slackMessage("Server error  ("+Transactions.btc+") BTC  is less than 0.0005");
+							this.notify("Server error  ("+Transactions.btc+") BTC  is less than 0.0005");
 							return setTimeout(()=>{this.bittrexArbitrage(pair1,pair2,pair3).catch((e)=>{console.log(e);});},this.rate);
 						}										
 						console.log("Starting Trades");
-						try{this.slackMessage(message);}catch(e){console.log(e);}
+						try{this.notify(message);}catch(e){console.log(e);}
 						return this.bittrexTrade("sell",pair2,Transactions[b3],b).then(()=>{
 							this.bittrexTrade("buy",pair3,Transactions[e1].toFixed(8),c).catch((e)=>{
-								this.slackMessage("Retrying buying:"+Transactions[e1].toFixed(8)+u2+" =>"+e1+" @"+c);
-								setTimeout(()=>{this.bittrexTrade("buy",pair3,Transactions[e1].toFixed(8),c).catch((e)=>{this.slackMessage(e);});},3000);
+								this.notify("Retrying buying:"+Transactions[e1].toFixed(8)+u2+" =>"+e1+" @"+c);
+								setTimeout(()=>{this.bittrexTrade("buy",pair3,Transactions[e1].toFixed(8),c).catch((e)=>{this.notify(e);});},3000);
 							});
 						})
 						.then(()=>{
 							this.bittrexTrade("sell",pair1,Transactions[e1].toFixed(8),a).catch((e)=>{
-								this.slackMessage("Retrying selling:"+Transactions[e1].toFixed(8)+e1+" =>"+e1+" @"+a);
-								setTimeout(()=>{this.bittrexTrade("sell",pair1,Transactions[e1].toFixed(8),a).catch((e)=>{this.slackMessage(e);});},3000);
+								this.notify("Retrying selling:"+Transactions[e1].toFixed(8)+e1+" =>"+e1+" @"+a);
+								setTimeout(()=>{this.bittrexTrade("sell",pair1,Transactions[e1].toFixed(8),a).catch((e)=>{this.notify(e);});},3000);
 							});		
 						})
 						.then(()=>{
@@ -235,7 +235,7 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3){
 							},20000);
 						}).catch((e)=>{
 							console.log(e);
-							this.slackMessage("Selling:"+Transactions[b3]+b3+" =>"+u2+" @"+b+" Failed");
+							this.notify("Selling:"+Transactions[b3]+b3+" =>"+u2+" @"+b+" Failed");
 						})
 					}
 					else{
@@ -286,7 +286,7 @@ CryptoBot.prototype.bittrexCompleteArbitrage = function(){
 					return this.bittrexPoll();
 				}).catch((e)=>{
 					console.log("Error Getting Balance:",e);
-					this.slackMessage("Error getting balance after arbitrage compleged:"+new Date());
+					this.notify("Error getting balance after arbitrage compleged:"+new Date());
 					return this.bittrexAccount().then(()=>{
 						this.bittrexPoll();
 					}).catch((e)=>{
@@ -461,6 +461,16 @@ CryptoBot.prototype.database = function(){
 	return DB
 }
 
+CryptoBot.prototype.notify = function(message){
+	if(this.Settings.Slack.use){
+		this.sendEmail(message)
+	}
+	if(this.Settings.Email.use){
+		this.slackMessage(message);
+	}
+	return;
+}
+
 CryptoBot.prototype.retrieveDB = function(type){
 	return new Promise((resolve,reject) => {
 		try{
@@ -521,7 +531,7 @@ CryptoBot.prototype.sendEmail = function(email_message){
 	message	= {
 		   text:email_message, 
 		   from:Settings.Email.usr, 
-		   to:Settings.Email,addr,
+		   to:Settings.Email.addr,
 		   subject:"C4D",
 		   attachment:[{data:"<html>"+email_message+"</html>",alternative:true,inline:true}]			   
 	};		
