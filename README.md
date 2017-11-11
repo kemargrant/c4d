@@ -29,8 +29,8 @@ npm install
 node c4d.js
 ```
 After starting the command line script connect to the websocket port with a web socket [client](https://chrome.google.com/webstore/detail/simple-websocket-client/pfdhoblngboilpfeibdedpjgfnlcodoo) to start the program.
-* Web GUI Coming  Soon
-[Preview 1](https://i.imgur.com/g8RofSN.jpg) [Preview 2](https://i.imgur.com/2nxkbQE.jpg)
+* Web GUI
+[C4DC](https://github.com/kemargrant/c4dc)
 
 ## Configuration
 Bot settings are controlled by the 'config.json' file
@@ -115,3 +115,9 @@ License
 ----
 
 GPLv3
+
+Donate
+----
+BTC:1656ASaUDzMbiQHf32YUNU2E3QWKGPdFEL
+
+ETH:0x30CE6E295D5c204b9C77C6DE995260735B8Ba8bC
