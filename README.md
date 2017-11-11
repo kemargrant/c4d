@@ -58,14 +58,20 @@ Bot settings are controlled by the 'config.json' file
 		{
 			"addr":"Recipient Email Address",
 			"host_smtp":"Email SMTP IP Address",
+			"use":false,
 			"usr":"Email Account Address",
 			"pwd":"Email Password"			
 		},
-	"MongoDB":{"db_string":"mongodb://xxxx:xxxxxxxx@ip_address:port/database","connect":false},	
+	"MongoDB":
+		{
+			"db_string":"mongodb://xxxx:xxxxxxxx@ip_address:port/database",
+			"connect":false
+		},	
 	"Slack":
 		{
 			"channel":"Slack Channel",
 			"hook":"Slack Webhook",
+			"use":false,
 			"usr":"Slack user to notify",
 			"img":"Image url"
 		}
@@ -85,6 +91,18 @@ Bot settings are controlled by the 'config.json' file
 | Config.percentage2 | Percentage of BTC to use when performing BTC=>BTC trade | String
 | Config.polling | The default milliseconds for the bot to query the Bittrex ticker | Number
 | Config.port |Websocket port number | Number
+| Email.addr |Recipient Email Address | String
+| Email.host_smtp |Email SMTP Address| String
+| Email.use |Use email notifications | Boolean
+| Email.usr |Email Account Address | String
+| Email.pwd |Email Password | String
+| MongoDB.db_string | MongoDB connection string | String
+| MongoDB.connect | Use MongoDB database | Boolean
+| Slack.channel |Slack channel | String
+| Slack.hook |Slack Webhook| String
+| Slack.use |Use Slack notifications | Boolean
+| Slack.usr |Slack user to notify | String
+| Slack.img |Image to attach to slack message | String
 
 ## Disclaimer
 
