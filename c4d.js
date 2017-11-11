@@ -26,181 +26,6 @@ function CryptoBot(Settings){
 	this.Transactions = {};
 }
 
-CryptoBot.prototype.sendEmail = function(email_message){
-	var email;
-	var message;
-	var server;		
-	email  = require("emailjs");
-	server = email.server.connect({
-	   user:	Settings.Email.usr, 
-	   password: Settings.Email.pwd, 
-	   host:	Settings.Email.host_smtp, 
-	   tls:		true,
-	   port:	587
-	}); 
-	message	= {
-		   text:email_message, 
-		   from:Settings.Email.usr, 
-		   to:Settings.Email,addr,
-		   subject:"C4D",
-		   attachment:[{data:"<html>"+email_message+"</html>",alternative:true,inline:true}]			   
-	};		
-	return server.send(message,function(err, message){
-		if(err){
-			return console.log("Error Sending Email:",err);
-		}
-	});
-}
-
-CryptoBot.prototype.slackMessage = function(slack_message){
-	try{
-		var img;
-		var parameters;
-		var message;
-		var req;
-		message = slack_message + " @"+Settings.Slack.usr;
-		parameters = {};
-		img = Settings.Slack.img;
-		parameters.channel = Settings.Slack.channel;
-		parameters.username = "Server_Message";
-		parameters.attachments = [{"pretext":new Date().toString().split('GM')[0],"text":message,"image_url":img}];
-		req = https.request(
-		    {
-				host:"hooks.slack.com",
-				path: Settings.Slack.hook.replace("https://hooks.slack.com",""),
-				method:"Post",
-			},
-			(response)=>{
-		        var body = "";
-		        response.on("data",function(d){
-					body += d;
-					console.log(body)
-				});
-		        response.on("end",function(){
-					console.log('body:',body)
-			    });
-		        response.on('error',(e)=>{
-					console.log("Bittrex API Error:",e);
-				})
-			}
-	    );
-	   req.write(JSON.stringify(parameters))
-	   req.end();
-	}
-	catch(e){
-		return console.log(e);
-	}
-}		
-
-CryptoBot.prototype.database = function(){
-	var DB = {}
-	if(this.Settings.MongoDB.connect){
-		try{
-			MongoClient.connect(this.Settings.MongoDB.db_string, function(err, db) {
-				if(err) { 
-					return (console.log("Unable to connect to the database:",err)); 
-				}
-				else{
-					db.createCollection('bittrexBalance',{strict:true},function(err,collection){ 
-							if(err){
-								console.log("Bittrex Balance Collection Already Created");
-							}
-							else{
-								db.collection('bittrexBalance').createIndex( { "Time": 1 }, { unique: true } )
-							}
-							return DB.balance = db.collection('bittrexBalance');
-					});	
-					db.createCollection('bittrexHistory',{strict:true},function(err,collection){ 
-							if(err){
-								console.log("Bittrex History Collection Already Created");
-								}
-							else{
-								db.collection('bittrexHistory').createIndex( { "Time": 1 }, { unique: true } )
-							}
-							DB.history = db.collection('bittrexHistory');	
-					});	
-					
-					db.createCollection('bittrexTrade',{strict:true},function(err,collection){ 
-							if(err){
-								console.log("Bittrex Trade Collection Already Created");
-							}
-							else{
-								db.collection('bittrexTrade').createIndex( { "Time": 1 }, { unique: true } )
-							}
-							DB.trade = db.collection('bittrexTrade');	
-					});	
-					
-				}
-			});			
-		}
-		catch(e){
-			console.log(e);
-		}	
-	}
-	else{
-		console.log("Database Not Found");
-	}
-	return DB
-}
-	
-CryptoBot.prototype.setupWebsocket = function(){
-	return new Promise((resolve,reject) =>{			
-		this.wss.on('connection',(ws)=>{
-			console.log("Websocket started");
-			resolve(true);
-			ws.on('message',(message)=>{
-				try{
-					console.log("Message Received:",message);
-					try{
-						message = JSON.parse(crypto.AES.decrypt(message,Settings.Config.key).toString(crypto.enc.Utf8));												
-					}
-					catch(e){
-						return console.log(e);
-					}
-					if(message.command === "connect"){
-						ws.send(crypto.AES.encrypt(JSON.stringify({"type":'balance',"balance":this.balance,"p1":this.p1,"p2":this.p2,"polling":this.rate}),Settings.Config.key).toString());
-						return ws.send(crypto.AES.encrypt(JSON.stringify({"type":"history","bittrex_history1":this.bittrexHistory.history.percentages,"bittrex_history2":this.bittrexHistory.history.dates}),Settings.Config.key).toString());
-					}											
-					if(message.command === "poll"){
-						if(Number(message.rate)){this.rate = message.rate * 1000;}
-						return console.log("poll_rate:",this.rate/1000 +" seconds");
-					}
-					if(message.command === "update_percentage"){
-						this.p1 = message.percentage1;
-						return this.p2 = message.percentage2;
-					}											
-					if(message.command === "poll_rate"){
-						return this.broadcastMessage({"type":"poll_rate","polling":this.rate});
-					}											
-					if(message.command === "bittrex_balance"){
-						return this.bittrexAccount().catch(e=>console.log(e));
-					}	
-					if(message.command === "bittrex_orders"){
-						return this.bittrexGetOrders().then((orders)=>{
-							orders.map(function(order){
-								return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'order',"otype":order.OrderType,"timestamp_created":order.Opened,"rate":order.Limit,"status":order.Closed,"pair":order.Exchange,"filled":order.QuantityRemaining,"amount":order.Quantity,"order_id":order.OrderUuid}),Settings.Config.key).toString());
-							});
-						}).catch((e)=>{
-							console.log(e);
-						})
-					}	
-					if(message.command === "bittrex_db"){
-						return this.retrieveDB(message.db).then((que)=>{
-							return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'db_'+message.db,"info":que}),Settings.Config.key).toString());														
-						}).catch((e)=>{
-							console.log(e);
-							return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'log',"log":e}),Settings.Config.key).toString());
-						})								
-					}																																														
-				}
-				catch(e){
-					console.log(e);
-				}
-			});				
-		});	
-	});				
-}	
-
 CryptoBot.prototype.bittrexAPI = function(path,options){
 	return new Promise((resolve,reject) =>{	
 		var hmac;
@@ -584,6 +409,58 @@ CryptoBot.prototype.broadcastMessage = function(data){
 		}
 	});
 }	
+
+CryptoBot.prototype.database = function(){
+	var DB = {}
+	if(this.Settings.MongoDB.connect){
+		try{
+			MongoClient.connect(this.Settings.MongoDB.db_string, function(err, db) {
+				if(err) { 
+					return (console.log("Unable to connect to the database:",err)); 
+				}
+				else{
+					db.createCollection('bittrexBalance',{strict:true},function(err,collection){ 
+							if(err){
+								console.log("Bittrex Balance Collection Already Created");
+							}
+							else{
+								db.collection('bittrexBalance').createIndex( { "Time": 1 }, { unique: true } )
+							}
+							return DB.balance = db.collection('bittrexBalance');
+					});	
+					db.createCollection('bittrexHistory',{strict:true},function(err,collection){ 
+							if(err){
+								console.log("Bittrex History Collection Already Created");
+								}
+							else{
+								db.collection('bittrexHistory').createIndex( { "Time": 1 }, { unique: true } )
+							}
+							DB.history = db.collection('bittrexHistory');	
+					});	
+					
+					db.createCollection('bittrexTrade',{strict:true},function(err,collection){ 
+							if(err){
+								console.log("Bittrex Trade Collection Already Created");
+							}
+							else{
+								db.collection('bittrexTrade').createIndex( { "Time": 1 }, { unique: true } )
+							}
+							DB.trade = db.collection('bittrexTrade');	
+					});	
+					
+				}
+			});			
+		}
+		catch(e){
+			console.log(e);
+		}	
+	}
+	else{
+		console.log("Database Not Found");
+	}
+	return DB
+}
+
 CryptoBot.prototype.retrieveDB = function(type){
 	return new Promise((resolve,reject) => {
 		try{
@@ -605,6 +482,7 @@ CryptoBot.prototype.retrieveDB = function(type){
 		}
 	})
 }	
+
 CryptoBot.prototype.saveDB = function(type,doc){
 	try{
 			if(!this.Settings.MongoDB.connect){
@@ -627,6 +505,130 @@ CryptoBot.prototype.saveDB = function(type,doc){
 		return console.log(e);
 	}
 }
+
+CryptoBot.prototype.sendEmail = function(email_message){
+	var email;
+	var message;
+	var server;		
+	email  = require("emailjs");
+	server = email.server.connect({
+	   user:	Settings.Email.usr, 
+	   password: Settings.Email.pwd, 
+	   host:	Settings.Email.host_smtp, 
+	   tls:		true,
+	   port:	587
+	}); 
+	message	= {
+		   text:email_message, 
+		   from:Settings.Email.usr, 
+		   to:Settings.Email,addr,
+		   subject:"C4D",
+		   attachment:[{data:"<html>"+email_message+"</html>",alternative:true,inline:true}]			   
+	};		
+	return server.send(message,function(err, message){
+		if(err){
+			return console.log("Error Sending Email:",err);
+		}
+	});
+}
+
+CryptoBot.prototype.setupWebsocket = function(){
+	return new Promise((resolve,reject) =>{			
+		this.wss.on('connection',(ws)=>{
+			console.log("Websocket started");
+			resolve(true);
+			ws.on('message',(message)=>{
+				try{
+					console.log("Message Received:",message);
+					try{
+						message = JSON.parse(crypto.AES.decrypt(message,Settings.Config.key).toString(crypto.enc.Utf8));												
+					}
+					catch(e){
+						return console.log(e);
+					}
+					if(message.command === "connect"){
+						ws.send(crypto.AES.encrypt(JSON.stringify({"type":'balance',"balance":this.balance,"p1":this.p1,"p2":this.p2,"polling":this.rate}),Settings.Config.key).toString());
+						return ws.send(crypto.AES.encrypt(JSON.stringify({"type":"history","bittrex_history1":this.bittrexHistory.history.percentages,"bittrex_history2":this.bittrexHistory.history.dates}),Settings.Config.key).toString());
+					}											
+					if(message.command === "poll"){
+						if(Number(message.rate)){this.rate = message.rate * 1000;}
+						return console.log("poll_rate:",this.rate/1000 +" seconds");
+					}
+					if(message.command === "update_percentage"){
+						this.p1 = message.percentage1;
+						return this.p2 = message.percentage2;
+					}											
+					if(message.command === "poll_rate"){
+						return this.broadcastMessage({"type":"poll_rate","polling":this.rate});
+					}											
+					if(message.command === "bittrex_balance"){
+						return this.bittrexAccount().catch(e=>console.log(e));
+					}	
+					if(message.command === "bittrex_orders"){
+						return this.bittrexGetOrders().then((orders)=>{
+							orders.map(function(order){
+								return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'order',"otype":order.OrderType,"timestamp_created":order.Opened,"rate":order.Limit,"status":order.Closed,"pair":order.Exchange,"filled":order.QuantityRemaining,"amount":order.Quantity,"order_id":order.OrderUuid}),Settings.Config.key).toString());
+							});
+						}).catch((e)=>{
+							console.log(e);
+						})
+					}	
+					if(message.command === "bittrex_db"){
+						return this.retrieveDB(message.db).then((que)=>{
+							return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'db_'+message.db,"info":que}),Settings.Config.key).toString());														
+						}).catch((e)=>{
+							console.log(e);
+							return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'log',"log":e}),Settings.Config.key).toString());
+						})								
+					}																																														
+				}
+				catch(e){
+					console.log(e);
+				}
+			});				
+		});	
+	});				
+}	
+
+CryptoBot.prototype.slackMessage = function(slack_message){
+	try{
+		var img;
+		var parameters;
+		var message;
+		var req;
+		message = slack_message + " @"+Settings.Slack.usr;
+		parameters = {};
+		img = Settings.Slack.img;
+		parameters.channel = Settings.Slack.channel;
+		parameters.username = "Server_Message";
+		parameters.attachments = [{"pretext":new Date().toString().split('GM')[0],"text":message,"image_url":img}];
+		req = https.request(
+		    {
+				host:"hooks.slack.com",
+				path: Settings.Slack.hook.replace("https://hooks.slack.com",""),
+				method:"Post",
+			},
+			(response)=>{
+		        var body = "";
+		        response.on("data",function(d){
+					body += d;
+					console.log(body)
+				});
+		        response.on("end",function(){
+					console.log('body:',body)
+			    });
+		        response.on('error',(e)=>{
+					console.log("Bittrex API Error:",e);
+				})
+			}
+	    );
+	   req.write(JSON.stringify(parameters))
+	   req.end();
+	}
+	catch(e){
+		return console.log(e);
+	}
+}		
 
 CryptoBot.prototype.bittrexTrade = function(type,pair,quantity,rate){
 	return new Promise((resolve,reject) => {	
