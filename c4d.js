@@ -121,7 +121,7 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3){
 			var u2;
 			var b3;
 			var _b3;
-			a =  values[0],b = values[1],c = values[2];
+			a =  values[0].strat1,b = values[1].strat1,c = values[2].strat1;
 			e1 = pair1.split('-')[1].toLowerCase();
 			_e1 = "_" + pair1.split('-')[1].toLowerCase();
 			b3 = pair1.split('-')[0].toLowerCase();
@@ -132,12 +132,12 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3){
 					console.log("Bittrex Arbitrage Error:",new Date());
 					return setTimeout(()=>{this.bittrexArbitrage(pair1,pair2,pair3).catch((e)=>{console.log(e);})},this.rate);
 			}
-			this.bittrexHistory.add(percentage);
-			trading_pairs = {"type":"percentage","exchange":"bittrex","percentage":percentage}
-			trading_pairs[pair1] = a,trading_pairs[pair2] = b,trading_pairs[pair3] = c;
-			this.broadcastMessage(trading_pairs);
-			console.log("Bittrex("+a+'|'+pair1+'/ '+b+'|'+pair2+'/ '+c+'|'+pair3+")",percentage);
 			if(percentage < 100){
+				trading_pairs = {"type":"percentage","exchange":"bittrex","percentage":percentage,"strategy":1}
+				trading_pairs[pair1] = a,trading_pairs[pair2] = b,trading_pairs[pair3] = c;
+				this.bittrexHistory.add(percentage);
+				this.broadcastMessage(trading_pairs);
+				console.log("Bittrex("+a+'|'+pair1+'/ '+b+'|'+pair2+'/ '+c+'|'+pair3+")",percentage);
 				Transactions[e1] = Number((this.balance[e1] * this.p1).toFixed(8));
 				Transactions[u2] = 0.9975*Transactions[e1] * c;
 				Transactions[b3] = 0.9975*Transactions[u2]/b;	
@@ -155,7 +155,8 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3){
 					if(Transactions[u2+'_amount'] > Transactions[u2] && Transactions[b3+'_amount'] > Transactions[b3] && Transactions[e1+'_amount'] > Transactions[e1]){
 						if(Transactions[e1+'_status'] && Transactions[b3+'_status'] && Transactions[u2+'_status']){
 							if(Transactions.btc < 0.0005){
-									this.notify("Server error  ("+Transactions.btc+") BTC  is less than 0.0005");
+									this.notify("Server error  ("+Transactions.btc+") BTC  is less than 0.0005\n"+message);
+									this.bittrexAccount().catch((e)=>{});
 									return setTimeout(()=>{this.bittrexArbitrage(pair1,pair2,pair3).catch((e)=>{console.log(e);});},this.rate);
 							}
 							console.log("Starting Trades");														
@@ -195,6 +196,13 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3){
 				}
 			}
 			if(percentage > 100){
+				a =  values[0].strat2,b = values[1].strat2,c = values[2].strat2;
+				percentage = a * b/c * 100;
+				trading_pairs = {"type":"percentage","exchange":"bittrex","percentage":percentage,"strategy":2}
+				trading_pairs[pair1] = a,trading_pairs[pair2] = b,trading_pairs[pair3] = c;
+				this.broadcastMessage(trading_pairs);
+				this.bittrexHistory.add(percentage);
+				console.log("Bittrex("+a+'|'+pair1+'/ '+b+'|'+pair2+'/ '+c+'|'+pair3+")",percentage);
 				Transactions[b3] =  Number((this.balance[b3] * this.p2).toFixed(8));
 				Transactions[u2] = 0.9975 * Transactions[b3] * b;
 				Transactions[e1] = 0.9975*(Transactions[u2]/c);
@@ -211,7 +219,8 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3){
 				if(percentage > 100.7524 && percentage < 101.9 && Transactions[u2+'_amount'] > Transactions[u2] && Transactions[b3+'_amount'] > Transactions[b3] && Transactions[e1+'_amount'] > Transactions[e1]){
 					if(Transactions[e1+'_status'] && Transactions[b3+'_status'] && Transactions[u2+'_status']){	
 						if(Transactions.btc < 0.0005){
-							this.notify("Server error  ("+Transactions.btc+") BTC  is less than 0.0005");
+							this.notify("Server error  ("+Transactions.btc+") BTC  is less than 0.0005\n"+message);
+							this.bittrexAccount().catch((e)=>{});
 							return setTimeout(()=>{this.bittrexArbitrage(pair1,pair2,pair3).catch((e)=>{console.log(e);});},this.rate);
 						}										
 						console.log("Starting Trades");
@@ -313,7 +322,6 @@ CryptoBot.prototype.bittrexDepth = function(pair){
 								return reject(body);
 							}
 				            var parsed = JSON.parse(body);
-				            //console.log(parsed)
 				            if(!parsed || !parsed.success){
 								return reject("Error:"+body);
 							}
@@ -323,7 +331,15 @@ CryptoBot.prototype.bittrexDepth = function(pair){
 							else{
 								this.Transactions[pair.split('-')[0].toLowerCase()+'_amount'] =  Number((parsed['result'].buy[0].Quantity * parsed['result'].buy[0].Rate));
 							}
-							return resolve(Number(parsed['result'].buy[0].Rate + parsed['result'].sell[0].Rate)/2);
+							if(pair === this.Settings.Config.pair3){
+								return resolve({"strat1":Number(parsed['result'].buy[0].Rate),"strat2":Number(parsed['result'].sell[0].Rate)});
+							}
+							else if(pair === this.Settings.Config.pair2){
+								return resolve({"strat1":Number(parsed['result'].sell[0].Rate),"strat2":Number(parsed['result'].buy[0].Rate)});
+							}
+							else{
+								return resolve({"strat1":Number(parsed['result'].sell[0].Rate),"strat2":Number(parsed['result'].sell[0].Rate)});
+							}
 						}
 						catch(e){
 							return reject(e);
