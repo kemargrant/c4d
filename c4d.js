@@ -195,7 +195,7 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3){
 					}	
 				}
 			}
-			if(percentage > 100){
+			else{
 				a =  values[0].strat2,b = values[1].strat2,c = values[2].strat2;
 				percentage = a * b/c * 100;
 				trading_pairs = {"type":"percentage","exchange":"bittrex","percentage":percentage,"strategy":2}
@@ -206,7 +206,7 @@ CryptoBot.prototype.bittrexArbitrage = function(pair1,pair2,pair3){
 				Transactions[b3] =  Number((this.balance[b3] * this.p2).toFixed(8));
 				Transactions[u2] = 0.9975 * Transactions[b3] * b;
 				Transactions[e1] = 0.9975*(Transactions[u2]/c);
-				Transactions[_b3] = (0.9975 * Transactions[e1]*a).toFixed(8);
+				Transactions[_b3] = Number((0.9975 * Transactions[e1]*a).toFixed(8));
 				message = message + percentage.toFixed(2)+"% \n";
 				message = message + Transactions[b3] + b3 +" => "+Transactions[u2].toFixed(8)+" "+u2+" @" + b + '\n';
 				message = message + Transactions[u2].toFixed(8) + u2+" => " + Transactions[e1].toFixed(8) + e1+" @"+c +'\n';
