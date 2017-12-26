@@ -41,13 +41,15 @@ Bot settings are controlled by the 'config.json' file
 	"Bittrex":
 		{
 			"apikey":"Bittrex_API_Key",
-			"secret":"Bittrex_API_Secret"
+			"secret":"Bittrex_API_Secret",
+			"minimum":001
 		},
 	"Config":
 		{
 			"key":"Secret Private Key",	
 			"liquidTrades":true,
-			"lowerLimit":89,
+			"logs":3,
+			"lowerLimit":98.3,
 			"pair1":"BTC-XXX",
 			"pair2":"USDT-BTC",
 			"pair3":"USDT-XXX",		
@@ -81,7 +83,7 @@ Bot settings are controlled by the 'config.json' file
 		},
 	"Swing":
 		{
-			"amount":0.00051,
+			"amount":0.001,
 			"pair":"BTC-XXX",
 			"rate":60000,
 			"swing":0.02,
