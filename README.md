@@ -42,7 +42,7 @@ Bot settings are controlled by the 'config.json' file
 		{
 			"apikey":"Bittrex_API_Key",
 			"secret":"Bittrex_API_Secret",
-			"minimum":001
+			"minimum":0.001
 		},
 	"Config":
 		{
@@ -97,8 +97,10 @@ Bot settings are controlled by the 'config.json' file
 | ------ | ------ | ------ |
 | Bittrex.apikey | Bittrex Api Key | String
 | Bittrex.secret | Bittrex Api Secret | String
+| Bittrex.minimum | Bittrex minimum btc order size Defaut(0.001)| Number
 | Config.key | The key used to encrypt messages between the bot and a web client | String
 | Config.liquidTrades | Perform arbitrage between when enough liquidity is on the books (prevents left behind trades...usually) | Boolean
+| Config.logs | 0-None 1-Server Only 2-Client Only 3-Server and Client Default(3) | Number
 | Config.lowerLimit | Lower percentage limit when saneTrades is true | Number
 | Config.pair1 | BTC- your target currency | String
 | Config.pair2 | “USDT-BTC” (Required) | String
