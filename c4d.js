@@ -463,6 +463,7 @@ CryptoBot.prototype.bittrexPoll = function(){
 }
 
 CryptoBot.prototype.broadcastMessage = function(data){
+	try{
   return this.wss.clients.forEach((client)=> {
 	    if (client.readyState === WebSocket.OPEN){
 				try{
@@ -474,6 +475,10 @@ CryptoBot.prototype.broadcastMessage = function(data){
 				}
 		}
 	});
+	}
+	catch(e){
+		return console.log(e);
+	}
 }	
 
 CryptoBot.prototype.completedTrades = function(_orders) {
