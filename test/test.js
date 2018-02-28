@@ -164,7 +164,7 @@ describe('Bittrex', function() {
 
 	describe('#Completed Trades', function() {
 		this.timeout(15000);
-		return it('Return a settimeout object', function() {
+		return it('Should return a settimeout object', function() {
 			var val = bot.completedTrades(['xxxx']);
 			assert.equal(Number(val._idleStart > 0),true);
 		});
@@ -172,7 +172,7 @@ describe('Bittrex', function() {
 
 	describe('#Stream', function() {
 		this.timeout(15000);
-		return it('Return signalr client', async function() {
+		return it('Should return signalr client', async function() {
 			var val = await bot.bittrexPrepareStream();
 			var val2 = await bot.bittrexStream(val[0],val[1]);
 			assert(val2.headers.cookie);
