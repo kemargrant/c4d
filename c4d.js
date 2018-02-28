@@ -53,9 +53,9 @@ function CryptoBot(){
 	this.binanceTradesMade = {}
 	this.binanceUserStreamStatus = false;
 	for(var i=0;i< Settings.Binance.pairs.length;i++){
-		this.binanceB1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumBTC;
-		this.binanceC1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumXXX;
-		this.binanceU1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumU1Order;
+		this.binanceB1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumB1;
+		this.binanceC1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumC1;
+		this.binanceU1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumU1;
 		this.binanceInProcess[Settings.Binance.pairs[i].pair1] = false;
 		this.binanceOrders[Settings.Binance.pairs[i].pair1] = [];
 		this.binancePrec[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].prec;
