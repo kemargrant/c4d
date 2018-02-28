@@ -1,4 +1,20 @@
 {
+	"Binance":
+		{
+			"apikey":"Binance_API_Key",
+			"secretkey":"Binance_API_Secret",
+			"enabled":true,
+			"pairs":[{
+			"liquidTrades":true,
+			"minimumB1":0.01,
+			"minimumC1":0.0001,
+			"minimumU1":10,
+			"pair1":"xxxyyy",
+			"pair2":"yyyzzz",
+			"pair3":"xxxzzz",
+			"prec":[6,2,2,3,2,5]
+			}]
+		},
 	"Bittrex":
 		{
 			"apikey":"Bittrex_API_Key",
@@ -7,6 +23,7 @@
 		},
 	"Config":
 		{
+			"enabled":true,
 			"key":"Secret Private Key",	
 			"liquidTrades":true,
 			"logs":3,
@@ -19,7 +36,8 @@
 			"polling":45000,
 			"port":7071,
 			"saneTrades":true,
-			"upperLimit":101.79
+			"upperLimit":101.79,
+			"viewBook":false
 		},
 	"Email":
 		{
@@ -40,7 +58,6 @@
 			"hook":"Slack Webhook",
 			"use":false,
 			"usr":"Slack user to notify",
-			"img":"Image url"
 		},
 	"Swing":
 		{
