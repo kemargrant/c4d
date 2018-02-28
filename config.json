@@ -57,7 +57,7 @@
 			"channel":"Slack Channel",
 			"hook":"Slack Webhook",
 			"use":false,
-			"usr":"Slack user to notify",
+			"usr":"Slack user to notify"
 		},
 	"Swing":
 		{
