@@ -1,5 +1,5 @@
 {
-	"scripts": {
+  "scripts": {
     "test": "mocha --exit"
   },
   "dependencies": {
