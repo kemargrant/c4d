@@ -1,6 +1,6 @@
 {
 	"scripts": {
-    "test": "mocha"
+    "test": "mocha --exit"
   },
   "dependencies": {
     "crypto-js": "^3.1.9-1",
