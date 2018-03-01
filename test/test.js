@@ -3,14 +3,19 @@ var bot = new CryptoBot.bot();
 var assert = require('assert');
 var WebSocketClient = require('websocket').client;
 
-describe('General Functions', function() {
-
+describe('Functions', function() {
+	
 	describe('#Connect To Database', function() {
 		this.timeout(2100);
 		return it('Should return a db connection with trade and balance collections', function(done) {
 			return setTimeout(function(){
-				assert(bot.DB.balance && bot.DB.trade)
-				done();
+				try{
+					assert(bot.DB.balance && bot.DB.trade);
+					done();
+				}
+				catch(e){
+					done(e);
+				}
 			},950)
 		});
 	});
@@ -22,8 +27,12 @@ describe('General Functions', function() {
 			return setTimeout( async function(){
 				var x = await bot.saveDB("trade",{"UUID":date});
 				var y = await bot.saveDB("trade",{},{method:"remove",query:{'UUID':date}});	
-				assert(x && y,true)
-				done();
+				try{
+					assert(x && y,true);
+				}
+				catch(e){
+					done(e);
+				}
 			},1150)
 		});
 	});		
@@ -39,7 +48,7 @@ describe('General Functions', function() {
 		this.timeout(2500)
 		return it('Should send an email message', async function() {
 			var val = await bot.sendEmail("Hello World");
-			assert(val);
+			assert.equal(val,true);
 		});
 	});
 	
@@ -60,69 +69,68 @@ describe('General Functions', function() {
 			assert(val);
 		});
 	});	
-	return
-})
-
-//~ //Binance Tests
-describe('Binance', function() {
 	
-	describe('#ApiKeys', function() {
-		return it('should return true when the apikey and apisecret are present', function() {
-			assert.equal(bot.Settings.Binance.apikey.length > 0 && bot.Settings.Binance.secretkey.length > 0, true);
+//Binance Tests
+	describe('Binance', function() {
+		
+		describe('#ApiKeys', function() {
+			return it('should return true when the apikey and apisecret are present', function() {
+				assert.equal(bot.Settings.Binance.apikey.length > 0 && bot.Settings.Binance.secretkey.length > 0, true);
+			});
 		});
+	
+		describe('#Account Data', function() {
+			return it('Should return account data', async function() {
+				var val = await bot.binanceAccount();
+				assert.equal(typeof val,"object")
+			});
+		});
+		
+		describe('#Get Orders', function() {
+			return it('Should return a list of open orders for btcusdt', async function() {
+				var val = await bot.binanceOpenOrders("BTCUSDT");
+				assert(val instanceof Array)
+			})
+		});  	
+		
+		describe('#Listen Key', function() {
+			it('Should return a user listen key of 60 characters', async function() {
+				var val = await bot.binanceListenKey()
+				assert.equal(val.length,60);				
+			});
+		});	
+	
+		describe('#Keep Alive', function() {
+			return it('Should return an empty object', async function() {
+				var val = await bot.binanceListenKey();
+				var val2 = await bot.binanceListenBeat(val);
+				assert.equal(JSON.stringify(val2),"{}");
+			});
+		});
+	
+		describe('#Listen User Account', function() {
+			return it('Should return a connected websocket client', async function() {
+				var val = await bot.binanceListenUser();
+				assert.equal(val.url.host,"stream.binance.com:9443");		
+			});
+		});
+		
+		describe('#Binance Stream', function() {
+			return it('Should return a connected websocket', function() {
+				assert(bot.binanceStream("btcusdt","btcusdt").url.href,"wss://stream.binance.com:9443/ws/btcusdt@depth");
+			});
+		});		
+		
+		describe('#Place and Remove Order', function() {
+			return it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
+				var val = await bot.binanceTrade("BTCUSDT","BUY",1.00,20.00,"GTC")
+				var val2 = await bot.binanceCancelOrder("BTCUSDT",val.orderId);
+				assert.equal(val2.symbol,"BTCUSDT");
+			});
+		});	
+	  return
 	});
 
-	describe('#Account Data', function() {
-		return it('Should return account data', async function() {
-			var val = await bot.binanceAccount();
-			assert.equal(typeof val,"object")
-		});
-	});
-	
-	describe('#Get Orders', function() {
-		return it('Should return a list of open orders for btcusdt', async function() {
-			var val = await bot.binanceOpenOrders("BTCUSDT");
-			assert(val instanceof Array)
-		})
-	});  	
-	
-	describe('#Listen Key', function() {
-		it('Should return a user listen key of 60 characters', async function() {
-			var val = await bot.binanceListenKey()
-			assert.equal(val.length,60);				
-		});
-	});	
-
-	describe('#Keep Alive', function() {
-		return it('Should return an empty object', async function() {
-			var val = await bot.binanceListenKey();
-			var val2 = await bot.binanceListenBeat(val);
-			assert.equal(JSON.stringify(val2),"{}");
-		});
-	});
-
-	describe('#Listen User Account', function() {
-		return it('Should return a connected websocket client', async function() {
-			var val = await bot.binanceListenUser();
-			assert.equal(val.url.host,"stream.binance.com:9443");		
-		});
-	});
-	
-	describe('#Binance Stream', function() {
-		return it('Should return a connected websocket', function() {
-			assert(bot.binanceStream("btcusdt","btcusdt").url.href,"wss://stream.binance.com:9443/ws/btcusdt@depth");
-		});
-	});		
-	
-	describe('#Place and Remove Order', function() {
-		return it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
-			var val = await bot.binanceTrade("BTCUSDT","BUY",1.00,20.00,"GTC")
-			var val2 = await bot.binanceCancelOrder("BTCUSDT",val.orderId);
-			assert.equal(val2.symbol,"BTCUSDT");
-		});
-	});	
-  return
-});
 
 //Bittrex Tests
 describe('Bittrex', function() {
@@ -179,6 +187,10 @@ describe('Bittrex', function() {
 		});
 	});
 	
-	return;
 });
+
+
+	return
+})
+
 
