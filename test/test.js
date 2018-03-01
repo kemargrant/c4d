@@ -8,11 +8,11 @@ describe('Functions', function() {
 	describe('#Connect To Database', function() {
 		this.timeout(2100);
 		return it('Should return a db connection with trade and balance collections', function(done) {
-			return setTimeout(function(){
+			return setTimeout(async function(){
 				try{
-					var x = bot.DB.balance ? true : false;
-					var y = bot.DB.trade ? true : false;
-					assert(x && y)
+					var x = await bot.DB.balance;
+					var y = await bot.DB.trade;
+					assert((x && y) !== undefined)
 					done();
 				}
 				catch(e){
@@ -49,7 +49,7 @@ describe('Functions', function() {
 	
 	describe('#Send Email', function() {
 		this.timeout(2500)
-		return it('Should send an email message', async function() {
+		return it('Should send an email message', async function(done) {
 			var val = await bot.sendEmail("Hello World");
 			try{
 				assert(val);
@@ -62,7 +62,7 @@ describe('Functions', function() {
 	});
 	
 	describe('#Should send Slack Message', function() {
-		return it('Should send a slack message', async function() {
+		return it('Should send a slack message', async function(done) {
 			var val = await bot.slackMessage("Hello World");
 			try{
 				assert(val);
