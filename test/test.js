@@ -10,7 +10,9 @@ describe('Functions', function() {
 		return it('Should return a db connection with trade and balance collections', function(done) {
 			return setTimeout(function(){
 				try{
-					assert(bot.DB.balance && bot.DB.trade);
+					var x = bot.DB.balance ? true : false;
+					var y = bot.DB.trade ? true : false;
+					assert(x && y)
 					done();
 				}
 				catch(e){
@@ -29,6 +31,7 @@ describe('Functions', function() {
 				var y = await bot.saveDB("trade",{},{method:"remove",query:{'UUID':date}});	
 				try{
 					assert(x && y,true);
+					done();
 				}
 				catch(e){
 					done(e);
@@ -48,14 +51,26 @@ describe('Functions', function() {
 		this.timeout(2500)
 		return it('Should send an email message', async function() {
 			var val = await bot.sendEmail("Hello World");
-			assert.equal(val,true);
+			try{
+				assert(val);
+				done();
+			}
+			catch(e){
+				done(e);
+			}			
 		});
 	});
 	
 	describe('#Should send Slack Message', function() {
 		return it('Should send a slack message', async function() {
 			var val = await bot.slackMessage("Hello World");
-			assert(val);
+			try{
+				assert(val);
+				done();
+			}
+			catch(e){
+				done(e);
+			}
 		});
 	});
 	
