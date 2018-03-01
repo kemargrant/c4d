@@ -1469,7 +1469,7 @@ CryptoBot.prototype.bittrexTrade = function(type,pair,quantity,rate,options){
 
 CryptoBot.prototype.broadcastMessage = function(data){
 	try{
-		if(!this.wss.clients){
+		if(!this.wss || !this.wss.clients){
 			return;
 		}
 		return this.wss.clients.forEach((client)=> {
