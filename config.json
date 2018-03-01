@@ -41,11 +41,11 @@
 		},
 	"Email":
 		{
-			"addr":"Recipient Email Address",
-			"host_smtp":"Email SMTP IP Address",
+			"addr":"Recipient_Email_Address",
+			"host_smtp":"Email_SMTP_IP_Address",
 			"use":false,
-			"usr":"Email Account Address",
-			"pwd":"Email Password"		
+			"usr":"Email_Account_Address",
+			"pwd":"Email_Password"		
 		},
 	"MongoDB":
 		{
@@ -54,10 +54,10 @@
 		},	
 	"Slack":
 		{
-			"channel":"Slack Channel",
-			"hook":"Slack Webhook",
+			"channel":"Slack_Channel",
+			"hook":"Slack_Webhook",
 			"use":false,
-			"usr":"Slack user to notify"
+			"usr":"Slack_user_to_notify"
 		},
 	"Swing":
 		{
