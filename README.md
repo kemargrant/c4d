@@ -123,7 +123,7 @@ Bot settings are controlled by the 'config.json' file
 | Binance.enabled | Enable trading on Binance exchange (Default true) | Boolean
 | Binance.pairs | Array of pairs to use | Array
 | Binance.pairs.liquidTrades | Perform arbitrage between when enough liquidity is on the books (Default true) | Boolean
-| Binance.pairs.minimumB1 | Minimum Order Amount For Currency Pair1 ie ltcbtc (0.01)LTC | Array
+| Binance.pairs.minimumB1 | Minimum Order Value For Currency Pair1 ie ltcbtc (0.001)BTC | Array
 | Binance.pairs.minimumC1 | Minimum Order Amount/Minimum Order Price For Currency Pair2 ie btcusdt (0.0001)BTC | Array
 | Binance.pairs.minimumU1 | Minimum Order Value For Currency Pair3 ie ltcusdt (10)USDT | Array
 | Binance.pairs.pair1 | Currency Pair1 ie ltcbtc | Array
