@@ -94,6 +94,9 @@ CryptoBot.prototype.binanceAccount = function(){
 					if(parsed.code === -1021){
 						throw new Error(parsed.msg);
 					}
+					if(!parsed.balances){
+						return reject(false);
+					}
 					for(var i=0;i<parsed.balances.length;i++){
 						this.binanceBalance[parsed.balances[i].asset.toLowerCase()] = Number(parsed.balances[i].free) > 0 ? Number(parsed.balances[i].free) : 0;
 					}
@@ -350,7 +353,12 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 	});
 	client.on('connect', (connection)=> {
 	    this.log(pair+' - Binance WebSocket Client Connected:',new Date());
-	    this.binanceSocketConnections.push(connection);
+	    if(this.binanceSocketConnections){
+			this.binanceSocketConnections.push(connection);
+		}
+		else{
+			connection.close();
+		}
 	    connection.on('error', (error)=> {
 	        this.log(pair+" - Connection Error: ",error,new Date());  
 	    });
@@ -1461,6 +1469,9 @@ CryptoBot.prototype.bittrexTrade = function(type,pair,quantity,rate,options){
 
 CryptoBot.prototype.broadcastMessage = function(data){
 	try{
+		if(!this.wss.clients){
+			return;
+		}
 		return this.wss.clients.forEach((client)=> {
 		    if (client.readyState === WebSocket.OPEN){
 					try{
@@ -1474,7 +1485,7 @@ CryptoBot.prototype.broadcastMessage = function(data){
 		});
 	}
 	catch(e){
-		return console.log(e);
+		console.log(e);
 	}
 }	
 
