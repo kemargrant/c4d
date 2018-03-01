@@ -1,6 +1,7 @@
+
 # Description
 
-C4D is a node.js cryptocurrency arbitrage bot for use on the Bittrex exchange.
+C4D is a node.js cryptocurrency arbitrage bot for use on the Bittrex/Binance exchange.
 
 Using the BTC/USDT markets on Bittrex the bot conducts triangular arbitrage. The bot's wallet requires a sufficient amount of each currency to perform the three trades in parallel.
 
@@ -28,6 +29,11 @@ cd c4d
 npm install
 node c4d.js
 ```
+## Testing
+```npm test```
+
+----
+
 After starting the command line script connect to the websocket port with a web socket [client](https://chrome.google.com/webstore/detail/simple-websocket-client/pfdhoblngboilpfeibdedpjgfnlcodoo) to start the program.
 * Web GUI
 [C4DC](https://github.com/kemargrant/c4dc)
@@ -38,6 +44,22 @@ Bot settings are controlled by the 'config.json' file
 
 ```
 {
+	"Binance":
+		{
+			"apikey":"Binance_API_Key",
+			"secretkey":"Binance_API_Secret",
+			"enabled":true,
+			"pairs":[{
+			"liquidTrades":true,
+			"minimumB1":0.001,
+			"minimumC1":0.001,
+			"minimumU1":10,
+			"pair1":"xxxyyy",
+			"pair2":"yyyzzz",
+			"pair3":"xxxzzz",
+			"prec":[6,2,2,3,2,5]
+			}]
+		},
 	"Bittrex":
 		{
 			"apikey":"Bittrex_API_Key",
@@ -46,6 +68,7 @@ Bot settings are controlled by the 'config.json' file
 		},
 	"Config":
 		{
+			"enabled":true,
 			"key":"Secret Private Key",	
 			"liquidTrades":true,
 			"logs":3,
@@ -58,12 +81,13 @@ Bot settings are controlled by the 'config.json' file
 			"polling":45000,
 			"port":7071,
 			"saneTrades":true,
-			"upperLimit":101.79
+			"upperLimit":101.79,
+			"viewBook":false
 		},
 	"Email":
 		{
-			"addr":"Recipient Email Address",
-			"host_smtp":"Email SMTP IP Address",
+			"addr":"Recipient_Email_Address",
+			"host_smtp":"Email_SMTP_IP_Address",
 			"use":false,
 			"usr":"Email Account Address",
 			"pwd":"Email Password"		
@@ -75,11 +99,10 @@ Bot settings are controlled by the 'config.json' file
 		},	
 	"Slack":
 		{
-			"channel":"Slack Channel",
-			"hook":"Slack Webhook",
+			"channel":"Slack_Channel",
+			"hook":"Slack_Webhook",
 			"use":false,
-			"usr":"Slack user to notify",
-			"img":"Image url"
+			"usr":"Slack_user_to_notify"
 		},
 	"Swing":
 		{
@@ -95,9 +118,22 @@ Bot settings are controlled by the 'config.json' file
 
 | Property | Value | Type
 | ------ | ------ | ------ |
+| Binance.apikey | Binance Api Key | String
+| Binance.secretkey | Binance Api Secret | String
+| Binance.enabled | Enable trading on Binance exchange (Default true) | Boolean
+| Binance.pairs | Array of pairs to use | Array
+| Binance.pairs.liquidTrades | Perform arbitrage between when enough liquidity is on the books (Default true) | Boolean
+| Binance.pairs.minimumB1 | Minimum Order Amount For Currency Pair1 ie ltcbtc (0.01)LTC | Array
+| Binance.pairs.minimumC1 | Minimum Order Amount/Minimum Order Price For Currency Pair2 ie btcusdt (0.0001)BTC | Array
+| Binance.pairs.minimumU1 | Minimum Order Value For Currency Pair3 ie ltcusdt (10)USDT | Array
+| Binance.pairs.pair1 | Currency Pair1 ie ltcbtc | Array
+| Binance.pairs.pair2 | Currency Pair2 ie btcusdt| Array
+| Binance.pairs.pair3 | Currency Pair3 ie ltcusdt | Array
+| Binance.pairs.prec | Array of pairs | Array
 | Bittrex.apikey | Bittrex Api Key | String
 | Bittrex.secret | Bittrex Api Secret | String
 | Bittrex.minimum | Bittrex minimum btc order size Defaut(0.001)| Number
+| Config.enabled | Enable trading on Bittrex (Default true) | Boolean
 | Config.key | The key used to encrypt messages between the bot and a web client | String
 | Config.liquidTrades | Perform arbitrage between when enough liquidity is on the books (prevents left behind trades...usually) | Boolean
 | Config.logs | 0-None 1-Server Only 2-Client Only 3-Server and Client Default(3) | Number
@@ -111,6 +147,7 @@ Bot settings are controlled by the 'config.json' file
 | Config.port | Websocket port number | Number
 | Config.saneTrades | Perform arbitrage between upper and lower limits (Prevents trading during flash crashes...probably) | Boolean
 | Config.upperLimit | Upper percentage limit when saneTrades is true | Number
+| Config.viewBook | View Bittrex order book in c4dc client (Default false)| Boolean
 | Email.addr | Recipient Email Address | String
 | Email.host_smtp | Email SMTP Address| String
 | Email.use | Use email notifications | Boolean
