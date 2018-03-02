@@ -427,7 +427,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 		            if(!Number(percentage)){return;}
 		            if(percentage > 100){
 						percentage = (this.binanceStrategy[base].two.a * this.binanceStrategy[base].two.b/this.binanceStrategy[base].two.c)*100;
-						if(percentage < 100.099 || percentage > 100.4){return}							
+						if(percentage < 100.098 || percentage > 100.3){return}							
 						this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});
 						Transform_B1 = solveOver(this.binancePrec[base][4],this.binancePrec[base][3],this.binanceStrategy[base].two.a,this.binanceStrategy[base].two.b,this.binanceStrategy[base].two.c);
 						Transactions[b1[base]] = Transform_B1;
@@ -475,12 +475,6 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 									this.log("Checking:",Object.keys(_orders),new Date());
 									if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
 										this.log("Binance Arbitrage timeout.....",new Date());
-										try{
-											this.saveDB("trade",{},{extra:{"w":1},method:"update",query:{"Percent":percentage,"Profit":profit,"Profit2":profit2,"Profit3":profit3},modifier:{"$set":{"Completed":new Date().getTime()}}});
-										}
-										catch(e){
-											console.log(e);
-										}
 										return reset();
 									}
 								},480005)
@@ -496,7 +490,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 						}
 					}
 		            else{
-						if(percentage < 99.5 || percentage > 99.793){return}	
+						if(percentage < 99.65 || percentage > 99.92){return}	
 						this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});						
 						Transform_E1 = solveUnder(this.binancePrec[base][3],this.binanceStrategy[base].one.a,this.binanceStrategy[base].one.b,this.binanceStrategy[base].one.c);
 						Transactions[e1[base]] = Transform_E1;					
@@ -506,8 +500,8 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 						message = message + Transactions[e1[base]] + e1[base]+" => "+Transactions[u1[base]]+" "+u1[base]+" @" + this.binanceStrategy[base].one.c + '\n';
 						message = message + (Transactions[b1[base]] * this.binanceStrategy[base].one.b) + u1[base]+" => " + Transactions[b1[base]] + " "+b1[base]+" @"+this.binanceStrategy[base].one.b +'\n'
 						message = message + (Transform_E1 * this.binanceStrategy[base].one.a).toFixed(8) + b1[base]+" => " + (Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3]) + " "+e1[base]+" @"+this.binanceStrategy[base].one.a +'\n';		
-						if((Transactions[b1[base]] >= (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) * this.binanceStrategy[base].one.a)) && (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) >= Transactions[e1[base]])){
-							this.log(message,new Date());
+						if((Transactions[b1[base]] >= (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) * this.binanceStrategy[base].one.a)) && (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) >= Transactions[e1[base]]) && ((Transactions[u1[base]] - (Transactions[b1[base]] * this.binanceStrategy[base].one.b)) > 0) ){
+							this.log(message);
 						}
 						else{
 							return this.log("Optimal Trade Not Found:",message,new Date());
@@ -543,12 +537,6 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 									this.log("Checking:",Object.keys(_orders),new Date());
 									if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
 										this.log("Binance Arbitrage timeout.....",new Date());
-										try{
-											this.saveDB("trade",{},{extra:{"w":1},method:"update",query:{"Percent":percentage,"Profit":profit,"Profit2":profit2,"Profit3":profit3},modifier:{"$set":{"Completed":new Date().getTime()}}});
-										}
-										catch(e){
-											console.log(e);
-										}
 										return reset();
 									}
 								},480005)
@@ -559,7 +547,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 							});
 						}
 						else{
-							console.log("Wallet Balance Low:",new Date());
+							this.log("Wallet Balance Low:",new Date());
 							return reset();
 						}
 					}
@@ -637,6 +625,7 @@ CryptoBot.prototype.binanceUserStream = function(key){
 								var _set = {}
 								lookupOrder[key] = false;
 								_set[key] = true;
+								_set['Filled'] = new Date().getTime();
 								if(this.binanceOrders[base].indexOf(data.c) > -1){
 									if(this.binanceOrders[base][0] === data.c){
 										this.binanceOrders[base].shift();
@@ -648,24 +637,15 @@ CryptoBot.prototype.binanceUserStream = function(key){
 										this.binanceOrders[base] = [this.binanceOrders[base][0],this.binanceOrders[base][2]];
 									}
 								}
-								this.log("Binance order removed:",data.c,this.binanceOrders[base],this.binanceTradesMade[base],new Date());
+								this.log("Binance order removed:",data.c,this.binanceOrders[base].length,this.binanceTradesMade[base]);
 								this.broadcastMessage({type:"orderRemove",order_id:data.c});
+								this.saveDB("trade",{},{extra:{"w":1},method:"update",query:lookupOrder,modifier:{"$set":_set,"$inc":{"OrdersFilled":1}}});
 								if(this.binanceOrders[base].length === 0 && this.binanceTradesMade[base] === 3){
-									try{
-										_set["Completed"] = new Date().getTime();
-										this.saveDB("trade",{},{extra:{"w":1},method:"update",query:lookupOrder,modifier:{"$set":_set,"$inc":{"OrdersFilled":1}}});
-									}
-									catch(e){
-										this.log(e);
-									}
 									this.binanceStrategy[base] = {one:{},two:{}}
 									this.binanceTradesMade[base] = false;
 									this.binanceInProcess[base] = false;	
 									this.binanceProcessTime[base] = 0;	
 									this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-								}
-								else{
-									this.saveDB("trade",{},{extra:{"w":1},method:"update",query:lookupOrder,modifier:{"$set":_set,"$inc":{"OrdersFilled":1}}});
 								}
 							} 
 						}
