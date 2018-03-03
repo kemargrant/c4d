@@ -428,7 +428,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 		            if(percentage > 100){
 						percentage = (this.binanceStrategy[base].two.a * this.binanceStrategy[base].two.b/this.binanceStrategy[base].two.c)*100;
 						this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});
-						if(percentage < 100.099 || percentage > 100.4){return}
+						if(percentage < 100.099 || percentage > 100.39){return}
 						Transform_B1 = solveOver(this.binancePrec[base][4],this.binancePrec[base][3],this.binanceStrategy[base].two.a,this.binanceStrategy[base].two.b,this.binanceStrategy[base].two.c);
 						Transactions[b1[base]] = Transform_B1;
 						Transactions[u1[base]] = (Transactions[b1[base]] * this.binanceStrategy[base].two.b)
@@ -1498,7 +1498,8 @@ CryptoBot.prototype.database = function(){
 	var DB = {}
 	if(this.Settings.MongoDB.connect){
 		try{
-			MongoClient.connect(this.Settings.MongoDB.db_string, (err, db)=>{
+			MongoClient.connect(this.Settings.MongoDB.db_string, (err, client)=>{
+				var db = client.db(this.Settings.MongoDB.db_string.split("/")[this.Settings.MongoDB.db_string.split("/").length - 1]);
 				if(err) { 
 					return (this.log("Unable to connect to the database:",err)); 
 				}
