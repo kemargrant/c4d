@@ -1877,7 +1877,9 @@ CryptoBot.prototype.setupWebsocket = function(){
 							} 
 							this.binanceSocketConnections = [];
 							this.binanceMonitor();
-							this.binanceListenUser();
+							if(!this.binanceUserStreamStatus){
+								this.binanceListenUser();
+							}
 							return this.log("Starting Binance Socket Connections");
 						}
 					}
