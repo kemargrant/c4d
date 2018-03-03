@@ -427,8 +427,8 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 		            if(!Number(percentage)){return;}
 		            if(percentage > 100){
 						percentage = (this.binanceStrategy[base].two.a * this.binanceStrategy[base].two.b/this.binanceStrategy[base].two.c)*100;
-						if(percentage < 100.098 || percentage > 100.3){return}							
 						this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});
+						if(percentage < 100.099 || percentage > 100.4){return}
 						Transform_B1 = solveOver(this.binancePrec[base][4],this.binancePrec[base][3],this.binanceStrategy[base].two.a,this.binanceStrategy[base].two.b,this.binanceStrategy[base].two.c);
 						Transactions[b1[base]] = Transform_B1;
 						Transactions[u1[base]] = (Transactions[b1[base]] * this.binanceStrategy[base].two.b)
@@ -490,8 +490,8 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 						}
 					}
 		            else{
-						if(percentage < 99.65 || percentage > 99.92){return}	
-						this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});						
+						this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});		
+						if(percentage < 99.5 || percentage > 99.92){return}					
 						Transform_E1 = solveUnder(this.binancePrec[base][3],this.binanceStrategy[base].one.a,this.binanceStrategy[base].one.b,this.binanceStrategy[base].one.c);
 						Transactions[e1[base]] = Transform_E1;					
 						Transactions[u1[base]] = this.binanceStrategy[base].one.c * Transactions[e1[base]];
@@ -519,7 +519,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 						if(this.binanceBalance[e1[base]] > Transactions[e1[base]] && this.binanceBalance[b1[base]] > Transactions[b1[base]] && this.binanceBalance[u1[base]] > Transactions[u1[base]]){
 							if(this.liquidTradesBinance[base] && (Transactions[e1[base]] < this.binanceStrategy[base].one.a_amount || Transactions[b1[base]] < this.binanceStrategy[base].one.b_amount)){
 								reset();
-								return console.log("Illiquid trade:",message);
+								return this.log("Illiquid trade:",message);
 							}
 							else{
 								this.binanceDepth[base]['strategy1']['c%'] = this.binanceDepth[base]['strategy1']['c%'] + "\n Illiquid Trade";
