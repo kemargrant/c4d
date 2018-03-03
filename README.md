@@ -57,7 +57,7 @@ Bot settings are controlled by the 'config.json' file
 			"pair1":"xxxyyy",
 			"pair2":"yyyzzz",
 			"pair3":"xxxzzz",
-			"prec":[6,2,2,3,2,5]
+			"prec":[6,2,2,2,5,5]
 			}]
 		},
 	"Bittrex":
@@ -123,13 +123,13 @@ Bot settings are controlled by the 'config.json' file
 | Binance.enabled | Enable trading on Binance exchange (Default true) | Boolean
 | Binance.pairs | Array of pairs to use | Array
 | Binance.pairs.liquidTrades | Perform arbitrage between when enough liquidity is on the books (Default true) | Boolean
-| Binance.pairs.minimumB1 | Minimum Order Value For Currency Pair1 ie ltcbtc (0.001)BTC | Array
-| Binance.pairs.minimumC1 | Minimum Order Amount/Minimum Order Price For Currency Pair2 ie btcusdt (0.0001)BTC | Array
-| Binance.pairs.minimumU1 | Minimum Order Value For Currency Pair3 ie ltcusdt (10)USDT | Array
-| Binance.pairs.pair1 | Currency Pair1 ie ltcbtc | Array
-| Binance.pairs.pair2 | Currency Pair2 ie btcusdt| Array
-| Binance.pairs.pair3 | Currency Pair3 ie ltcusdt | Array
-| Binance.pairs.prec | Array of pairs | Array
+| Binance.pairs.minimumB1 | Minimum Order Value For Currency Pair1 ie ltcbtc (0.001)BTC | Number
+| Binance.pairs.minimumC1 | Minimum Order Amount/Minimum Order Price For Currency Pair2 ie btcusdt (0.0001)BTC | Number
+| Binance.pairs.minimumU1 | Minimum Order Value For Currency Pair3 ie ltcusdt (10)USDT | Number
+| Binance.pairs.pair1 | Currency Pair1 ie ltcbtc | String
+| Binance.pairs.pair2 | Currency Pair2 ie btcusdt| String
+| Binance.pairs.pair3 | Currency Pair3 ie ltcusdt | String
+| Binance.pairs.prec | Array of numbers ie [Decimal Price Precision Pair1,Decimal Price Precision Pair2,Decimal Price Precision Pair3,Decimal Amount Precision Pair1,Decimal Amount Precision Pair2,Decimal Amount Precision Pair3] | Array
 | Bittrex.apikey | Bittrex Api Key | String
 | Bittrex.secret | Bittrex Api Secret | String
 | Bittrex.minimum | Bittrex minimum btc order size Defaut(0.001)| Number
