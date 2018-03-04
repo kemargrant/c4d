@@ -470,7 +470,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 								profit = Number((Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][4])) - Transactions[b1[base]];
 								profit2 = Transactions[e1[base]] - Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]));
 								profit3 = Transactions[u1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].two.c);
-								this.saveDB("trade",{"Time":new Date().getTime(),Orders:_orders,"Percent":percentage,"Exchange":"Binance","Profit":profit,"Profit2":profit2,'Profit3':profit3,"Pair":base});
+								this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":{"Time":this.binanceProcessTime[base],"Percent":percentage,"Exchange":"Binance","Profit":profit,"Profit2":profit2,"Profit3":profit3,"Pair":base}}});
 								return setTimeout(()=>{
 									this.log("Checking:",Object.keys(_orders),new Date());
 									if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
@@ -532,7 +532,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 								profit = Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) - Transactions[e1[base]];
 								profit2 = Transactions[b1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].one.a);
 								profit3 = Transactions[u1[base]] - (Transactions[b1[base]] * this.binanceStrategy[base].one.b);
-								this.saveDB("trade",{"Time":new Date().getTime(),Orders:_orders,"Percent":percentage,"Exchange":"Binance","Profit":profit,"Profit2":profit2,"Profit3":profit3,"Pair":base});
+								this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":{"Time":this.binanceProcessTime[base],"Percent":percentage,"Exchange":"Binance","Profit":profit,"Profit2":profit2,"Profit3":profit3,"Pair":base}}});								
 								return setTimeout(()=>{
 									this.log("Checking:",Object.keys(_orders),new Date());
 									if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
@@ -584,7 +584,7 @@ CryptoBot.prototype.binanceUserStream = function(key){
 	        this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
 	    });
 	    connection.on('close', ()=> {
-	        this.log('User Stream Connection Closed:',new Date());
+	        this.log('User Account Connection Closed:',new Date());
 	        this.binanceUserStreamStatus = false;
 			this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
 	        return setTimeout(()=>{this.binanceUserStream(key)},10000);
@@ -604,6 +604,10 @@ CryptoBot.prototype.binanceUserStream = function(key){
 								}
 							}
 							if(this.binanceOrders[base] && this.binanceInProcess[base]){
+								var _key= "Orders."+data.c;
+								var _set = {}
+								_set[_key] = false;
+								this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":_set}});
 								this.binanceOrders[base].push(data.c);
 								this.binanceTradesMade[base]++;
 								var order = {type:"order","exchange":"Binance","otype":data.S,"order_id":data.c,"amount":data.q,"pair":data.s,"status":data.x,"rate":data.p,"timestamp_created":data.E}
@@ -626,6 +630,7 @@ CryptoBot.prototype.binanceUserStream = function(key){
 								lookupOrder[key] = false;
 								_set[key] = true;
 								_set['Filled'] = new Date().getTime();
+								this.saveDB("trade",{},{extra:{"w":1},method:"update",query:lookupOrder,modifier:{"$set":_set,"$inc":{"OrdersFilled":1}}});
 								if(this.binanceOrders[base].indexOf(data.c) > -1){
 									if(this.binanceOrders[base][0] === data.c){
 										this.binanceOrders[base].shift();
@@ -637,9 +642,8 @@ CryptoBot.prototype.binanceUserStream = function(key){
 										this.binanceOrders[base] = [this.binanceOrders[base][0],this.binanceOrders[base][2]];
 									}
 								}
-								this.log("Binance order removed:",data.c,this.binanceOrders[base].length,this.binanceTradesMade[base]);
+								this.log("Binance Order Removed:",data.c,new Date().toString()+":"+this.binanceOrders[base].length+"/"+this.binanceTradesMade[base]);
 								this.broadcastMessage({type:"orderRemove",order_id:data.c});
-								this.saveDB("trade",{},{extra:{"w":1},method:"update",query:lookupOrder,modifier:{"$set":_set,"$inc":{"OrdersFilled":1}}});
 								if(this.binanceOrders[base].length === 0 && this.binanceTradesMade[base] === 3){
 									this.binanceStrategy[base] = {one:{},two:{}}
 									this.binanceTradesMade[base] = false;
@@ -1743,8 +1747,11 @@ CryptoBot.prototype.setupWebsocket = function(){
 		this.wss.on('connection',(ws)=>{
 			resolve(this.log("Websocket connection created:",new Date()));
 			ws.on('error',(e)=>{
-				return this.log(e);
+				return this.log("WebSocket Error:",e,new Date());
 			})
+			ws.on('close',(e)=>{
+				return this.log("WebSocket Closed:",e,new Date());
+			})			
 			ws.on('message',(message)=>{
 				try{
 					try{
