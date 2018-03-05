@@ -35,7 +35,7 @@ function CryptoBot(){
 	this.p2 = Settings.Config.percentage2;
 	this.Settings = Settings;
 	this.DB = this.database();
-	//binance Settings
+	//Binance Settings
 	this.binanceApiKey = Settings.Binance.apikey;
 	this.binanceApiSecret = Settings.Binance.secretkey;
 	this.binanceBalance = {account:"Binance"}	
@@ -43,6 +43,8 @@ function CryptoBot(){
 	this.binanceC1Min = {}
 	this.binanceU1Min = {}
 	this.binanceInProcess = {}
+	this.binanceLimits = {}
+	this.binanceOptimalTrades = {}
 	this.binanceOrders = {}
 	this.binancePrec = {}
 	this.binanceProcessTime = {}
@@ -57,6 +59,11 @@ function CryptoBot(){
 		this.binanceC1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumC1;
 		this.binanceU1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumU1;
 		this.binanceInProcess[Settings.Binance.pairs[i].pair1] = false;
+		this.binanceLimits[Settings.Binance.pairs[i].pair1] = {
+			"over":{"lowerLimit":Settings.Binance.pairs[i].lowerLimit1,"upperLimit":Settings.Binance.pairs[i].upperLimit1},
+			"under":{"lowerLimit":Settings.Binance.pairs[i].lowerLimit2,"upperLimit":Settings.Binance.pairs[i].upperLimit2}
+			}
+		this.binanceOptimalTrades[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].optimalTrades;
 		this.binanceOrders[Settings.Binance.pairs[i].pair1] = [];
 		this.binancePrec[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].prec;
 		this.binanceProcessTime[Settings.Binance.pairs[i].pair1] = false;
@@ -428,7 +435,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 		            if(percentage > 100){
 						percentage = (this.binanceStrategy[base].two.a * this.binanceStrategy[base].two.b/this.binanceStrategy[base].two.c)*100;
 						this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});
-						if(percentage < 100.099 || percentage > 100.39){return}
+						if(percentage < this.binanceLimits[base].over.lowerLimit || percentage > this.binanceLimits[base].over.upperLimit){return}
 						Transform_B1 = solveOver(this.binancePrec[base][4],this.binancePrec[base][3],this.binanceStrategy[base].two.a,this.binanceStrategy[base].two.b,this.binanceStrategy[base].two.c);
 						Transactions[b1[base]] = Transform_B1;
 						Transactions[u1[base]] = (Transactions[b1[base]] * this.binanceStrategy[base].two.b)
@@ -441,7 +448,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 							this.log(message);
 						}
 						else{
-							return this.log("Optimal Trade Not Found:",message,new Date());
+							return this.log("Optimal Trade Not Found:",new Date());
 						}	
 						if ((Transactions[e1[base]] * this.binanceStrategy[base].two.c) < this.binanceU1Min[base]){
 							return this.log("Minimum "+u1[base]+ " order not satisfied",new Date());
@@ -491,7 +498,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 					}
 		            else{
 						this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});		
-						if(percentage < 99.5 || percentage > 99.92){return}					
+						if(percentage < this.binanceLimits[base].under.lowerLimit || percentage > this.binanceLimits[base].under.upperLimit){return}					
 						Transform_E1 = solveUnder(this.binancePrec[base][3],this.binanceStrategy[base].one.a,this.binanceStrategy[base].one.b,this.binanceStrategy[base].one.c);
 						Transactions[e1[base]] = Transform_E1;					
 						Transactions[u1[base]] = this.binanceStrategy[base].one.c * Transactions[e1[base]];
@@ -500,13 +507,13 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 						message = message + Transactions[e1[base]] + e1[base]+" => "+Transactions[u1[base]]+" "+u1[base]+" @" + this.binanceStrategy[base].one.c + '\n';
 						message = message + (Transactions[b1[base]] * this.binanceStrategy[base].one.b) + u1[base]+" => " + Transactions[b1[base]] + " "+b1[base]+" @"+this.binanceStrategy[base].one.b +'\n'
 						message = message + (Transform_E1 * this.binanceStrategy[base].one.a).toFixed(8) + b1[base]+" => " + (Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3]) + " "+e1[base]+" @"+this.binanceStrategy[base].one.a +'\n';		
-						if((Transactions[b1[base]] >= (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) * this.binanceStrategy[base].one.a)) && (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) >= Transactions[e1[base]]) && ((Transactions[u1[base]] - (Transactions[b1[base]] * this.binanceStrategy[base].one.b)) > 0) ){
+						if((Transactions[b1[base]] >= (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) * this.binanceStrategy[base].one.a)) && (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) >= Transactions[e1[base]])){
 							this.log(message);
 						}
-						else{
-							return this.log("Optimal Trade Not Found:",message,new Date());
+						if(((Transactions[u1[base]] - (Transactions[b1[base]] * this.binanceStrategy[base].one.b)) < 0) && this.binanceOptimalTrades[base]){
+							return this.log("Optimal Trade Not Found:",new Date());
 						}	
-						if ((Transactions[e1[base]] * this.binanceStrategy[base].two.c) < this.binanceU1Min[base]){
+						if((Transactions[e1[base]] * this.binanceStrategy[base].two.c) < this.binanceU1Min[base]){
 							return this.log("Minimum "+u1[base]+ " order not satisfied",new Date());
 						}	
 						if (Transactions[b1[base]] < this.binanceB1Min[base]){
@@ -604,7 +611,7 @@ CryptoBot.prototype.binanceUserStream = function(key){
 									break;
 								}
 							}
-							if(this.binanceOrders[base] && this.binanceInProcess[base]){
+							if(this.binanceOrders[base]){
 								var _key= "Orders."+data.c;
 								var _set = {}
 								_set[_key] = false;
@@ -623,7 +630,7 @@ CryptoBot.prototype.binanceUserStream = function(key){
 									break;
 								}
 							}
-							if(this.binanceOrders[base] && this.binanceInProcess[base]){
+							if(this.binanceOrders[base]){
 								var key= "Orders."+data.c;
 								var update = {key:true}
 								var lookupOrder = {}
@@ -1803,6 +1810,13 @@ CryptoBot.prototype.setupWebsocket = function(){
 						this.binanceC1Min[message.pair] = Number(message.min);
 						return this.log("Minimum Binance "+message.pair+" Order:",this.binanceC1Min[message.pair]);
 					}	
+					if(message.command === "binanceLimits"){
+						this.binanceLimits[message.pair] = {
+							"over":{"lowerLimit":message.lowerLimit1,"upperLimit":message.upperLimit1},
+							"under":{"lowerLimit":message.lowerLimit2,"upperLimit":message.upperLimit2}
+						}
+						return this.log("Binance Limits"+message.pair+" Order:",this.binanceLimits[message.pair]);
+					}	
 					if(message.command === "binanceMonitor"){
 						this.binanceInProcess[message.pair] = message.bool;
 						this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,time:this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
@@ -1840,7 +1854,8 @@ CryptoBot.prototype.setupWebsocket = function(){
 							"time":this.binanceProcessTime,
 							"ustream":this.binanceUserStreamStatus,
 							"minB1":this.binanceB1Min,
-							"minXXX":this.binanceC1Min,
+							"minC1":this.binanceC1Min,
+							"limits":this.binanceLimits,
 							"liquid":this.liquidTradesBinance,
 							"connections":this.binanceSocketConnections.length,
 							"pairs":this.Settings.Binance.pairs}),this.Settings.Config.key).toString());
