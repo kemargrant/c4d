@@ -570,9 +570,10 @@ CryptoBot.prototype.binanceUserStream = function(key){
 		pairs[this.Settings.Binance.pairs[i].pair1] = [this.Settings.Binance.pairs[i].pair1,this.Settings.Binance.pairs[i].pair2,this.Settings.Binance.pairs[i].pair3];
 	}	 
 	client.on('connectFailed', (error)=> {
-	    this.log('Binance User Account Connect Error: ' + error.toString());
+	    this.log('Binance User Account Connect Error: ' + error.toString(),new Date());
 	    this.binanceUserStreamStatus = false;
 		this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
+		return setTimeout(()=>{this.binanceUserStream(key)},10000);
 	});
 	client.on('connect', (connection)=> {
 	    this.log('WebSocket Client Connected:Listening to Binance User Account:',new Date());
