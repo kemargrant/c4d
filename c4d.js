@@ -611,7 +611,7 @@ CryptoBot.prototype.binanceUserStream = function(key){
 									break;
 								}
 							}
-							if(this.binanceOrders[base]){
+							if(this.binanceOrders[base] && this.binanceInProcess[base]){
 								var _key= "Orders."+data.c;
 								var _set = {}
 								_set[_key] = false;
@@ -1811,11 +1811,13 @@ CryptoBot.prototype.setupWebsocket = function(){
 						return this.log("Minimum Binance "+message.pair+" Order:",this.binanceC1Min[message.pair]);
 					}	
 					if(message.command === "binanceLimits"){
-						this.binanceLimits[message.pair] = {
-							"over":{"lowerLimit":message.lowerLimit1,"upperLimit":message.upperLimit1},
-							"under":{"lowerLimit":message.lowerLimit2,"upperLimit":message.upperLimit2}
-						}
-						return this.log("Binance Limits"+message.pair+" Order:",this.binanceLimits[message.pair]);
+						var key = message.selection.split(".")
+						this.binanceLimits[message.pair][key[0]][key[1]] =  message.value;
+						return this.log("Binance Limits ("+message.pair+") Order:",this.binanceLimits[message.pair]);
+					}	
+					if(message.command === "binanceOptimal"){
+						this.binanceOptimalTrades[message.pair] =  message.bool
+						return this.log("Binance Optimal Trades ("+message.pair+") Order:",this.binanceOptimalTrades[message.pair]);
 					}	
 					if(message.command === "binanceMonitor"){
 						this.binanceInProcess[message.pair] = message.bool;
@@ -1853,6 +1855,7 @@ CryptoBot.prototype.setupWebsocket = function(){
 							"status":this.binanceInProcess,
 							"time":this.binanceProcessTime,
 							"ustream":this.binanceUserStreamStatus,
+							"optimal":this.binanceOptimalTrades,
 							"minB1":this.binanceB1Min,
 							"minC1":this.binanceC1Min,
 							"limits":this.binanceLimits,
