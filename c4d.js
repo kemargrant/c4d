@@ -1450,7 +1450,7 @@ CryptoBot.prototype.bittrexTrade = function(type,pair,quantity,rate,options){
 			else{
 				this.log("Error Placing Order:",new Date());
 				this.notify("Trade Error:"+type+"/"+pair+"/"+quantity+"/"+rate);
-				return reject(false);
+				return reject(new Error("Error Placing Order:",new Date()))
 			}
 		}).catch((e)=>{
 			this.log("Error Placing Order:",e,new Date());
