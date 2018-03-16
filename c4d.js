@@ -99,10 +99,11 @@ CryptoBot.prototype.binanceAccount = function(){
 				try{
 					parsed = JSON.parse(body);
 					if(parsed.code === -1021){
-						throw new Error(parsed.msg);
+						this.log(parsed.msg);
+						return reject(new Error("Error getting Binance account info"));
 					}
 					if(!parsed.balances){
-						return reject(false);
+						return reject(new Error("Error getting Binance account info"));
 					}
 					for(var i=0;i<parsed.balances.length;i++){
 						this.binanceBalance[parsed.balances[i].asset.toLowerCase()] = Number(parsed.balances[i].free) > 0 ? Number(parsed.balances[i].free) : 0;
@@ -112,7 +113,7 @@ CryptoBot.prototype.binanceAccount = function(){
 				}
 				catch(e){
 					this.log("Error Getting Binance Balance:",e);
-					return reject(false);
+					return reject(e);
 				}		
 	            return resolve(Number(parsed));
 	        });
@@ -939,15 +940,15 @@ CryptoBot.prototype.bittrexGetOrders = function(){
 CryptoBot.prototype.bittrexPrepareStream = function(){
 	return new Promise((resolve,reject) =>{	
 		cloudscraper.get('https://bittrex.com/',(error,response,body)=> {
-				if (error) {
-					this.log('Cloudscraper error occurred');
-					return reject(error);
-				} 
-				else{  
-					this.log('CloudFlare bypassed:',new Date());
-					return resolve([response.request.headers["cookie"],response.request.headers["User-Agent"]]);
-				}
-			});
+			if (error) {
+				this.log('Cloudscraper error occurred');
+				return reject(error);
+			} 
+			else{  
+				this.log('CloudFlare bypassed:',new Date());
+				return resolve([response.request.headers["cookie"],response.request.headers["User-Agent"]]);
+			}
+		});
 	});
 }
 
