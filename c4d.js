@@ -778,7 +778,7 @@ CryptoBot.prototype.bittrexAccount = function(){
 		return this.bittrexAPI("account/getbalances",null).then((list)=>{
 			if(!list){
 				this.log("Error getting Bittrex account info");
-				return reject(false);
+				return reject(new Error("Error getting Bittrex account info"));
 			}
 			list.forEach((asset)=>{
 				return this.balance[asset.Currency.toLowerCase()] = asset.Available;
@@ -793,8 +793,8 @@ CryptoBot.prototype.bittrexAccount = function(){
 			}		
 			return resolve(true);				
 		}).catch((e)=>{
-			this.log("Error getting bittrex balance:",e);
-			return reject(false);
+			this.log("Error Getting Bittrex balance:",e);
+			return reject(e);
 		});
 	});
 }
