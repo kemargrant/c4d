@@ -184,13 +184,13 @@ CryptoBot.prototype.binanceListenBeat = function(listenkey){
 				try{
 					parsed = JSON.parse(body);
 					if(parsed.length < 1){
-						return reject(false);
+						return reject(new Error("Error Listening to Binance User Account"));
 					}
 					else{resolve(parsed)}
 				}
 				catch(e){
 					this.log("Error:",e);
-					return resolve(e);
+					return reject(e);
 				}		
 	            return resolve(parsed);
 	        });
@@ -222,7 +222,7 @@ CryptoBot.prototype.binanceListenKey = function(){
 				try{
 					parsed = JSON.parse(body);
 					if(!parsed.listenKey){
-						return reject(false);
+						return reject(new Error("Error Getting Binance Listen Key"));
 					}
 					else{
 						return resolve(parsed.listenKey);
@@ -230,10 +230,11 @@ CryptoBot.prototype.binanceListenKey = function(){
 				}
 				catch(e){
 					this.log("Error:",e);
-					return resolve(e);
+					return reject(e);
 				}		
 	        });
 	    }).on('error',(e)=>{
+			this.log(e);
 			return reject(e);
 		});
 	    req.write("");
