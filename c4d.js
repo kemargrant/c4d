@@ -362,7 +362,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 	});
 	client.on('connect', (connection)=> {
 	    this.log(pair+' - Binance WebSocket Client Connected:',new Date());
-	    if(this.binanceSocketConnections){
+	    if(this.binanceSocketConnections instanceof Array){
 			this.binanceSocketConnections.push(connection);
 		}
 		else{
@@ -705,7 +705,7 @@ CryptoBot.prototype.binanceTrade = function(pair,side,amount,price,timeInForce){
 					if(!parsed.orderId){
 						this.notify("Error trading:"+pair+","+side+","+amount+","+price+","+new Date().toString());
 						this.log("Error trading:",pair,side,amount,price,new Date());
-						return reject(false);
+						return reject(new Error("Error trading:",pair,side,amount,price,new Date()));
 					}
 					else{
 						return resolve(parsed);
