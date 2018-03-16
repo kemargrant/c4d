@@ -6,7 +6,6 @@ var MongoClient = require('mongodb').MongoClient;
 var signalR = require('signalr-client');
 var cloudscraper = require('cloudscraper');
 var WebSocket = require('ws');
-var WebSocketClient = require('websocket').client;
 
 function CryptoBot(){	
 	var Settings = {};
@@ -312,7 +311,7 @@ CryptoBot.prototype.binanceOpenOrders = function(pair){
 }
 
 CryptoBot.prototype.binanceStream = function(base,pair){
-	var client = new WebSocketClient();	
+	var client = new WebSocket('wss://stream.binance.com:9443/ws/'+pair+'@depth');
 	var reset = ()=> {
 		this.binanceInProcess[base] = false;
 		this.binanceOrders[base] = [];
@@ -356,328 +355,306 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 		}
 		return suggested
 	}	
-	client.on('connectFailed', (error)=> {
-	    this.log(pair+ '  - Binance Connection Error: ',error,new Date());
-	    return setTimeout(()=>{this.binanceStream(base,pair)},1000);
-	});
-	client.on('connect', (connection)=> {
-	    this.log(pair+' - Binance WebSocket Client Connected:',new Date());
-	    if(this.binanceSocketConnections instanceof Array){
-			this.binanceSocketConnections.push(connection);
-		}
-		else{
-			connection.close();
-		}
-	    connection.on('error', (error)=> {
-	        this.log(pair+" - Connection Error: ",error,new Date());  
-	    });
-	    connection.on('close', ()=> {
-	        this.log(pair+'- Binance Connection Closed:',new Date());
+	client.onclose = (error)=> {
+	    this.log(pair+'- Binance Connection Closed:',new Date());
 	        return setTimeout(()=>{
 				if(!this.binanceKill){
 					this.binanceStream(base,pair);
 				}
 			},1000);
-	    });
-	    connection.on('message', (message)=> {
-			if(this.binanceInProcess[base]){return}
-			if(this.binanceBalance.bnb < 0.009){return}			
-			try{
-		        if (message.type === 'utf8' && JSON.parse(message.utf8Data).b[0] && JSON.parse(message.utf8Data).a[0]){
-		            if(pair === pair1){
-						this.binanceStrategy[base]['one']['a'] = Number((Number(JSON.parse(message.utf8Data).a[0][0])).toFixed(this.binancePrec[base][0]));
-						this.binanceStrategy[base]['one']['a_amount'] = Number(JSON.parse(message.utf8Data).a[0][1]);
-						this.binanceStrategy[base]['two']['a'] = Number((Number(JSON.parse(message.utf8Data).b[0][0])).toFixed(this.binancePrec[base][0]));
-						this.binanceStrategy[base]['two']['a_amount'] = Number(JSON.parse(message.utf8Data).b[0][1]);
-						this.binanceDepth[base]['depth']['a'] = JSON.parse(message.utf8Data); 
+	}
+	
+	client.onopen = ()=> {
+	    this.log(pair+' - Binance WebSocket Client Connected:',new Date());
+	    if(this.binanceSocketConnections instanceof Array){
+			this.binanceSocketConnections.push(client);
+		}    
+	};
+	client.onmessage = (message) => {
+		if(this.binanceInProcess[base]){return}
+		if(this.binanceBalance.bnb < 0.009){return}			
+		try{
+	        if (message.type === 'message' && JSON.parse(message.data).b[0] && JSON.parse(message.data).a[0]){
+	            if(pair === pair1){
+					this.binanceStrategy[base]['one']['a'] = Number((Number(JSON.parse(message.data).a[0][0])).toFixed(this.binancePrec[base][0]));
+					this.binanceStrategy[base]['one']['a_amount'] = Number(JSON.parse(message.data).a[0][1]);
+					this.binanceStrategy[base]['two']['a'] = Number((Number(JSON.parse(message.data).b[0][0])).toFixed(this.binancePrec[base][0]));
+					this.binanceStrategy[base]['two']['a_amount'] = Number(JSON.parse(message.data).b[0][1]);
+					this.binanceDepth[base]['depth']['a'] = JSON.parse(message.data); 
+				}
+	            if(pair === pair2){
+					this.binanceStrategy[base]['one']['b'] =  Number((Number(JSON.parse(message.data).a[0][0])).toFixed(this.binancePrec[base][1]));
+					this.binanceStrategy[base]['one']['b_amount'] = Number(JSON.parse(message.data).a[0][1]);
+					this.binanceStrategy[base]['two']['b'] = Number((Number(JSON.parse(message.data).b[0][0])).toFixed(this.binancePrec[base][1]));					
+					this.binanceStrategy[base]['two']['b_amount'] = Number(JSON.parse(message.data).b[0][1]);
+					this.binanceDepth[base]['depth']['b'] = JSON.parse(message.data);
+				}
+	            if(pair === pair3){
+					this.binanceStrategy[base]['one']['c'] =  Number((Number(JSON.parse(message.data).b[0][0])).toFixed(this.binancePrec[base][2]));
+					this.binanceStrategy[base]['one']['c_amount'] =  Number(JSON.parse(message.data).b[0][1]);
+					var liquidC;
+					var liquidCcount = 0;
+					for(var i = 0;i < JSON.parse(message.data).a.length;i++){
+							if(Number(JSON.parse(message.data).a[i][1] > 0.1)){
+								liquidC = Number(JSON.parse(message.data).a[i][0]);
+								liquidCcount = i;
+								break;
+							}
 					}
-		            if(pair === pair2){
-						this.binanceStrategy[base]['one']['b'] =  Number((Number(JSON.parse(message.utf8Data).a[0][0])).toFixed(this.binancePrec[base][1]));
-						this.binanceStrategy[base]['one']['b_amount'] = Number(JSON.parse(message.utf8Data).a[0][1]);
-						this.binanceStrategy[base]['two']['b'] = Number((Number(JSON.parse(message.utf8Data).b[0][0])).toFixed(this.binancePrec[base][1]));					
-						this.binanceStrategy[base]['two']['b_amount'] = Number(JSON.parse(message.utf8Data).b[0][1]);
-						this.binanceDepth[base]['depth']['b'] = JSON.parse(message.utf8Data);
+					if(!liquidC){
+						liquidC =  Number((Number(JSON.parse(message.data).a[0][0])).toFixed(this.binancePrec[base][2]));
+						liquidCcount = 0;
 					}
-		            if(pair === pair3){
-						this.binanceStrategy[base]['one']['c'] =  Number((Number(JSON.parse(message.utf8Data).b[0][0])).toFixed(this.binancePrec[base][2]));
-						this.binanceStrategy[base]['one']['c_amount'] =  Number(JSON.parse(message.utf8Data).b[0][1]);
-						var liquidC;
-						var liquidCcount = 0;
-						for(var i = 0;i < JSON.parse(message.utf8Data).a.length;i++){
-								if(Number(JSON.parse(message.utf8Data).a[i][1] > 0.1)){
-									liquidC = Number(JSON.parse(message.utf8Data).a[i][0]);
-									liquidCcount = i;
-									break;
+					this.binanceStrategy[base]['two']['c'] = liquidC;				
+					try{
+						this.binanceStrategy[base]['two']['c_amount'] = Number(JSON.parse(message.data).a[liquidCcount][1]);
+					}
+					catch(e){
+						return this.log(e);
+					}
+					this.binanceDepth[base]['depth']['c'] = JSON.parse(message.data);
+				}
+				var _orders = {}
+				var message = "Binance Bot:"
+	            var percentage;
+	            var profit;
+	            var profit2;
+	            var profit3;
+	            var Transform_B1;
+	            var Transform_E1;
+	            var Transactions = {}
+	            percentage = (this.binanceStrategy[base].one.a * this.binanceStrategy[base].one.b/this.binanceStrategy[base].one.c)*100;	
+	            if(!Number(percentage)){return;}
+	            if(percentage > 100){
+					percentage = (this.binanceStrategy[base].two.a * this.binanceStrategy[base].two.b/this.binanceStrategy[base].two.c)*100;
+					this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});
+					if(percentage < this.binanceLimits[base].over.lowerLimit || percentage > this.binanceLimits[base].over.upperLimit){return}
+					Transform_B1 = solveOver(this.binancePrec[base][4],this.binancePrec[base][3],this.binanceStrategy[base].two.a,this.binanceStrategy[base].two.b,this.binanceStrategy[base].two.c);
+					Transactions[b1[base]] = Transform_B1;
+					Transactions[u1[base]] = (Transactions[b1[base]] * this.binanceStrategy[base].two.b)
+					Transactions[e1[base]] = Number((Transactions[u1[base]]/this.binanceStrategy[base].two.c).toFixed(this.binancePrec[base][5]));
+					message += percentage.toFixed(3)+"% "+new Date().toString().split('GMT')[0]+"\n";
+					message = message + Transactions[b1[base]] + " "+b1[base]+" => "+Transactions[u1[base]]+" "+u1[base]+" @" + this.binanceStrategy[base].two.b + '\n';
+					message = message + (Transactions[e1[base]] * this.binanceStrategy[base].two.c) + u1[base]+" => " + Transactions[e1[base]] + " "+e1[base]+" @"+this.binanceStrategy[base].two.c +'\n'
+					message = message + Transactions[e1[base]].toFixed(this.binancePrec[base][3]) + e1[base]+" => " + (Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][0]) + " "+b1[base]+" @"+this.binanceStrategy[base].two.a +'\n';							
+					if( Number((Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][0])) >= Transform_B1 && (Transactions[e1[base]].toFixed(this.binancePrec[base][3]) <= Transactions[e1[base]])){
+						this.log(message);
+					}
+					if((Transactions[u1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].two.c)) < 0 && this.binanceOptimalTrades[base]){
+						return this.log("Optimal Trade Not Found:",new Date());
+					}	
+					if ((Transactions[e1[base]] * this.binanceStrategy[base].two.c) < this.binanceU1Min[base]){
+						return this.log("Minimum "+u1[base]+ " order not satisfied",new Date());
+					}
+					this.binanceInProcess[base] = true;
+					this.binanceProcessTime[base] = new Date().getTime();
+					this.binanceTradesMade[base] = 0;
+					this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
+					if(this.binanceBalance[e1[base]] > Transactions[e1[base]] && this.binanceBalance[u1[base]] > Transactions[u1[base]] && this.binanceBalance[b1[base]] > Transactions[b1[base]]){
+						if(this.liquidTradesBinance[base] && (Transactions[e1[base]] < this.binanceStrategy[base].two.a_amount || Transactions[b1[base]] < this.binanceStrategy[base].two.b_amount)){
+							reset();
+							return this.log("Illiquid trade:",new Date());
+						}
+						else{
+							this.binanceDepth[base]['strategy2']['c%'] = this.binanceDepth[base]['strategy2']['c%'] + "(Possible Illiquid Trade)";
+						}
+						//this.notify(message + "\r\n" + JSON.stringify(this.binanceDepth[base]).replace(new RegExp('"', 'g'),""));
+						this.notify(message);
+						Promise.all([
+						this.binanceTrade(pair2.toUpperCase(),"SELL",Transactions[b1[base]],this.binanceStrategy[base].two.b,"GTC"),
+						this.binanceTrade(pair3.toUpperCase(),"BUY",Transactions[e1[base]],this.binanceStrategy[base].two.c,"GTC"),
+						this.binanceTrade(pair1.toUpperCase(),"SELL",Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3])),this.binanceStrategy[base].two.a,"GTC")]).then((values)=>{
+							_orders[values[0].clientOrderId] = false;
+							_orders[values[1].clientOrderId] = false;
+							_orders[values[2].clientOrderId] = false;
+							profit = Number((Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][4])) - Transactions[b1[base]];
+							profit2 = Transactions[e1[base]] - Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]));
+							profit3 = Transactions[u1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].two.c);
+							this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":{"Time":this.binanceProcessTime[base],"Percent":percentage,"Exchange":"Binance","Profit":profit,"Profit2":profit2,"Profit3":profit3,"Pair":base}}});
+							return setTimeout(()=>{
+								this.log("Checking:",Object.keys(_orders),new Date());
+								if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
+									this.log("Binance Arbitrage timeout.....",new Date());
+									return reset();
 								}
-						}
-						if(!liquidC){
-							liquidC =  Number((Number(JSON.parse(message.utf8Data).a[0][0])).toFixed(this.binancePrec[base][2]));
-							liquidCcount = 0;
-						}
-						this.binanceStrategy[base]['two']['c'] = liquidC;				
-						try{
-							this.binanceStrategy[base]['two']['c_amount'] = Number(JSON.parse(message.utf8Data).a[liquidCcount][1]);
-						}
-						catch(e){
-							return this.log(e);
-						}
-						this.binanceDepth[base]['depth']['c'] = JSON.parse(message.utf8Data);
+							},480005)
+						}).catch((e)=>{
+							reset();
+							this.log("Error:",e,new Date());
+							return this.notify(e.toString());
+						});
 					}
-					var _orders = {}
-					var message = "Binance Bot:"
-		            var percentage;
-		            var profit;
-		            var profit2;
-		            var profit3;
-		            var Transform_B1;
-		            var Transform_E1;
-		            var Transactions = {}
-		            percentage = (this.binanceStrategy[base].one.a * this.binanceStrategy[base].one.b/this.binanceStrategy[base].one.c)*100;	
-		            if(!Number(percentage)){return;}
-		            if(percentage > 100){
-						percentage = (this.binanceStrategy[base].two.a * this.binanceStrategy[base].two.b/this.binanceStrategy[base].two.c)*100;
-						this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});
-						if(percentage < this.binanceLimits[base].over.lowerLimit || percentage > this.binanceLimits[base].over.upperLimit){return}
-						Transform_B1 = solveOver(this.binancePrec[base][4],this.binancePrec[base][3],this.binanceStrategy[base].two.a,this.binanceStrategy[base].two.b,this.binanceStrategy[base].two.c);
-						Transactions[b1[base]] = Transform_B1;
-						Transactions[u1[base]] = (Transactions[b1[base]] * this.binanceStrategy[base].two.b)
-						Transactions[e1[base]] = Number((Transactions[u1[base]]/this.binanceStrategy[base].two.c).toFixed(this.binancePrec[base][5]));
-						message += percentage.toFixed(3)+"% "+new Date().toString().split('GMT')[0]+"\n";
-						message = message + Transactions[b1[base]] + " "+b1[base]+" => "+Transactions[u1[base]]+" "+u1[base]+" @" + this.binanceStrategy[base].two.b + '\n';
-						message = message + (Transactions[e1[base]] * this.binanceStrategy[base].two.c) + u1[base]+" => " + Transactions[e1[base]] + " "+e1[base]+" @"+this.binanceStrategy[base].two.c +'\n'
-						message = message + Transactions[e1[base]].toFixed(this.binancePrec[base][3]) + e1[base]+" => " + (Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][0]) + " "+b1[base]+" @"+this.binanceStrategy[base].two.a +'\n';							
-						if( Number((Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][0])) >= Transform_B1 && (Transactions[e1[base]].toFixed(this.binancePrec[base][3]) <= Transactions[e1[base]])){
-							this.log(message);
-						}
-						else{
-							return this.log("Optimal Trade Not Found:",new Date());
-						}	
-						if ((Transactions[e1[base]] * this.binanceStrategy[base].two.c) < this.binanceU1Min[base]){
-							return this.log("Minimum "+u1[base]+ " order not satisfied",new Date());
-						}
-						this.binanceInProcess[base] = true;
-						this.binanceProcessTime[base] = new Date().getTime();
-						this.binanceTradesMade[base] = 0;
-						this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-						if(this.binanceBalance[e1[base]] > Transactions[e1[base]] && this.binanceBalance[u1[base]] > Transactions[u1[base]] && this.binanceBalance[b1[base]] > Transactions[b1[base]]){
-							if(this.liquidTradesBinance[base] && (Transactions[e1[base]] < this.binanceStrategy[base].two.a_amount || Transactions[b1[base]] < this.binanceStrategy[base].two.b_amount)){
-								reset();
-								return this.log("Illiquid trade:",new Date());
-							}
-							else{
-								this.binanceDepth[base]['strategy2']['c%'] = this.binanceDepth[base]['strategy2']['c%'] + "(Possible Illiquid Trade)";
-							}
-							//this.notify(message + "\r\n" + JSON.stringify(this.binanceDepth[base]).replace(new RegExp('"', 'g'),""));
-							this.notify(message);
-							Promise.all([
-							this.binanceTrade(pair2.toUpperCase(),"SELL",Transactions[b1[base]],this.binanceStrategy[base].two.b,"GTC"),
-							this.binanceTrade(pair3.toUpperCase(),"BUY",Transactions[e1[base]],this.binanceStrategy[base].two.c,"GTC"),
-							this.binanceTrade(pair1.toUpperCase(),"SELL",Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3])),this.binanceStrategy[base].two.a,"GTC")]).then((values)=>{
-								_orders[values[0].clientOrderId] = false;
-								_orders[values[1].clientOrderId] = false;
-								_orders[values[2].clientOrderId] = false;
-								profit = Number((Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][4])) - Transactions[b1[base]];
-								profit2 = Transactions[e1[base]] - Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]));
-								profit3 = Transactions[u1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].two.c);
-								this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":{"Time":this.binanceProcessTime[base],"Percent":percentage,"Exchange":"Binance","Profit":profit,"Profit2":profit2,"Profit3":profit3,"Pair":base}}});
-								return setTimeout(()=>{
-									this.log("Checking:",Object.keys(_orders),new Date());
-									if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
-										this.log("Binance Arbitrage timeout.....",new Date());
-										return reset();
-									}
-								},480005)
-							}).catch((e)=>{
-								reset();
-								this.log("Error:",e,new Date());
-								return this.notify(e.toString());
-							});
-						}
-						else{
-							this.log("Wallet balance low:",new Date());
-							return reset();
-						}
+					else{
+						this.log("Wallet balance low:",new Date());
+						return reset();
 					}
-		            else{
-						this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});		
-						if(percentage < this.binanceLimits[base].under.lowerLimit || percentage > this.binanceLimits[base].under.upperLimit){return}					
-						Transform_E1 = solveUnder(this.binancePrec[base][3],this.binanceStrategy[base].one.a,this.binanceStrategy[base].one.b,this.binanceStrategy[base].one.c);
-						Transactions[e1[base]] = Transform_E1;					
-						Transactions[u1[base]] = this.binanceStrategy[base].one.c * Transactions[e1[base]];
-						Transactions[b1[base]] = Number((Transactions[u1[base]]/this.binanceStrategy[base].one.b).toFixed(this.binancePrec[base][4]))			
-						message += percentage.toFixed(3)+"% "+new Date().toString().split('GMT')[0]+"\n";
-						message = message + Transactions[e1[base]] + e1[base]+" => "+Transactions[u1[base]]+" "+u1[base]+" @" + this.binanceStrategy[base].one.c + '\n';
-						message = message + (Transactions[b1[base]] * this.binanceStrategy[base].one.b) + u1[base]+" => " + Transactions[b1[base]] + " "+b1[base]+" @"+this.binanceStrategy[base].one.b +'\n'
-						message = message + (Transform_E1 * this.binanceStrategy[base].one.a).toFixed(8) + b1[base]+" => " + (Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3]) + " "+e1[base]+" @"+this.binanceStrategy[base].one.a +'\n';		
-						if((Transactions[b1[base]] >= (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) * this.binanceStrategy[base].one.a)) && (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) >= Transactions[e1[base]])){
-							this.log(message);
-						}
-						if(((Transactions[u1[base]] - (Transactions[b1[base]] * this.binanceStrategy[base].one.b)) < 0) && this.binanceOptimalTrades[base]){
-							return this.log("Optimal Trade Not Found:",new Date());
-						}	
-						if((Transactions[e1[base]] * this.binanceStrategy[base].two.c) < this.binanceU1Min[base]){
-							return this.log("Minimum "+u1[base]+ " order not satisfied",new Date());
-						}	
-						if (Transactions[b1[base]] < this.binanceB1Min[base]){
-							return this.log("Minimum "+b1[base]+ " order not satisfied",new Date());
-						}
-						this.binanceInProcess[base] = true;
-						this.binanceProcessTime[base] = new Date().getTime();
-						this.binanceTradesMade[base] = 0;
-						this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-						if(this.binanceBalance[e1[base]] > Transactions[e1[base]] && this.binanceBalance[b1[base]] > Transactions[b1[base]] && this.binanceBalance[u1[base]] > Transactions[u1[base]]){
-							if(this.liquidTradesBinance[base] && (Transactions[e1[base]] < this.binanceStrategy[base].one.a_amount || Transactions[b1[base]] < this.binanceStrategy[base].one.b_amount)){
-								reset();
-								return this.log("Illiquid trade:",message);
-							}
-							else{
-								this.binanceDepth[base]['strategy1']['c%'] = this.binanceDepth[base]['strategy1']['c%'] + "\n Illiquid Trade";
-							}
-							this.notify(message);
-							Promise.all([this.binanceTrade(pair3.toUpperCase(),"SELL",Transactions[e1[base]],this.binanceStrategy[base].one.c,"GTC"),this.binanceTrade(pair2.toUpperCase(),"BUY",Transactions[b1[base]],this.binanceStrategy[base].one.b,"GTC"),this.binanceTrade(pair1.toUpperCase(),"BUY",(Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3]),this.binanceStrategy[base].one.a,"GTC")]).then((values)=>{
-								_orders[values[0].clientOrderId] = false;
-								_orders[values[1].clientOrderId] = false;
-								_orders[values[2].clientOrderId] = false;
-								profit = Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) - Transactions[e1[base]];
-								profit2 = Transactions[b1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].one.a);
-								profit3 = Transactions[u1[base]] - (Transactions[b1[base]] * this.binanceStrategy[base].one.b);
-								this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":{"Time":this.binanceProcessTime[base],"Percent":percentage,"Exchange":"Binance","Profit":profit,"Profit2":profit2,"Profit3":profit3,"Pair":base}}});								
-								return setTimeout(()=>{
-									this.log("Checking:",Object.keys(_orders),new Date());
-									if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
-										this.log("Binance Arbitrage timeout.....",new Date());
-										return reset();
-									}
-								},480005)
-							}).catch((e)=>{
-								reset();
-								this.log("Error:",e,new Date());
-								return this.notify(e.toString());
-							});
+				}
+	            else{
+					this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});		
+					if(percentage < this.binanceLimits[base].under.lowerLimit || percentage > this.binanceLimits[base].under.upperLimit){return}					
+					Transform_E1 = solveUnder(this.binancePrec[base][3],this.binanceStrategy[base].one.a,this.binanceStrategy[base].one.b,this.binanceStrategy[base].one.c);
+					Transactions[e1[base]] = Transform_E1;					
+					Transactions[u1[base]] = this.binanceStrategy[base].one.c * Transactions[e1[base]];
+					Transactions[b1[base]] = Number((Transactions[u1[base]]/this.binanceStrategy[base].one.b).toFixed(this.binancePrec[base][4]))			
+					message += percentage.toFixed(3)+"% "+new Date().toString().split('GMT')[0]+"\n";
+					message = message + Transactions[e1[base]] + e1[base]+" => "+Transactions[u1[base]]+" "+u1[base]+" @" + this.binanceStrategy[base].one.c + '\n';
+					message = message + (Transactions[b1[base]] * this.binanceStrategy[base].one.b) + u1[base]+" => " + Transactions[b1[base]] + " "+b1[base]+" @"+this.binanceStrategy[base].one.b +'\n'
+					message = message + (Transform_E1 * this.binanceStrategy[base].one.a).toFixed(8) + b1[base]+" => " + (Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3]) + " "+e1[base]+" @"+this.binanceStrategy[base].one.a +'\n';		
+					if((Transactions[b1[base]] >= (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) * this.binanceStrategy[base].one.a)) && (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) >= Transactions[e1[base]])){
+						this.log(message);
+					}
+					if(((Transactions[u1[base]] - (Transactions[b1[base]] * this.binanceStrategy[base].one.b)) < 0) && this.binanceOptimalTrades[base]){
+						return this.log("Optimal Trade Not Found:",new Date());
+					}	
+					if((Transactions[e1[base]] * this.binanceStrategy[base].two.c) < this.binanceU1Min[base]){
+						return this.log("Minimum "+u1[base]+ " order not satisfied",new Date());
+					}	
+					if (Transactions[b1[base]] < this.binanceB1Min[base]){
+						return this.log("Minimum "+b1[base]+ " order not satisfied",new Date());
+					}
+					this.binanceInProcess[base] = true;
+					this.binanceProcessTime[base] = new Date().getTime();
+					this.binanceTradesMade[base] = 0;
+					this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
+					if(this.binanceBalance[e1[base]] > Transactions[e1[base]] && this.binanceBalance[b1[base]] > Transactions[b1[base]] && this.binanceBalance[u1[base]] > Transactions[u1[base]]){
+						if(this.liquidTradesBinance[base] && (Transactions[e1[base]] < this.binanceStrategy[base].one.a_amount || Transactions[b1[base]] < this.binanceStrategy[base].one.b_amount)){
+							reset();
+							return this.log("Illiquid trade:",message);
 						}
 						else{
-							this.log("Wallet Balance Low:",new Date());
-							return reset();
+							this.binanceDepth[base]['strategy1']['c%'] = this.binanceDepth[base]['strategy1']['c%'] + "\n Illiquid Trade";
 						}
+						this.notify(message);
+						Promise.all([this.binanceTrade(pair3.toUpperCase(),"SELL",Transactions[e1[base]],this.binanceStrategy[base].one.c,"GTC"),this.binanceTrade(pair2.toUpperCase(),"BUY",Transactions[b1[base]],this.binanceStrategy[base].one.b,"GTC"),this.binanceTrade(pair1.toUpperCase(),"BUY",(Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3]),this.binanceStrategy[base].one.a,"GTC")]).then((values)=>{
+							_orders[values[0].clientOrderId] = false;
+							_orders[values[1].clientOrderId] = false;
+							_orders[values[2].clientOrderId] = false;
+							profit = Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) - Transactions[e1[base]];
+							profit2 = Transactions[b1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].one.a);
+							profit3 = Transactions[u1[base]] - (Transactions[b1[base]] * this.binanceStrategy[base].one.b);
+							this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":{"Time":this.binanceProcessTime[base],"Percent":percentage,"Exchange":"Binance","Profit":profit,"Profit2":profit2,"Profit3":profit3,"Pair":base}}});								
+							return setTimeout(()=>{
+								this.log("Checking:",Object.keys(_orders),new Date());
+								if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
+									this.log("Binance Arbitrage timeout.....",new Date());
+									return reset();
+								}
+							},480005)
+						}).catch((e)=>{
+							reset();
+							this.log("Error:",e,new Date());
+							return this.notify(e.toString());
+						});
+					}
+					else{
+						this.log("Wallet Balance Low:",new Date());
+						return reset();
 					}
 				}
 			}
-			 catch(e){
-				return this.log(e);
-	        }
-	    });
-	    
-	});		
-	client.connect('wss://stream.binance.com:9443/ws/'+pair+'@depth');
+		}
+		 catch(e){
+			return this.log(e);
+        }
+	};		
 	return client;
 }
 
 CryptoBot.prototype.binanceUserStream = function(key){
-	var client = new WebSocketClient();		
+	var client = new WebSocket('wss://stream.binance.com:9443/ws/'+key);		
 	var pairs ={}
 	for(var i=0;i< this.Settings.Binance.pairs.length;i++){
 		pairs[this.Settings.Binance.pairs[i].pair1] = [this.Settings.Binance.pairs[i].pair1,this.Settings.Binance.pairs[i].pair2,this.Settings.Binance.pairs[i].pair3];
 	}	 
-	client.on('connectFailed', (error)=> {
+	client.onclose = (error)=> {
 	    this.log('Binance User Account Connect Error: ' + error.toString(),new Date());
 	    this.binanceUserStreamStatus = false;
 		this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
 		return setTimeout(()=>{this.binanceUserStream(key)},10000);
-	});
-	client.on('connect', (connection)=> {
+	};
+	client.onerror = client.onclose;
+	client.onopen = ()=> {
 	    this.log('WebSocket Client Connected:Listening to Binance User Account:',new Date());
 	    this.binanceUserStreamStatus = true;
 	    this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-	    connection.on('error', (error)=> {
-	        this.log("Binance User Account Connection Error:",error);
-	        this.binanceUserStreamStatus = false;
-	        this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-	    });
-	    connection.on('close', ()=> {
-	        this.log('User Account Connection Closed:',new Date());
-	        this.binanceUserStreamStatus = false;
-			this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-	        return setTimeout(()=>{this.binanceUserStream(key)},10000);
-	    });
-	    connection.on('message', (message)=> {
-	        if (message.type === 'utf8') {
-				var base;
-	            var data;
-	            try{
-					 data = JSON.parse(message.utf8Data);
-					 if(data.e == "executionReport"){
-						if(data.x == "NEW"){
-							for(key in pairs){
-								if(pairs[key].indexOf(data.s.toLowerCase()) > -1){
-									base = key;
-									break;
-								}
-							}
-							if(this.binanceOrders[base] && this.binanceInProcess[base]){
-								var _key= "Orders."+data.c;
-								var _set = {}
-								_set[_key] = false;
-								this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":_set}});
-								this.binanceOrders[base].push(data.c);
-								this.binanceTradesMade[base]++;
-								var order = {type:"order","exchange":"Binance","otype":data.S,"order_id":data.c,"amount":data.q,"pair":data.s,"status":data.x,"rate":data.p,"timestamp_created":data.E}
-								this.broadcastMessage(order);
-								this.log("Binance Order Added:",data.c,new Date());
+	};		
+	client.onmessage = (message)=> {
+        if (message.type === 'message') {
+			var base;
+            var data;
+            try{
+				 data = JSON.parse(message.data);
+				 if(data.e == "executionReport"){
+					if(data.x == "NEW"){
+						for(key in pairs){
+							if(pairs[key].indexOf(data.s.toLowerCase()) > -1){
+								base = key;
+								break;
 							}
 						}
-						if(data.x == "CANCELED" || data.X === "FILLED"){
-							for(key in pairs){
-								if(pairs[key].indexOf(data.s.toLowerCase()) > -1){
-									base = key;
-									break;
-								}
-							}
-							if(this.binanceOrders[base]){
-								var key= "Orders."+data.c;
-								var update = {key:true}
-								var lookupOrder = {}
-								var _set = {}
-								lookupOrder[key] = false;
-								_set[key] = true;
-								_set['Filled'] = new Date().getTime();
-								this.saveDB("trade",{},{extra:{"w":1},method:"update",query:lookupOrder,modifier:{"$set":_set,"$inc":{"OrdersFilled":1}}});
-								if(this.binanceOrders[base].indexOf(data.c) > -1){
-									if(this.binanceOrders[base][0] === data.c){
-										this.binanceOrders[base].shift();
-									}
-									else if(this.binanceOrders[base][this.binanceOrders[base].length - 1] === data.c){
-										this.binanceOrders[base].pop();
-									}
-									else{
-										this.binanceOrders[base] = [this.binanceOrders[base][0],this.binanceOrders[base][2]];
-									}
-								}
-								this.log("Binance Order Removed:",data.c,new Date().toString()+":"+this.binanceOrders[base].length+"/"+this.binanceTradesMade[base]);
-								this.broadcastMessage({type:"orderRemove",order_id:data.c});
-								if(this.binanceOrders[base].length === 0 && this.binanceTradesMade[base] === 3){
-									this.binanceStrategy[base] = {one:{},two:{}}
-									this.binanceTradesMade[base] = false;
-									this.binanceInProcess[base] = false;	
-									this.binanceProcessTime[base] = 0;	
-									this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-								}
-							} 
+						if(this.binanceOrders[base] && this.binanceInProcess[base]){
+							var _key= "Orders."+data.c;
+							var _set = {}
+							_set[_key] = false;
+							this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":_set}});
+							this.binanceOrders[base].push(data.c);
+							this.binanceTradesMade[base]++;
+							var order = {type:"order","exchange":"Binance","otype":data.S,"order_id":data.c,"amount":data.q,"pair":data.s,"status":data.x,"rate":data.p,"timestamp_created":data.E}
+							this.broadcastMessage(order);
+							this.log("Binance Order Added:",data.c,new Date());
 						}
 					}
-					else if(data.e === "outboundAccountInfo"){
-						for(var i=0;i<data.B.length;i++){
-							this.binanceBalance[data.B[i].a.toLowerCase()] = Number(data.B[i].f) > 0 ? Number(data.B[i].f) : 0;
+					if(data.x == "CANCELED" || data.X === "FILLED"){
+						for(key in pairs){
+							if(pairs[key].indexOf(data.s.toLowerCase()) > -1){
+								base = key;
+								break;
+							}
 						}
-						this.broadcastMessage({type:"balanceBinance",balance:this.binanceBalance});
-					}									
+						if(this.binanceOrders[base]){
+							var key= "Orders."+data.c;
+							var update = {key:true}
+							var lookupOrder = {}
+							var _set = {}
+							lookupOrder[key] = false;
+							_set[key] = true;
+							_set['Filled'] = new Date().getTime();
+							this.saveDB("trade",{},{extra:{"w":1},method:"update",query:lookupOrder,modifier:{"$set":_set,"$inc":{"OrdersFilled":1}}});
+							if(this.binanceOrders[base].indexOf(data.c) > -1){
+								if(this.binanceOrders[base][0] === data.c){
+									this.binanceOrders[base].shift();
+								}
+								else if(this.binanceOrders[base][this.binanceOrders[base].length - 1] === data.c){
+									this.binanceOrders[base].pop();
+								}
+								else{
+									this.binanceOrders[base] = [this.binanceOrders[base][0],this.binanceOrders[base][2]];
+								}
+							}
+							this.log("Binance Order Removed:",data.c,new Date().toString()+":"+this.binanceOrders[base].length+"/"+this.binanceTradesMade[base]);
+							this.broadcastMessage({type:"orderRemove",order_id:data.c});
+							if(this.binanceOrders[base].length === 0 && this.binanceTradesMade[base] === 3){
+								this.binanceStrategy[base] = {one:{},two:{}}
+								this.binanceTradesMade[base] = false;
+								this.binanceInProcess[base] = false;	
+								this.binanceProcessTime[base] = 0;	
+								this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
+							}
+						} 
+					}
 				}
-				catch(e){
-					return this.log("Error:",e);
-				}
-	        }
-	    });
-	});		
-	client.connect('wss://stream.binance.com:9443/ws/'+key);
+				else if(data.e === "outboundAccountInfo"){
+					for(var i=0;i<data.B.length;i++){
+						this.binanceBalance[data.B[i].a.toLowerCase()] = Number(data.B[i].f) > 0 ? Number(data.B[i].f) : 0;
+					}
+					this.broadcastMessage({type:"balanceBinance",balance:this.binanceBalance});
+				}									
+			}
+			catch(e){
+				return this.log("Error:",e);
+			}
+        }
+	 };
 	return client;
 }	
 
@@ -1892,7 +1869,7 @@ CryptoBot.prototype.setupWebsocket = function(){
 						this.binanceKill = !message.bool;
 						if(this.binanceKill === true){
 							for(var i = 0; i < this.binanceSocketConnections.length;i++){
-								this.binanceSocketConnections[i].close();
+								this.binanceSocketConnections[i].terminate();
 							}
 							for(var key in this.binanceInProcess){
 								this.binanceInProcess[key] = "killed";
