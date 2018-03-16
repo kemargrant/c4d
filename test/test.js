@@ -12,7 +12,7 @@ describe('Functions', function() {
 				try{
 					var x = await bot.DB.balance;
 					var y = await bot.DB.trade;
-					assert((x && y) !== undefined)
+					assert((x && y) !== undefined);
 					done();
 				}
 				catch(e){
