@@ -767,6 +767,13 @@ CryptoBot.prototype.binanceTrade = function(pair,side,amount,price,timeInForce){
 	});					
 }
 
+/**
+   * Bittrex API base template.
+   * @method bittrexAPI
+   * @param {String} Bittrex api path
+   * @param {String} Bittrex api query options
+   * @return {Promise} Should resolve with req response
+   */
 CryptoBot.prototype.bittrexAPI = function(path,options){
 	return new Promise((resolve,reject) =>{	
 		var hmac;
@@ -815,6 +822,11 @@ CryptoBot.prototype.bittrexAPI = function(path,options){
 	});
 }	
 	
+/**
+   * Get Bittrex balance.
+   * @method bittrexAccount
+   * @return {Promise} Should resolve with Bittrex balance object
+   */	
 CryptoBot.prototype.bittrexAccount = function(){
 	return new Promise((resolve,reject)=>{
 		return this.bittrexAPI("account/getbalances",null).then((list)=>{
@@ -827,13 +839,7 @@ CryptoBot.prototype.bittrexAccount = function(){
 			});
 			this.balance.account = "BITTREX";
 			this.broadcastMessage({"type":"balance","balance":this.balance,"p1":this.p1,"p2":this.p2});
-			var balance = {};
-			for(var i = 0;i < list.length;i++){
-				if(this.balance[list[i].Currency.toLowerCase()] > 0){
-					balance[list[i].Currency] = this.balance[list[i].Currency.toLowerCase()];
-				}
-			}		
-			return resolve(true);				
+			return resolve(this.balance);				
 		}).catch((e)=>{
 			this.log("Error Getting Bittrex balance:",e);
 			return reject(e);
@@ -841,6 +847,12 @@ CryptoBot.prototype.bittrexAccount = function(){
 	});
 }
 	
+/**
+   * Cancel Bittrex order.
+   * @method bittrexCancelOrder
+   * @param {String} Bittrex order id
+   * @return {Promise} Should resolve with req response
+   */	
 CryptoBot.prototype.bittrexCancelOrder = function(orderid){
 	return new Promise((resolve,reject)=>{
 		return this.bittrexAPI("market/cancel","&uuid="+orderid).then((res)=>{
@@ -856,6 +868,11 @@ CryptoBot.prototype.bittrexCancelOrder = function(orderid){
 	});
 }	
 	
+/**
+   * Monitor Bittrex trades for completion.
+   * @method bittrexCompleteArbitrage
+   * @param {Object} Object with 3 Bittrex ids as keys
+   */	
 CryptoBot.prototype.bittrexCompleteArbitrage = function(tracking){
 	if(Object.keys(tracking).length === 0 && obj.constructor === Object){
 		this.rate = 52000;
@@ -936,6 +953,12 @@ CryptoBot.prototype.bittrexCompleteArbitrage = function(tracking){
 	}	
 }	
 
+/**
+   * Get Bittrex pair depth.
+   * @method bittrexDepthPure
+   * @param {String} Bittrex pair
+   * @return {Promise} Should resolve {Object} with currency pair depth data
+   */	
 CryptoBot.prototype.bittrexDepthPure = function(pair){
 	return new Promise((resolve,reject) =>{	
 	    https.get({host: "bittrex.com",path: "/api/v1.1/public/getorderbook?market="+pair+"&type=both"},(response)=>{
@@ -965,6 +988,12 @@ CryptoBot.prototype.bittrexDepthPure = function(pair){
 	});
 }
 
+
+/**
+   * Get Bittrex orders.
+   * @method bittrexGetOrders
+   * @return {Promise} Should resolve {Array} with Bittrex orders
+   */
 CryptoBot.prototype.bittrexGetOrders = function(){
 	return new Promise((resolve,reject) => {	
 		return this.bittrexAPI("market/getopenorders",null).then((orders)=>{
@@ -980,6 +1009,11 @@ CryptoBot.prototype.bittrexGetOrders = function(){
 	})
 }	
 
+/**
+   * Get Bittrex cookie and user-agent.
+   * @method bittrexPrepareStream
+   * @return {Promise} Should resolve {Object} with Bittrex cookie and a user-agent
+   */
 CryptoBot.prototype.bittrexPrepareStream = function(){
 	return new Promise((resolve,reject) =>{	
 		cloudscraper.get('https://bittrex.com/',(error,response,body)=> {
@@ -995,6 +1029,13 @@ CryptoBot.prototype.bittrexPrepareStream = function(){
 	});
 }
 
+/**
+   * Monitor Bittrex pairs for arbitrage opportunities.
+   * @method bittrexStream
+   * @param {String} Bittrex cookie
+   * @param {String} A user-agent
+   * @return Should return signalr-client
+   */
 CryptoBot.prototype.bittrexStream = function(cookie,agent){
 	var a;
 	var b;
@@ -1361,10 +1402,20 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 	return client;
 }
 
+/**
+   * Remove swing order document.
+   * @method bittrexResetSwingOrder
+   * @return {Promise} Should resolve with boolean
+   */
 CryptoBot.prototype.bittrexResetSwingOrder = function(){
 	return this.saveDB("swing",{},{extra:{"w":1},method:"remove",query:{"swing":1},modifier:{}});
 }
 
+
+/**
+   * Buy/Sell Bittrex swing pair.
+   * @method bittrexSwing
+   */
 CryptoBot.prototype.bittrexSwing = function(){
 	if(!this.vibrate){
 		return;
@@ -1451,6 +1502,12 @@ CryptoBot.prototype.bittrexSwing = function(){
 			
 }
 
+/**
+   * Monitor Bittrex swing order.
+   * @method bittrexSwingOrder
+   * @param {String} Bittrex swing order uuid
+   * @return {Promise} Should resolve setTimeout id
+   */
 CryptoBot.prototype.bittrexSwingOrder = function(uuid){
 	return new Promise((resolve,reject) => {	
 		this.bittrexAPI("account/getorder","&uuid="+uuid).then((order)=>{
@@ -1459,22 +1516,32 @@ CryptoBot.prototype.bittrexSwingOrder = function(uuid){
 				if(order.IsOpen !== true){
 					this.notify("Order:"+uuid+" Filled");
 					this.bittrexAccount();
-					return setTimeout(()=>{this.bittrexSwing()},this.swingRate);
+					return resolve(setTimeout(()=>{this.bittrexSwing()},this.swingRate));
 				}		
-				return setTimeout(()=>{this.bittrexSwingOrder(uuid);},this.swingRate);		
+				return resolve(setTimeout(()=>{this.bittrexSwingOrder(uuid);},this.swingRate));		
 			}
 			else{
 				this.log("Unable to find order:"+uuid);
 				this.notify("Swing Error. Unable to find:"+uuid);
-				return setTimeout(()=>{this.bittrexSwingOrder(uuid);},this.swingRate);
+				return resolve(setTimeout(()=>{this.bittrexSwingOrder(uuid);},this.swingRate));
 			}
 		}).catch((e)=>{
 				this.log(e);
-				return setTimeout(()=>{this.bittrexSwingOrder(uuid);},this.swingRate);
+				return resolve(setTimeout(()=>{this.bittrexSwingOrder(uuid);},this.swingRate));
 			});	
 	})
 }	
 
+/**
+   * Conduct Bittrex trade.
+   * @method bittrexTrade
+   * @param {String} Order type ie 'buy'/'sell'
+   * @param {String} order pair
+   * @param {Number} Order quantity
+   * @param {Number} Order price
+   * @param {Object} Options object ie {swing:true}(optional)
+   * @return {Promise} Should resolve Bittrex order object
+   */
 CryptoBot.prototype.bittrexTrade = function(type,pair,quantity,rate,options){
 	return new Promise((resolve,reject) => {	
 		return this.bittrexAPI("market/"+type+"limit","&rate="+rate+"&market="+pair+"&quantity="+quantity).then((result)=>{
@@ -1503,6 +1570,11 @@ CryptoBot.prototype.bittrexTrade = function(type,pair,quantity,rate,options){
 	})
 }
 
+/**
+   * Send message to all connected websocket clients.
+   * @method broadcastMessage
+   * @param {String} Message to send to clients 
+   */
 CryptoBot.prototype.broadcastMessage = function(data){
 	try{
 		if(!this.wss || !this.wss.clients){
@@ -1510,21 +1582,26 @@ CryptoBot.prototype.broadcastMessage = function(data){
 		}
 		return this.wss.clients.forEach((client)=> {
 		    if (client.readyState === WebSocket.OPEN){
-					try{
-						var encrypted = typeof data === "string" ? crypto.AES.encrypt(data,this.Settings.Config.key).toString() : crypto.AES.encrypt(JSON.stringify(data),this.Settings.Config.key).toString();
-						return client.send(encrypted);
-					}
-					catch(e){
-						return this.log(e);
-					}
+				try{
+					var encrypted = typeof data === "string" ? crypto.AES.encrypt(data,this.Settings.Config.key).toString() : crypto.AES.encrypt(JSON.stringify(data),this.Settings.Config.key).toString();
+					return client.send(encrypted);
+				}
+				catch(e){
+					return this.log(e);
+				}
 			}
 		});
 	}
 	catch(e){
-		console.log(e);
+		return this.log(e);
 	}
 }	
 
+/**
+   * Prepare Bittrex arbitrage orders to be monitored.
+   * @method completedTrades
+   * @param {Object} Object with 3 Bittrex order uuids as keys
+   */
 CryptoBot.prototype.completedTrades = function(_orders) {
 	try{
 		var orders = {}
@@ -1550,6 +1627,11 @@ CryptoBot.prototype.completedTrades = function(_orders) {
 	}
 }
 
+/**
+   * Connect to mongodb database.
+   * @method database
+   * @return {Object} Return database object
+   */
 CryptoBot.prototype.database = function(){
 	var DB = {}
 	if(this.Settings.MongoDB.connect){
@@ -1597,6 +1679,11 @@ CryptoBot.prototype.database = function(){
 	return DB;
 }
 
+/**
+   * Log messages.
+   * @method log
+   * @return {Boolean} Should return boolean
+   */
 CryptoBot.prototype.log = function(){
 	if(this.logLevel === 0){
 		return;
@@ -1625,6 +1712,13 @@ CryptoBot.prototype.log = function(){
 	}
 }
 
+/**
+   * Chain functions with a delay of 2 seconds.
+   * @method niceOrderChain
+   * @param {Array} An array of functions [func1,func2,callback]
+   * @param {Object} An object to modify with the result of function calls
+   * @return {Object} Return object with 'chain' Promise function
+   */
 CryptoBot.prototype.niceOrderChain = function(functions,obj){
 	return{	
 		chain:(array)=>{
@@ -1656,6 +1750,11 @@ CryptoBot.prototype.niceOrderChain = function(functions,obj){
 	}
 }
 
+/**
+   * Send slack and/or email message.
+   * @method notify
+   * @param {String} Message to send
+   */	
 CryptoBot.prototype.notify = function(message){
 	if(this.Settings.Email.use){
 		try{ 
@@ -1676,6 +1775,13 @@ CryptoBot.prototype.notify = function(message){
 	return;
 }
 
+/**
+   * Retrieve information from mongodb.
+   * @method retrieveDB
+   * @param {String} Mongodb collection name
+   * @param {Object} Options object ie 	{query:{}}	
+   * @return {Promise} Should resolve with boolean
+   */	
 CryptoBot.prototype.retrieveDB = function(type,options){
 	return new Promise((resolve,reject) => {
 		try{
@@ -1712,6 +1818,14 @@ CryptoBot.prototype.retrieveDB = function(type,options){
 	})
 }	
 
+/**
+   * Save information to mongodb.
+   * @method saveDB
+   * @param {String} Mongodb collection name
+   * @param {Object} Document to insert in collection
+   * @param {Object} Options object ie 	{method:"update",extra:{"w":1,"upsert":true},query:{},modifier:{"$set":{}}}	
+   * @return {Promise} Should resolve with boolean
+   */						
 CryptoBot.prototype.saveDB = function(type,doc,options){
 	return new Promise((resolve,reject) =>{		
 		try{
@@ -1765,6 +1879,13 @@ CryptoBot.prototype.saveDB = function(type,doc,options){
 		}
 	})
 }
+
+/**
+   * Send an email.
+   * @method sendEmail
+   * @param {String} Email message
+   * @return {Promise} Should resolve with boolean
+   */
 CryptoBot.prototype.sendEmail = function(email_message){
 	return new Promise((resolve,reject)=>{
 		var email;
@@ -1795,6 +1916,11 @@ CryptoBot.prototype.sendEmail = function(email_message){
 	})
 }
 
+/**
+   * Setup websocket server.
+   * @method setupWebsocket
+   * @return {Promise} Resolves when first websocket client connects
+   */
 CryptoBot.prototype.setupWebsocket = function(){
 	return new Promise((resolve,reject) =>{			
 		this.wss.on('connection',(ws)=>{
@@ -2016,6 +2142,12 @@ CryptoBot.prototype.setupWebsocket = function(){
 	});				
 }	
 
+/**
+   * Send Slack message.
+   * @method slackeMessage
+   * @param {String} Text to send to Slack channel
+   * @return {Promise} Should resolve with req response
+   */
 CryptoBot.prototype.slackMessage = function(slack_message){
 	return new Promise((resolve,reject)=>{
 		try{
@@ -2069,9 +2201,14 @@ CryptoBot.prototype.slackMessage = function(slack_message){
 	})
 }		
 
+/**
+   * Update status of Bittrex socket connection.
+   * @method updateBittrexSocketStatus
+   * @param {Boolean}
+   */
 CryptoBot.prototype.updateBittrexSocketStatus = function(bool){
 	this.bittrexSocketStatus = bool;
-	return this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
+	this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
 }
 
 module.exports = {bot:CryptoBot}
