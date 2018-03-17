@@ -7,6 +7,10 @@ var signalR = require('signalr-client');
 var cloudscraper = require('cloudscraper');
 var WebSocket = require('ws');
 
+/**
+   * CryptoBot constructor.
+   * @method CryptoBot
+   */
 function CryptoBot(){	
 	var Settings = {};
 	try{
@@ -76,6 +80,11 @@ function CryptoBot(){
 	this.Transactions = {};
 }
 
+/**
+   * Get Binance Account Balance.
+   * @method binanceAccount
+   * @return {Promise} Should resolve with binanceBalance object
+	**/
 CryptoBot.prototype.binanceAccount = function(){
 	return new Promise((resolve,reject) => {	
 		var date = new Date().getTime();
@@ -124,6 +133,11 @@ CryptoBot.prototype.binanceAccount = function(){
 	});		
 }
 
+/**
+   * Cancel a Binance order.
+   * @method binanceCancelOrder
+   * @return {Promise} Should resolves with req response
+   */
 CryptoBot.prototype.binanceCancelOrder = function(pair,id){	
 	return new Promise((resolve,reject) => {	
 		var date = new Date().getTime();
@@ -166,6 +180,12 @@ CryptoBot.prototype.binanceCancelOrder = function(pair,id){
 	});			
 }
 
+/**
+   * Send heartbeat to keep Binance user stream alive.
+   * @method binanceListenBeat
+   * @param {String} Binance listen key
+   * @return {Promise} Should resolve with req response
+   */
 CryptoBot.prototype.binanceListenBeat = function(listenkey){
 	return new Promise((resolve,reject) => {	
 	    const req = https.request({
@@ -201,6 +221,11 @@ CryptoBot.prototype.binanceListenBeat = function(listenkey){
 	});			
 }
 
+/**
+   * Get Binance listen key.
+   * @method binanceListenKey
+   * @return {Promise} Should resolve with binance listen key
+   */
 CryptoBot.prototype.binanceListenKey = function(){
 	return new Promise((resolve,reject) => {	
 	    const req = https.request({
@@ -241,6 +266,11 @@ CryptoBot.prototype.binanceListenKey = function(){
 	});			
 }
 
+/**
+   * Listen to Binance user account.
+   * @method binanceListenUser
+   * @return {Promise} Should resolve with websocket client
+   */
 CryptoBot.prototype.binanceListenUser = function(){
 	return new Promise((resolve,reject) => {	
 		this.binanceListenKey()
@@ -258,6 +288,11 @@ CryptoBot.prototype.binanceListenUser = function(){
 	})
 }
 
+/**
+   * Stream all Binance currency pairs market depth.
+   * @method binanceMonitor
+   * @param {String} Binance listen key
+   */
 CryptoBot.prototype.binanceMonitor = function(){
 	this.binanceDepth = {}
 	for(var i=0;i< this.Settings.Binance.pairs.length;i++){
@@ -268,6 +303,13 @@ CryptoBot.prototype.binanceMonitor = function(){
 	}	
 }
 
+
+/**
+   * Get Binance open orders for a currency pair.
+   * @method binanceOpenOrders
+   * @param {String} Binance currency pair
+   * @return {Promise} Should resolve with req response
+   */
 CryptoBot.prototype.binanceOpenOrders = function(pair){	
 	return new Promise((resolve,reject) => {	
 		var date = new Date().getTime();
@@ -310,6 +352,13 @@ CryptoBot.prototype.binanceOpenOrders = function(pair){
 	});			
 }
 
+/**
+   * Websocket stream Binance currency pair market depth.
+   * @method binanceStream
+   * @param {String} Base Binance currency pair
+   * @param {String} Binance currency pair
+   * @return {Object} Websocket client
+   */
 CryptoBot.prototype.binanceStream = function(base,pair){
 	var client = new WebSocket('wss://stream.binance.com:9443/ws/'+pair+'@depth');
 	var reset = ()=> {
@@ -560,6 +609,12 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 	return client;
 }
 
+/**
+   * Stream Binance user account information.
+   * @method binanceUserStream
+   * @param {String} Binance listen key
+   * @return {Object} Websocket client
+   */
 CryptoBot.prototype.binanceUserStream = function(key){
 	var client = new WebSocket('wss://stream.binance.com:9443/ws/'+key);		
 	var pairs ={}
@@ -658,6 +713,16 @@ CryptoBot.prototype.binanceUserStream = function(key){
 	return client;
 }	
 
+/**
+   * Conduct a Binance trade.
+   * @method binanceTrade
+   * @param {String} Binance currency pair ie 'ETHBTC'
+   * @param {String} Trade side 'BUY'/'SELL'
+   * @param {Number} Trade amount
+   * @param {Number} Trade price
+   * @param {String} Trade time parameter 'GTC' 
+   * @return {Promise} Should resolve with req response
+   */
 CryptoBot.prototype.binanceTrade = function(pair,side,amount,price,timeInForce){
 	return new Promise((resolve,reject) => {	
 		var date = new Date().getTime();
