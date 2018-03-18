@@ -77,7 +77,10 @@ describe('Functions', function() {
 	describe('#Setup WebSocket', function() {
 		return it('Should setup a web socket server and connect to it', async function() {			
 			return setTimeout(function(){
-				var client = new WebSocket("http://localhost:7071");	
+				var client = new WebSocket("http://localhost:7071");
+				client.onopen = ()=>{
+					client.terminate();
+				}	
 			},300);
 			var val = await bot.setupWebsocket();
 			assert(val);
