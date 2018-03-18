@@ -12,6 +12,7 @@
     "ws": "^3.3.0"
   },
   "devDependencies": {
+    "istanbul": "^0.4.5",
     "mocha": "^5.0.1",
     "nyc": "^11.6.0"
   }
