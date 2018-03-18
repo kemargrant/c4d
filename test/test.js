@@ -134,7 +134,12 @@ describe('Functions', function() {
 		
 		describe('#Binance Stream', function() {
 			return it('Should return a connected websocket', function() {
-				assert(bot.binanceStream("btcusdt","btcusdt").url.href,"wss://stream.binance.com:9443/ws/btcusdt@depth");
+				var client = bot.binanceStream("btcusdt","btcusdt");
+				setTimeout(()=>{
+					bot.binanceKill = true;
+					client.terminate();
+				},400);
+				assert(client.url.href,"wss://stream.binance.com:9443/ws/btcusdt@depth");
 			});
 		});		
 		
@@ -200,6 +205,11 @@ describe('Bittrex', function() {
 		return it('Should return signalr client', async function() {
 			var val = await bot.bittrexPrepareStream();
 			var val2 = await bot.bittrexStream(val[0],val[1]);
+				setTimeout(()=>{
+					bot.bittrexSocketConnection.close();
+					client.terminate();
+				},400);
+			
 			assert(val2.headers.cookie);
 		});
 	});
