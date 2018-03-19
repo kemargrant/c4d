@@ -1,4 +1,4 @@
-
+[![codecov](https://codecov.io/gh/kemargrant/c4d/branch/master/graph/badge.svg)](https://codecov.io/gh/kemargrant/c4d)
 # Description
 
 C4D is a node.js cryptocurrency arbitrage bot for use on the Bittrex/Binance exchange.
