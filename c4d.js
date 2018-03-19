@@ -1072,30 +1072,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 	localMarket[this.Settings.Config.pair3] = {Bids:{},Asks:{}}
 	strategy[this.Settings.Config.pair1] = {}
 	strategy[this.Settings.Config.pair2] = {}
-	strategy[this.Settings.Config.pair3] = {}	
-	function BubbleSort(array,limitHigh){
-		var temp;
-		for(var j=0;j<array.length;j++){
-			for(var i=0;i < array.length;i++){
-				if(array[i+1] && Number(array[i]) < Number(array[i+1])){
-					temp = array[i];
-					array[i] = array[i+1];
-					array[i+1] = temp;
-				}
-			}
-		}
-		if(limitHigh){
-			var narray = [];
-			array.forEach(function(v,i){
-				if((Number(v) < limitHigh * 1.035) && (0.9907 * limitHigh < Number(v))){
-					narray.push(v);
-				}
-			});
-			array = narray
-		}
-		return array
-	}			
-
+	strategy[this.Settings.Config.pair3] = {}
 	var reset = () => {
 		this.bittrexInProcess = false;	
 		this.bittrexProcessTime = 0;
@@ -1106,8 +1083,8 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 	var sortBook = (obj) =>{
 		var keys1 = Object.keys(obj["Asks"]);
 		var keys2 = Object.keys(obj["Bids"]);
-		keys2 = BubbleSort(keys2);
-		keys1 = BubbleSort(keys1,Number(keys2[0]));
+		keys2 = this.utilities.BubbleSort(keys2);
+		keys1 = this.utilities.BubbleSort(keys1,Number(keys2[0]));
 		if(keys1.length > 25){
 			for(var i = 0;i < 5;i++){
 				delete obj["Asks"][keys1[i]];
@@ -2201,6 +2178,41 @@ CryptoBot.prototype.slackMessage = function(slack_message){
 	})
 }		
 
+/**
+   * General utility functions.
+   * @property utilities
+   */
+CryptoBot.prototype.utilities = {  
+	/**
+   * Sort an array.
+   * @method BubbleSort
+   * @param {Array} Unsorted arrray
+   * @param {Number} ~Maximum value allowed in sorted array (optional)
+   * @return {Array} Sorted array in decreasing order
+   */ 
+	BubbleSort: function (array,limitHigh){
+		var temp;
+		for(var j=0;j<array.length;j++){
+			for(var i=0;i < array.length;i++){
+				if(array[i+1] && Number(array[i]) < Number(array[i+1])){
+					temp = array[i];
+					array[i] = array[i+1];
+					array[i+1] = temp;
+				}
+			}
+		}
+		if(limitHigh){
+			var narray = [];
+			array.forEach(function(v,i){
+				if((Number(v) < limitHigh * 1.035) && (0.9907 * limitHigh < Number(v))){
+					narray.push(v);
+				}
+			});
+			return narray
+		}
+		return array
+	}
+}	
 /**
    * Update status of Bittrex socket connection.
    * @method updateBittrexSocketStatus

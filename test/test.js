@@ -216,6 +216,15 @@ describe('Bittrex', function() {
 	
 });
 
+describe('Utilities', function() {
+	describe('#BubbleSort', function() {
+		return it('Should sort in decreasing order', function() {
+			var array = [99.1,99.01,99.4,99.1,99.6,99.7,1,50,54];
+			var sorted = bot.utilities.BubbleSort(array,99.5);
+			assert.deepEqual([99.7,99.6,99.4,99.1,99.1,99.01],sorted);
+		});
+	});
+});
 
 	return
 })
