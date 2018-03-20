@@ -1,5 +1,5 @@
 [![codecov](https://codecov.io/gh/kemargrant/c4d/branch/master/graph/badge.svg)](https://codecov.io/gh/kemargrant/c4d)
-[![CircleCI](https://circleci.com/bb/grant_christophe/ckg.svg?style=svg)](https://circleci.com/bb/grant_christophe/ckg)
+[![CircleCI](https://circleci.com/bb/grant_christophe/ckg.svg?style=svg&circle-token=f685dbd819c526b36a94619c2278e99681b4b67f)](https://circleci.com/bb/grant_christophe/ckg)
 # Description
 
 C4D is a node.js cryptocurrency arbitrage bot for use on the Bittrex/Binance exchange.
