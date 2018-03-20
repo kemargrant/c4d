@@ -59,7 +59,7 @@ function CryptoBot(){
 	this.binanceUserStreamStatus = false;
 	//format Binance pairs for general usage
 	this.Settings.Binance.formatPairs = Settings.Binance.pairs;
-	Settings.Binance.pairs = JSON.parse(JSON.stringify(Settings.Binance.pairs).replace(new RegExp("_", 'g'),""));
+	this.Settings.Binance.pairs = JSON.parse(JSON.stringify(Settings.Binance.pairs).replace(new RegExp("_", 'g'),""));
 	//Get Exchange Information
 	this.binancePrecision().then(()=>{
 		for(var i=0;i< Settings.Binance.pairs.length;i++){
@@ -447,6 +447,7 @@ CryptoBot.prototype.binancePrecision = function(){
 				this.Settings.Binance.pairs[i].minimumB1 = minb1;
 				this.Settings.Binance.pairs[i].minimumC1 = minc1;
 				this.Settings.Binance.pairs[i].minimumU1 = minu1;
+				//this.log(this.Settings.Binance.pairs[i],pair1,"<=>Minimum B1:",minb1,"Minimum C1:",minc1,"Minimum U1:",minu1);
 			}
 			return resolve(true); 
 		}).catch((e)=>{
@@ -590,7 +591,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 					message = message + Transactions[b1[base]] + " "+b1[base]+" => "+Transactions[u1[base]]+" "+u1[base]+" @" + this.binanceStrategy[base].two.b + '\n';
 					message = message + (Transactions[e1[base]] * this.binanceStrategy[base].two.c) + u1[base]+" => " + Transactions[e1[base]] + " "+e1[base]+" @"+this.binanceStrategy[base].two.c +'\n'
 					message = message + Transactions[e1[base]].toFixed(this.binancePrec[base][3]) + e1[base]+" => " + (Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][0]) + " "+b1[base]+" @"+this.binanceStrategy[base].two.a +'\n';							
-					if( Number((Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][0])) >= Transform_B1 && (Transactions[e1[base]].toFixed(this.binancePrec[base][3]) <= Transactions[e1[base]])){
+					if( Number((Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][0])) >= Transform_B1 && (Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]) <= Transactions[e1[base]])) ){
 						this.log(message);
 					}
 					if((Transactions[u1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].two.c)) < 0 && this.binanceOptimalTrades[base]){
