@@ -55,13 +55,9 @@ Bot settings are controlled by the 'config.json' file
 			"lowerLimit1":100.2,
 			"lowerLimit2":99,
 			"optimalTrades":true,
-			"minimumB1":0.001,
-			"minimumC1":0.001,
-			"minimumU1":10,
-			"pair1":"xxxyyy",
-			"pair2":"yyyzzz",
-			"pair3":"xxxzzz",
-			"prec":[6,2,2,2,5,5],
+			"pair1":"xxx_yyy",
+			"pair2":"yyy_zzz",
+			"pair3":"xxx_zzz",
 			"upperLimit1":100.5,
 			"upperLimit2":99.99
 			}]
@@ -133,13 +129,9 @@ Bot settings are controlled by the 'config.json' file
 | Binance.pairs.lowerLimit1 | Minimum percent to perform trade when percentage < 100% | Number
 | Binance.pairs.lowerLimit2 | Minimum percent to perform trade when percentage > 100% | Number
 | Binance.pairs.optimalTrades | Make the best trade possible | Boolean
-| Binance.pairs.minimumB1 | Minimum Order Value For Currency Pair1 ie ltcbtc (0.001)BTC | Number
-| Binance.pairs.minimumC1 | Minimum Order Amount/Minimum Order Price For Currency Pair2 ie btcusdt (0.0001)BTC | Number
-| Binance.pairs.minimumU1 | Minimum Order Value For Currency Pair3 ie ltcusdt (10)USDT | Number
 | Binance.pairs.pair1 | Currency Pair1 ie ltcbtc | String
 | Binance.pairs.pair2 | Currency Pair2 ie btcusdt| String
 | Binance.pairs.pair3 | Currency Pair3 ie ltcusdt | String
-| Binance.pairs.prec | Array of numbers ie [Decimal Price Precision Pair1,Decimal Price Precision Pair2,Decimal Price Precision Pair3,Decimal Amount Precision Pair1,Decimal Amount Precision Pair2,Decimal Amount Precision Pair3] | Array
 | Binance.pairs.upperLimit1 | Maximum percent to perform trade when percentage < 100% | Number
 | Binance.pairs.upperLimit2 | Maximum percent to perform trade when percentage > 100% | Number
 | Bittrex.apikey | Bittrex Api Key | String
