@@ -181,6 +181,46 @@ CryptoBot.prototype.binanceCancelOrder = function(pair,id){
 }
 
 /**
+   * Get Binance Exchange information.
+   * @method binanceExchangeInfo
+   * @return {Promise} Should resolve with req response
+   */
+CryptoBot.prototype.binanceExchangeInfo = function(){
+	return new Promise((resolve,reject) => {	
+		const req = https.request({
+			host: "www.binance.com",
+			path: "/api/v1/exchangeInfo",
+			method: "GET"
+			},
+			(response)=> {
+	        var body = '';
+	        response.on('data',(d)=> {body += d;});
+	        response.on('end',()=> {
+				var parsed;
+				try{
+					parsed = JSON.parse(body);
+					if(parsed.length < 1){
+						return reject(new Error("Error Listening to Binance User Account"));
+					}
+					else{resolve(parsed)}
+				}
+				catch(e){
+					this.log("Error:",e);
+					return reject(e);
+				}		
+	            return resolve(parsed);
+	        });
+	    }).on('error',(e)=>{
+			return reject(e);
+		});
+	    req.write("");
+	    req.end();
+	});
+}   
+
+
+
+/**
    * Send heartbeat to keep Binance user stream alive.
    * @method binanceListenBeat
    * @param {String} Binance listen key
