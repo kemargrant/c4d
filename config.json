@@ -9,13 +9,9 @@
 			"lowerLimit1":100.2,
 			"lowerLimit2":99,
 			"optimalTrades":true,
-			"minimumB1":0.01,
-			"minimumC1":0.0001,
-			"minimumU1":10,
-			"pair1":"xxxyyy",
-			"pair2":"yyyzzz",
-			"pair3":"xxxzzz",
-			"prec":[6,2,2,3,2,5],
+			"pair1":"xxx_yyy",
+			"pair2":"yyy_zzz",
+			"pair3":"xxx_zzz",
 			"upperLimit1":100.5,
 			"upperLimit2":99.99
 			}]

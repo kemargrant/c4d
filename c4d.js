@@ -27,6 +27,7 @@ function CryptoBot(){
 	this.rate = Settings.Config ? Settings.Config.polling : 60000;
 	this.swingRate = Settings.Config ? Settings.Swing.rate : 60000;
 	this.saneTrades = Settings.Config ? Settings.Config.saneTrades : true;
+	this.Settings = Settings;
 	this.liquidTrades = Settings.Config ? Settings.Config.liquidTrades : true;
 	this.vibrate = Settings.Config ? Settings.Swing.swingTrade : false;
 	this.viewBittrexBook = Settings.Config.viewBook;
@@ -36,7 +37,6 @@ function CryptoBot(){
 	this.logLevel = Settings.Config.logs;
 	this.p1 = Settings.Config.percentage1;
 	this.p2 = Settings.Config.percentage2;
-	this.Settings = Settings;
 	this.DB = this.database();
 	//Binance Settings
 	this.binanceApiKey = Settings.Binance.apikey;
@@ -57,23 +57,31 @@ function CryptoBot(){
 	this.liquidTradesBinance = {}
 	this.binanceTradesMade = {}
 	this.binanceUserStreamStatus = false;
-	for(var i=0;i< Settings.Binance.pairs.length;i++){
-		this.binanceB1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumB1;
-		this.binanceC1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumC1;
-		this.binanceU1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumU1;
-		this.binanceInProcess[Settings.Binance.pairs[i].pair1] = false;
-		this.binanceLimits[Settings.Binance.pairs[i].pair1] = {
-			"over":{"lowerLimit":Settings.Binance.pairs[i].lowerLimit1,"upperLimit":Settings.Binance.pairs[i].upperLimit1},
-			"under":{"lowerLimit":Settings.Binance.pairs[i].lowerLimit2,"upperLimit":Settings.Binance.pairs[i].upperLimit2}
-			}
-		this.binanceOptimalTrades[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].optimalTrades;
-		this.binanceOrders[Settings.Binance.pairs[i].pair1] = [];
-		this.binancePrec[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].prec;
-		this.binanceProcessTime[Settings.Binance.pairs[i].pair1] = false;
-		this.binanceStrategy[Settings.Binance.pairs[i].pair1] = {one:{},two:{}}
-		this.liquidTradesBinance[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].liquidTrades;		
-		this.binanceTradesMade[Settings.Binance.pairs[i].pair1] = false;
-	}	
+	//format Binance pairs for general usage
+	this.Settings.Binance.formatPairs = Settings.Binance.pairs;
+	Settings.Binance.pairs = JSON.parse(JSON.stringify(Settings.Binance.pairs).replace(new RegExp("_", 'g'),""));
+	//Get Exchange Information
+	this.binancePrecision().then(()=>{
+		for(var i=0;i< Settings.Binance.pairs.length;i++){
+			this.binanceB1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumB1;
+			this.binanceC1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumC1;
+			this.binanceU1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumU1;
+			this.binanceInProcess[Settings.Binance.pairs[i].pair1] = false;
+			this.binanceLimits[Settings.Binance.pairs[i].pair1] = {
+				"over":{"lowerLimit":Settings.Binance.pairs[i].lowerLimit1,"upperLimit":Settings.Binance.pairs[i].upperLimit1},
+				"under":{"lowerLimit":Settings.Binance.pairs[i].lowerLimit2,"upperLimit":Settings.Binance.pairs[i].upperLimit2}
+				}
+			this.binanceOptimalTrades[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].optimalTrades;
+			this.binanceOrders[Settings.Binance.pairs[i].pair1] = [];
+			this.binancePrec[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].prec;
+			this.binanceProcessTime[Settings.Binance.pairs[i].pair1] = false;
+			this.binanceStrategy[Settings.Binance.pairs[i].pair1] = {one:{},two:{}}
+			this.liquidTradesBinance[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].liquidTrades;		
+			this.binanceTradesMade[Settings.Binance.pairs[i].pair1] = false;
+		}	
+	}).catch((e)=>{
+		this.log(e);
+	})
 	//setup websocket
 	this.wss = new WebSocket.Server({port:Settings.Config.port});
 	//transactions
@@ -392,6 +400,62 @@ CryptoBot.prototype.binanceOpenOrders = function(pair){
 	});			
 }
 
+
+/**
+   * Get Binance precision.
+   * @method binancePrecision
+   * @return {Promise} Should resolve with boolean
+	**/
+CryptoBot.prototype.binancePrecision = function(){
+	return new Promise((resolve,reject)=>{
+		var allPairs = [];
+		for(var i= 0;i < this.Settings.Binance.pairs.length;i++){
+			allPairs.push(this.Settings.Binance.pairs[i].pair1.toUpperCase())
+			allPairs.push(this.Settings.Binance.pairs[i].pair2.toUpperCase())
+			allPairs.push(this.Settings.Binance.pairs[i].pair3.toUpperCase())
+		} 
+		this.binanceExchangeInfo().then((info)=>{
+			var Exchange = {}
+			var index;
+			var filter;
+			function getPrec(textNumber){
+				var number = textNumber.split("1")[0].length - 1;
+				return number;
+			}
+			for(var i = 0;i <info.symbols.length;i++){
+				if(allPairs.indexOf(info.symbols[i].symbol) > -1 ){
+					index = info.symbols[i].symbol;
+					filter = info.symbols[i];
+					Exchange[index] = [getPrec(filter.filters[0].minPrice),getPrec(filter.filters[1].minQty),Number(filter.filters[2].minNotional)]			
+				}
+			}		
+			for(var i= 0;i < this.Settings.Binance.pairs.length;i++){
+				var prec = [0,0,0,0,0,0];
+				var minb1;
+				var minc1;
+				var minu1;
+				prec[0] = Exchange[this.Settings.Binance.pairs[i].pair1.toUpperCase()][0]
+				prec[3] = Exchange[this.Settings.Binance.pairs[i].pair1.toUpperCase()][1]
+				minb1 = Exchange[this.Settings.Binance.pairs[i].pair1.toUpperCase()][2]
+				prec[1] = Exchange[this.Settings.Binance.pairs[i].pair2.toUpperCase()][0]
+				prec[4] = Exchange[this.Settings.Binance.pairs[i].pair2.toUpperCase()][1]
+				prec[2] = Exchange[this.Settings.Binance.pairs[i].pair3.toUpperCase()][0]
+				prec[5] = Exchange[this.Settings.Binance.pairs[i].pair3.toUpperCase()][1]
+				minu1 = Exchange[this.Settings.Binance.pairs[i].pair3.toUpperCase()][2]
+				minc1 = minu1 * minb1;
+				this.Settings.Binance.pairs[i].prec = prec;
+				this.Settings.Binance.pairs[i].minimumB1 = minb1;
+				this.Settings.Binance.pairs[i].minimumC1 = minc1;
+				this.Settings.Binance.pairs[i].minimumU1 = minu1;
+			}
+			return resolve(true); 
+		}).catch((e)=>{
+			this.log(e);
+			return reject(false)
+		});
+	})
+}
+
 /**
    * Websocket stream Binance currency pair market depth.
    * @method binanceStream
@@ -418,9 +482,9 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 	var pair3;
 	for(var i=0;i< this.Settings.Binance.pairs.length;i++){
 		if(this.Settings.Binance.pairs[i].pair1 === base){
-			e1[base] = this.Settings.Binance.pairs[i].pair1.slice(0,3);
-			b1[base] = this.Settings.Binance.pairs[i].pair1.slice(3,this.Settings.Binance.pairs[i].pair1.length);
-			u1[base] = this.Settings.Binance.pairs[i].pair2.slice(3,this.Settings.Binance.pairs[i].pair2.length);
+			e1[base] = this.Settings.Binance.formatPairs[i].pair1.split("_")[0];
+			b1[base] = this.Settings.Binance.formatPairs[i].pair1.split("_")[1];
+			u1[base] = this.Settings.Binance.formatPairs[i].pair2.split("_")[1];
 			pair1 = this.Settings.Binance.pairs[i].pair1;
 			pair2 = this.Settings.Binance.pairs[i].pair2;
 			pair3 = this.Settings.Binance.pairs[i].pair3;
@@ -2049,7 +2113,7 @@ CryptoBot.prototype.setupWebsocket = function(){
 							"limits":this.binanceLimits,
 							"liquid":this.liquidTradesBinance,
 							"connections":this.binanceSocketConnections.length,
-							"pairs":this.Settings.Binance.pairs}),this.Settings.Config.key).toString());
+							"pairs":this.Settings.Binance.formatPairs}),this.Settings.Config.key).toString());
 					}			
 					if(message.command === "logs"){
 						this.logLevel = Number(message.logLevel);
