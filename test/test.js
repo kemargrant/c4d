@@ -95,13 +95,24 @@ describe('Functions', function() {
 				assert.equal(bot.Settings.Binance.apikey.length > 0 && bot.Settings.Binance.secretkey.length > 0, true);
 			});
 		});
-	
+	    
 		describe('#Account Data', function() {
 			return it('Should return account data', async function() {
 				var val = await bot.binanceAccount();
 				assert.equal(typeof val,"object")
 			});
 		});
+		
+		describe('#Binance Precision', function() {
+			return it('Should return Binance Exchange data for ltc/btc/usdt arbitrage', async function() {
+				var exchangeData = await bot.binancePrecision([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
+				bot.Settings.Binance.pairs[0].pair1 = "ltcbtc";
+				bot.Settings.Binance.pairs[0].pair2 = "btcusdt";
+				bot.Settings.Binance.pairs[0].pair3 = "ltcusdt";
+				bot.binanceFormatPairs(exchangeData);
+				assert.deepEqual(bot.Settings.Binance.pairs[0].prec,[6,2,2,2,6,5])
+			});			
+		});		
 		
 		describe('#Get Orders', function() {
 			return it('Should return a list of open orders for btcusdt', async function() {
@@ -111,7 +122,7 @@ describe('Functions', function() {
 		});  	
 		
 		describe('#Listen Key', function() {
-			it('Should return a user listen key of 60 characters', async function() {
+			return it('Should return a user listen key of 60 characters', async function() {
 				var val = await bot.binanceListenKey()
 				assert.equal(val.length,60);				
 			});
@@ -138,8 +149,8 @@ describe('Functions', function() {
 				setTimeout(()=>{
 					bot.binanceKill = true;
 					client.terminate();
-				},400);
-				assert(client.url.href,"wss://stream.binance.com:9443/ws/btcusdt@depth");
+				},900);
+				assert(client.readyState === 0);
 			});
 		});		
 		
@@ -154,7 +165,7 @@ describe('Functions', function() {
 	});
 
 
-//Bittrex Tests
+//~ //Bittrex Tests
 describe('Bittrex', function() {
 
 	describe('#ApiKeys', function() {
@@ -209,7 +220,6 @@ describe('Bittrex', function() {
 					bot.bittrexSocketConnection.close();
 					client.terminate();
 				},400);
-			
 			assert(val2.headers.cookie);
 		});
 	});

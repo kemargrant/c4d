@@ -61,23 +61,24 @@ function CryptoBot(){
 	this.Settings.Binance.formatPairs = Settings.Binance.pairs;
 	this.Settings.Binance.pairs = JSON.parse(JSON.stringify(Settings.Binance.pairs).replace(new RegExp("_", 'g'),""));
 	//Get Exchange Information
-	this.binancePrecision().then(()=>{
-		for(var i=0;i< Settings.Binance.pairs.length;i++){
-			this.binanceB1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumB1;
-			this.binanceC1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumC1;
-			this.binanceU1Min[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].minimumU1;
-			this.binanceInProcess[Settings.Binance.pairs[i].pair1] = false;
-			this.binanceLimits[Settings.Binance.pairs[i].pair1] = {
-				"over":{"lowerLimit":Settings.Binance.pairs[i].lowerLimit1,"upperLimit":Settings.Binance.pairs[i].upperLimit1},
-				"under":{"lowerLimit":Settings.Binance.pairs[i].lowerLimit2,"upperLimit":Settings.Binance.pairs[i].upperLimit2}
+	this.binancePrecision(this.Settings.Binance.pairs).then((exchangeData)=>{
+		this.binanceFormatPairs(exchangeData);
+		for(var i=0;i< this.Settings.Binance.pairs.length;i++){
+			this.binanceB1Min[this.Settings.Binance.pairs[i].pair1] = this.Settings.Binance.pairs[i].minimumB1;
+			this.binanceC1Min[this.Settings.Binance.pairs[i].pair1] = this.Settings.Binance.pairs[i].minimumC1;
+			this.binanceU1Min[this.Settings.Binance.pairs[i].pair1] = this.Settings.Binance.pairs[i].minimumU1;
+			this.binanceInProcess[this.Settings.Binance.pairs[i].pair1] = false;
+			this.binanceLimits[this.Settings.Binance.pairs[i].pair1] = {
+				"over":{"lowerLimit":this.Settings.Binance.pairs[i].lowerLimit1,"upperLimit":this.Settings.Binance.pairs[i].upperLimit1},
+				"under":{"lowerLimit":this.Settings.Binance.pairs[i].lowerLimit2,"upperLimit":this.Settings.Binance.pairs[i].upperLimit2}
 				}
-			this.binanceOptimalTrades[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].optimalTrades;
-			this.binanceOrders[Settings.Binance.pairs[i].pair1] = [];
-			this.binancePrec[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].prec;
-			this.binanceProcessTime[Settings.Binance.pairs[i].pair1] = false;
-			this.binanceStrategy[Settings.Binance.pairs[i].pair1] = {one:{},two:{}}
-			this.liquidTradesBinance[Settings.Binance.pairs[i].pair1] = Settings.Binance.pairs[i].liquidTrades;		
-			this.binanceTradesMade[Settings.Binance.pairs[i].pair1] = false;
+			this.binanceOptimalTrades[this.Settings.Binance.pairs[i].pair1] = this.Settings.Binance.pairs[i].optimalTrades;
+			this.binanceOrders[this.Settings.Binance.pairs[i].pair1] = [];
+			this.binancePrec[this.Settings.Binance.pairs[i].pair1] = this.Settings.Binance.pairs[i].prec;
+			this.binanceProcessTime[this.Settings.Binance.pairs[i].pair1] = false;
+			this.binanceStrategy[this.Settings.Binance.pairs[i].pair1] = {one:{},two:{}}
+			this.liquidTradesBinance[this.Settings.Binance.pairs[i].pair1] = this.Settings.Binance.pairs[i].liquidTrades;		
+			this.binanceTradesMade[this.Settings.Binance.pairs[i].pair1] = false;
 		}	
 	}).catch((e)=>{
 		this.log(e);
@@ -210,7 +211,6 @@ CryptoBot.prototype.binanceExchangeInfo = function(){
 					if(parsed.length < 1){
 						return reject(new Error("Error Listening to Binance User Account"));
 					}
-					else{resolve(parsed)}
 				}
 				catch(e){
 					this.log("Error:",e);
@@ -225,8 +225,6 @@ CryptoBot.prototype.binanceExchangeInfo = function(){
 	    req.end();
 	});
 }   
-
-
 
 /**
    * Send heartbeat to keep Binance user stream alive.
@@ -337,18 +335,19 @@ CryptoBot.prototype.binanceListenUser = function(){
 }
 
 /**
-   * Stream all Binance currency pairs market depth.
+   * Stream all configured Binance currency pairs market depth.
    * @method binanceMonitor
-   * @param {String} Binance listen key
+   * @param {Array} Array of pair data information
    */
-CryptoBot.prototype.binanceMonitor = function(){
-	this.binanceDepth = {}
-	for(var i=0;i< this.Settings.Binance.pairs.length;i++){
-		this.binanceDepth[this.Settings.Binance.pairs[i].pair1] = {depth:{},strategy1:{'a%':{},'b%':{},'c%':{}},strategy2:{'a%':{},'b%':{},'c%':{}}}
-		this.binanceStream(this.Settings.Binance.pairs[i].pair1,this.Settings.Binance.pairs[i].pair1);
-		this.binanceStream(this.Settings.Binance.pairs[i].pair1,this.Settings.Binance.pairs[i].pair2);
-		this.binanceStream(this.Settings.Binance.pairs[i].pair1,this.Settings.Binance.pairs[i].pair3);
+CryptoBot.prototype.binanceMonitor = function(pairData){
+	var _depth = {}
+	for(var i=0;i< pairData.length;i++){
+		_depth[pairData[i].pair1] = {depth:{},strategy1:{'a%':{},'b%':{},'c%':{}},strategy2:{'a%':{},'b%':{},'c%':{}}}
+		this.binanceStream(pairData[i].pair1,pairData[i].pair1);
+		this.binanceStream(pairData[i].pair1,pairData[i].pair2);
+		this.binanceStream(pairData[i].pair1,pairData[i].pair3);
 	}	
+	this.binanceDepth = _depth;
 }
 
 
@@ -356,7 +355,7 @@ CryptoBot.prototype.binanceMonitor = function(){
    * Get Binance open orders for a currency pair.
    * @method binanceOpenOrders
    * @param {String} Binance currency pair
-   * @return {Promise} Should resolve with req response
+   * @return {Promise} Should resolve with Binance exchange data 
    */
 CryptoBot.prototype.binanceOpenOrders = function(pair){	
 	return new Promise((resolve,reject) => {	
@@ -404,18 +403,18 @@ CryptoBot.prototype.binanceOpenOrders = function(pair){
 /**
    * Get Binance precision.
    * @method binancePrecision
-   * @return {Promise} Should resolve with boolean
+   * @return {Promise} Should resolve with Binance exchange data
 	**/
-CryptoBot.prototype.binancePrecision = function(){
+CryptoBot.prototype.binancePrecision = function(pairData){
 	return new Promise((resolve,reject)=>{
 		var allPairs = [];
-		for(var i= 0;i < this.Settings.Binance.pairs.length;i++){
-			allPairs.push(this.Settings.Binance.pairs[i].pair1.toUpperCase())
-			allPairs.push(this.Settings.Binance.pairs[i].pair2.toUpperCase())
-			allPairs.push(this.Settings.Binance.pairs[i].pair3.toUpperCase())
+		for(var i= 0;i < pairData.length;i++){
+			allPairs.push(pairData[i].pair1.toUpperCase())
+			allPairs.push(pairData[i].pair2.toUpperCase())
+			allPairs.push(pairData[i].pair3.toUpperCase())
 		} 
 		this.binanceExchangeInfo().then((info)=>{
-			var Exchange = {}
+			var exchangeData = {}
 			var index;
 			var filter;
 			function getPrec(textNumber){
@@ -426,35 +425,43 @@ CryptoBot.prototype.binancePrecision = function(){
 				if(allPairs.indexOf(info.symbols[i].symbol) > -1 ){
 					index = info.symbols[i].symbol;
 					filter = info.symbols[i];
-					Exchange[index] = [getPrec(filter.filters[0].minPrice),getPrec(filter.filters[1].minQty),Number(filter.filters[2].minNotional)]			
+					exchangeData[index] = [getPrec(filter.filters[0].minPrice),getPrec(filter.filters[1].minQty),Number(filter.filters[2].minNotional)]			
 				}
 			}		
-			for(var i= 0;i < this.Settings.Binance.pairs.length;i++){
-				var prec = [0,0,0,0,0,0];
-				var minb1;
-				var minc1;
-				var minu1;
-				prec[0] = Exchange[this.Settings.Binance.pairs[i].pair1.toUpperCase()][0]
-				prec[3] = Exchange[this.Settings.Binance.pairs[i].pair1.toUpperCase()][1]
-				minb1 = Exchange[this.Settings.Binance.pairs[i].pair1.toUpperCase()][2]
-				prec[1] = Exchange[this.Settings.Binance.pairs[i].pair2.toUpperCase()][0]
-				prec[4] = Exchange[this.Settings.Binance.pairs[i].pair2.toUpperCase()][1]
-				prec[2] = Exchange[this.Settings.Binance.pairs[i].pair3.toUpperCase()][0]
-				prec[5] = Exchange[this.Settings.Binance.pairs[i].pair3.toUpperCase()][1]
-				minu1 = Exchange[this.Settings.Binance.pairs[i].pair3.toUpperCase()][2]
-				minc1 = minu1 * minb1;
-				this.Settings.Binance.pairs[i].prec = prec;
-				this.Settings.Binance.pairs[i].minimumB1 = minb1;
-				this.Settings.Binance.pairs[i].minimumC1 = minc1;
-				this.Settings.Binance.pairs[i].minimumU1 = minu1;
-				//this.log(this.Settings.Binance.pairs[i],pair1,"<=>Minimum B1:",minb1,"Minimum C1:",minc1,"Minimum U1:",minu1);
-			}
-			return resolve(true); 
+			return resolve(exchangeData); 
 		}).catch((e)=>{
 			this.log(e);
 			return reject(false)
 		});
 	})
+}
+
+/**
+   * Format Binance pairs precision.
+   * @method binanceFormatPairs
+   * @param {Object} Object with Binance exchange data
+	**/
+CryptoBot.prototype.binanceFormatPairs = function(exchangeData){
+	for(var i= 0;i < this.Settings.Binance.pairs.length;i++){
+		var prec = [0,0,0,0,0,0];
+		var minb1;
+		var minc1;
+		var minu1;
+		prec[0] = exchangeData[this.Settings.Binance.pairs[i].pair1.toUpperCase()][0]
+		prec[3] = exchangeData[this.Settings.Binance.pairs[i].pair1.toUpperCase()][1]
+		minb1 = exchangeData[this.Settings.Binance.pairs[i].pair1.toUpperCase()][2]
+		prec[1] = exchangeData[this.Settings.Binance.pairs[i].pair2.toUpperCase()][0]
+		prec[4] = exchangeData[this.Settings.Binance.pairs[i].pair2.toUpperCase()][1]
+		prec[2] = exchangeData[this.Settings.Binance.pairs[i].pair3.toUpperCase()][0]
+		prec[5] = exchangeData[this.Settings.Binance.pairs[i].pair3.toUpperCase()][1]
+		minu1 = exchangeData[this.Settings.Binance.pairs[i].pair3.toUpperCase()][2]
+		minc1 = minu1 * minb1;
+		this.Settings.Binance.pairs[i].prec = prec;
+		this.Settings.Binance.pairs[i].minimumB1 = minb1;
+		this.Settings.Binance.pairs[i].minimumC1 = minc1;
+		this.Settings.Binance.pairs[i].minimumU1 = minu1;
+	}
+	return;
 }
 
 /**
@@ -515,7 +522,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 				if(!this.binanceKill){
 					this.binanceStream(base,pair);
 				}
-			},1000);
+			},2000);
 	}
 	
 	client.onopen = ()=> {
@@ -591,8 +598,11 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 					message = message + Transactions[b1[base]] + " "+b1[base]+" => "+Transactions[u1[base]]+" "+u1[base]+" @" + this.binanceStrategy[base].two.b + '\n';
 					message = message + (Transactions[e1[base]] * this.binanceStrategy[base].two.c) + u1[base]+" => " + Transactions[e1[base]] + " "+e1[base]+" @"+this.binanceStrategy[base].two.c +'\n'
 					message = message + Transactions[e1[base]].toFixed(this.binancePrec[base][3]) + e1[base]+" => " + (Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][0]) + " "+b1[base]+" @"+this.binanceStrategy[base].two.a +'\n';							
-					if( Number((Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][0])) >= Transform_B1 && (Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]) <= Transactions[e1[base]])) ){
+					if( Number((Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][0])) >= Transform_B1 && (Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3])) <= Transactions[e1[base]])){
 						this.log(message);
+					}
+					else{
+						return this.log("Optimal Trade Not Found:",new Date());
 					}
 					if((Transactions[u1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].two.c)) < 0 && this.binanceOptimalTrades[base]){
 						return this.log("Optimal Trade Not Found:",new Date());
@@ -727,10 +737,14 @@ CryptoBot.prototype.binanceUserStream = function(key){
 		pairs[this.Settings.Binance.pairs[i].pair1] = [this.Settings.Binance.pairs[i].pair1,this.Settings.Binance.pairs[i].pair2,this.Settings.Binance.pairs[i].pair3];
 	}	 
 	client.onclose = (error)=> {
-	    this.log('Binance User Account Connect Error: ' + error.toString(),new Date());
-	    this.binanceUserStreamStatus = false;
-		this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-		return setTimeout(()=>{this.binanceUserStream(key)},10000);
+		if(this.binanceUserStreamStatus){
+			this.binanceUserStreamStatus = false;
+		    this.log('Binance User Account Connect Error: ' + error.toString(),new Date());
+			this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
+			return setTimeout(()=>{
+				this.binanceUserStream(key)
+			},10000);
+		}
 	};
 	client.onerror = client.onclose;
 	client.onopen = ()=> {
@@ -2156,7 +2170,7 @@ CryptoBot.prototype.setupWebsocket = function(){
 								this.binanceInProcess[key] = false;
 							} 
 							this.binanceSocketConnections = [];
-							this.binanceMonitor();
+							this.binanceMonitor(this.Settings.Binance.pairs);
 							if(!this.binanceUserStreamStatus){
 								this.binanceListenUser();
 							}
