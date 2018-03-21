@@ -165,66 +165,66 @@ describe('Functions', function() {
 	});
 
 
-//~ //Bittrex Tests
-//~ describe('Bittrex', function() {
+//Bittrex Tests
+describe('Bittrex', function() {
 
-	//~ describe('#ApiKeys', function() {
-		//~ return it('should return true when the apikey and apisecret are present', function() {
-			//~ assert.equal(bot.Settings.Bittrex.apikey.length > 0 && bot.Settings.Bittrex.secret.length > 0, true);
-		//~ });
-	//~ });
+	describe('#ApiKeys', function() {
+		return it('should return true when the apikey and apisecret are present', function() {
+			assert.equal(bot.Settings.Bittrex.apikey.length > 0 && bot.Settings.Bittrex.secret.length > 0, true);
+		});
+	});
 	
-	//~ describe('#Account Data', function() {
-		//~ return it('Should return account data', async function() {
-			//~ var val = await bot.bittrexAccount();
-			//~ assert.equal(val,true)
-		//~ });
-	//~ });
+	describe('#Account Data', function() {
+		return it('Should return account data', async function() {
+			var val = await bot.bittrexAccount();
+			assert.equal(val,true)
+		});
+	});
 	
-	//~ describe('#Complete Arbitrage', function() {
-		//~ return it('Should return a setTimeout object', async function() {
-			//~ var val = await bot.bittrexCompleteArbitrage({'randomid':false,'randomi2':false,'randomid3':false});
-			//~ assert.equal(typeof val._idleStart,"number")
-		//~ });
-	//~ });	
+	describe('#Complete Arbitrage', function() {
+		return it('Should return a setTimeout object', async function() {
+			var val = await bot.bittrexCompleteArbitrage({'randomid':false,'randomi2':false,'randomid3':false});
+			assert.equal(typeof val._idleStart,"number")
+		});
+	});	
 	
-	//~ describe('#Market Depth', function() {
-		//~ return it('Should return an object with bid and ask price', async function() {
-			//~ var val = await bot.bittrexDepthPure('USDT-BTC');
-			//~ assert(val.buy && val.sell)
-		//~ });
-	//~ });		
+	describe('#Market Depth', function() {
+		return it('Should return an object with bid and ask price', async function() {
+			var val = await bot.bittrexDepthPure('USDT-BTC');
+			assert(val.buy && val.sell)
+		});
+	});		
 
-	//~ describe('#Place and Remove Order', function() {
-		//~ it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
-			//~ var val = await bot.bittrexTrade("buy","USDT-BTC",1,20.00);
-			//~ var val2 = await bot.bittrexCancelOrder(val);
-			//~ assert.equal(val2.success,true);
-		//~ });
-	//~ });	
+	describe('#Place and Remove Order', function() {
+		it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
+			var val = await bot.bittrexTrade("buy","USDT-BTC",1,20.00);
+			var val2 = await bot.bittrexCancelOrder(val);
+			assert.equal(val2.success,true);
+		});
+	});	
 
-	//~ describe('#Completed Trades', function() {
-		//~ this.timeout(15000);
-		//~ return it('Should return a settimeout object', function() {
-			//~ var val = bot.completedTrades(['xxxx']);
-			//~ assert.equal(Number(val._idleStart > 0),true);
-		//~ });
-	//~ });
+	describe('#Completed Trades', function() {
+		this.timeout(15000);
+		return it('Should return a settimeout object', function() {
+			var val = bot.completedTrades(['xxxx']);
+			assert.equal(Number(val._idleStart > 0),true);
+		});
+	});
 
-	//~ describe('#Stream', function() {
-		//~ this.timeout(15000);
-		//~ return it('Should return signalr client', async function() {
-			//~ var val = await bot.bittrexPrepareStream();
-			//~ var val2 = await bot.bittrexStream(val[0],val[1]);
-				//~ setTimeout(()=>{
-					//~ bot.bittrexSocketConnection.close();
-					//~ client.terminate();
-				//~ },400);
-			//~ assert(val2.headers.cookie);
-		//~ });
-	//~ });
+	describe('#Stream', function() {
+		this.timeout(15000);
+		return it('Should return signalr client', async function() {
+			var val = await bot.bittrexPrepareStream();
+			var val2 = await bot.bittrexStream(val[0],val[1]);
+				setTimeout(()=>{
+					bot.bittrexSocketConnection.close();
+					client.terminate();
+				},400);
+			assert(val2.headers.cookie);
+		});
+	});
 	
-//~ });
+});
 
 describe('Utilities', function() {
 	describe('#BubbleSort', function() {
