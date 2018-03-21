@@ -104,7 +104,11 @@ describe('Functions', function() {
 		});
 		
 		describe('#Binance Precision', function() {
-			return it('Should return Binance Exchange data for ltc/btc/usdt arbitrage', async function() {
+			 it('Should return Binance Exchange data for ltc/btc/usdt arbitrage', async function() {
+				var exchangeData = await bot.binancePrecision([{pair1:"ltcbtc",pair2:"btcusdt",pair3:"ltcusdt"}]);
+				assert.deepEqual(typeof exchangeData,"object")
+			});					
+			it('Should format precision data for ltc/btc/usdt pairs', async function() {
 				var exchangeData = await bot.binancePrecision([{pair1:"ltcbtc",pair2:"btcusdt",pair3:"ltcusdt"}]);
 				bot.Settings.Binance.pairs[0].pair1 = "ltcbtc";
 				bot.Settings.Binance.pairs[0].pair2 = "btcusdt";
@@ -165,7 +169,7 @@ describe('Functions', function() {
 	});
 
 
-//Bittrex Tests
+//~ //Bittrex Tests
 describe('Bittrex', function() {
 
 	describe('#ApiKeys', function() {
