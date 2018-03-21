@@ -1,5 +1,6 @@
 var CryptoBot = require('../c4d.js');
-var bot = new CryptoBot.bot();
+var Settings = require('../config.json');
+var bot = new CryptoBot.bot(Settings);
 var assert = require('assert');
 var WebSocket = require('ws');
 

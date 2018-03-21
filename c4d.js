@@ -10,15 +10,9 @@ var WebSocket = require('ws');
 /**
    * CryptoBot constructor.
    * @method CryptoBot
+   * @parm {Object} A config.json file
    */
-function CryptoBot(){	
-	var Settings = {};
-	try{
-		Settings = require('./config.json');
-	}
-	catch(e){
-		return console.log(e);
-	}
+function CryptoBot(Settings){	
 	this.balance = {}
 	this.bittrexInProcess = false;
 	this.bittrexProcessTime = 0;
@@ -479,8 +473,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 		this.binanceProcessTime[base] = 0;
 		this.binanceStrategy[base] = {one:{},two:{}}		
 		this.binanceTradesMade[base] = 0;
-		this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-		return;
+		return this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
 	}	
 	var e1 = {}
 	var b1 = {}
@@ -1986,11 +1979,12 @@ CryptoBot.prototype.sendEmail = function(email_message){
 			   attachment:[{data:"<html>"+email_message+"</html>",alternative:true,inline:true}]			   
 		};		
 		return server.send(message,(err, message)=>{
+			var bool = true;
 			if(err){
 				this.log("Error Sending Email:",err);
-				return resolve(false);
+				bool = false;
 			}
-			return resolve(true)
+			return resolve(bool)
 		});
 	})
 }
@@ -2229,54 +2223,48 @@ CryptoBot.prototype.setupWebsocket = function(){
    */
 CryptoBot.prototype.slackMessage = function(slack_message){
 	return new Promise((resolve,reject)=>{
-		try{
-			var parameters;
-			var message;
-			var req;
-			message = slack_message + " @"+this.Settings.Slack.usr;
-			parameters = {};
-			parameters.channel = this.Settings.Slack.channel;
-			parameters.username = "Server_Message";
-			parameters.attachments = [{
-				"pretext":new Date().toString().split('GM')[0],
-				"text":message,
-				"actions": [{
-	                    "type": "button",
-	                    "name": "webview",
-	                    "text": "C4DC",
-	                    "url": "http://arbitrage.0trust.us",
-	                    "style": "primary",
-	            }]
-			}];
-			req = https.request(
-			    {
-					host:"hooks.slack.com",
-					path: this.Settings.Slack.hook.replace("https://hooks.slack.com",""),
-					method:"Post",
-				},
-				(response)=>{
-			        var body = "";
-			        response.on("data",(d)=>{
-						body += d;
-					});
-			        response.on("end",()=>{
-						if(body === "ok"){
-							return resolve(true)
-						}
-						else{return resolve(false)}
-				    });
-			        response.on('error',(e)=>{
-						this.log("Slack Webhook Error:",e);
-						return resolve(false);
-					})
-				}
-		    );
-		   req.write(JSON.stringify(parameters))
-		   req.end();
-		}
-		catch(e){
-			return this.log(e);
-		}
+		var parameters;
+		var message;
+		var req;
+		message = slack_message + " @"+this.Settings.Slack.usr;
+		parameters = {};
+		parameters.channel = this.Settings.Slack.channel;
+		parameters.username = "Server_Message";
+		parameters.attachments = [{
+			"pretext":new Date().toString().split('GM')[0],
+			"text":message,
+			"actions": [{
+                    "type": "button",
+                    "name": "webview",
+                    "text": "C4DC",
+                    "url": "http://arbitrage.0trust.us",
+                    "style": "primary",
+            }]
+		}];
+		req = https.request(
+		    {
+				host:"hooks.slack.com",
+				path: this.Settings.Slack.hook.replace("https://hooks.slack.com",""),
+				method:"Post",
+			},
+			(response)=>{
+		        var body = "";
+		        response.on("data",(d)=>{
+					body += d;
+				});
+		        response.on("end",()=>{
+					var bool = body === "ok" ? true: false;
+					return resolve(bool);
+
+			    });
+		        response.on('error',(e)=>{
+					this.log("Slack Webhook Error:",e);
+					return resolve(false);
+				})
+			}
+	    );
+	   req.write(JSON.stringify(parameters))
+	   req.end();
 	})
 }		
 
@@ -2310,7 +2298,7 @@ CryptoBot.prototype.utilities = {
 					narray.push(v);
 				}
 			});
-			return narray
+			array = narray;
 		}
 		return array
 	},
@@ -2338,7 +2326,7 @@ CryptoBot.prototype.utilities = {
 		 */
 		  var suggested = Number((((1/Math.pow(10,prec)))/(((a*b)/c) - 1)).toFixed(prec));
 		  if(suggested < min){
-		 	return Number(((Number(((suggested * Math.ceil(min/suggested)) * b/c).toFixed(prec2))*a)- (1/Math.pow(10,prec))).toFixed(prec));
+		 	suggested = Number(((Number(((suggested * Math.ceil(min/suggested)) * b/c).toFixed(prec2))*a)- (1/Math.pow(10,prec))).toFixed(prec));
 		  }
 		 return suggested;
 	},

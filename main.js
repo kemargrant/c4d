@@ -1,6 +1,13 @@
 function main(){
 	var CryptoBot = require('./c4d.js');
-	var bot = new CryptoBot.bot();
+	var Settings;
+	try{
+		Settings = require('./config.json');
+	}
+	catch(e){
+		return console.log(e);
+	}
+	var bot = new CryptoBot.bot(Settings);
 	return bot.setupWebsocket().then(()=>{
 		return bot.bittrexAccount().then(()=>{
 			if(bot.vibrate === true){
