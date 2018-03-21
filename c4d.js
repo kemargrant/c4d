@@ -498,23 +498,6 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 			pair3 = this.Settings.Binance.pairs[i].pair3;
 			break;
 		}
-	}
-	var solveUnder = (prec,a,b,c) => {
-		var constant = c/(b*a);
-		var suggested = (945/Math.pow(10,prec+1))/(Math.pow(constant,2)-constant);
-		suggested = Number((suggested/c).toFixed(prec));
-		return suggested;
-	}
-	var solveOver = (prec,prec2,a,b,c) =>{
-		var constant = (a*b)/c;
-		var Inc = 1/Math.pow(10,prec);
-		var suggested = Number(((Inc)/(constant - 1)).toFixed(prec));
-		if(suggested < this.binanceB1Min[base]){
-			suggested = suggested * Math.ceil(this.binanceB1Min[base]/suggested);
-			suggested = Number((suggested*b/c).toFixed(prec2))*a ; 
-			suggested = Number((suggested- Inc).toFixed(prec));
-		}
-		return suggested
 	}	
 	client.onclose = (error)=> {
 	    this.log(pair+'- Binance Connection Closed:',new Date());
@@ -590,7 +573,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 					percentage = (this.binanceStrategy[base].two.a * this.binanceStrategy[base].two.b/this.binanceStrategy[base].two.c)*100;
 					this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});
 					if(percentage < this.binanceLimits[base].over.lowerLimit || percentage > this.binanceLimits[base].over.upperLimit){return}
-					Transform_B1 = solveOver(this.binancePrec[base][4],this.binancePrec[base][3],this.binanceStrategy[base].two.a,this.binanceStrategy[base].two.b,this.binanceStrategy[base].two.c);
+					Transform_B1 = this.utilities.solveOver(this.binanceB1Min[base],this.binancePrec[base][4],this.binancePrec[base][3],this.binanceStrategy[base].two.a,this.binanceStrategy[base].two.b,this.binanceStrategy[base].two.c);
 					Transactions[b1[base]] = Transform_B1;
 					Transactions[u1[base]] = (Transactions[b1[base]] * this.binanceStrategy[base].two.b)
 					Transactions[e1[base]] = Number((Transactions[u1[base]]/this.binanceStrategy[base].two.c).toFixed(this.binancePrec[base][5]));
@@ -656,7 +639,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 	            else{
 					this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});		
 					if(percentage < this.binanceLimits[base].under.lowerLimit || percentage > this.binanceLimits[base].under.upperLimit){return}					
-					Transform_E1 = solveUnder(this.binancePrec[base][3],this.binanceStrategy[base].one.a,this.binanceStrategy[base].one.b,this.binanceStrategy[base].one.c);
+					Transform_E1 = this.utilities.solveUnder(this.binancePrec[base][3],this.binanceStrategy[base].one.a,this.binanceStrategy[base].one.b,this.binanceStrategy[base].one.c);
 					Transactions[e1[base]] = Transform_E1;					
 					Transactions[u1[base]] = this.binanceStrategy[base].one.c * Transactions[e1[base]];
 					Transactions[b1[base]] = Number((Transactions[u1[base]]/this.binanceStrategy[base].one.b).toFixed(this.binancePrec[base][4]))			
@@ -2330,7 +2313,54 @@ CryptoBot.prototype.utilities = {
 			return narray
 		}
 		return array
-	}
+	},
+	/**
+   * Solve ideal arbitrage equation when ratio above 1.
+   * @method solveOver
+   * @param {Number} Qty precision allowed for pair 2
+   * @param {Number} Qty precision allowed for pair 1
+   * @param {Number} Price of asset A
+   * @param {Number} Price of asset B
+   * @param {Number} Price of asset C
+   * @return {Number} Ideal number to start arbitrage
+   */ 
+	solveOver: function (min,prec,prec2,a,b,c) {
+		 /* For reference
+		  * var constant = (a*b)/c;
+		  * var Inc = 1/Math.pow(10,prec);
+		  * var suggested = Number(((Inc)/(constant - 1)).toFixed(prec));
+		  * if(suggested < min){
+		  *	suggested = suggested * Math.ceil(min/suggested);
+		  *	suggested = Number((suggested * b/c).toFixed(prec2))*a ; 
+		  *	suggested = Number((suggested- Inc).toFixed(prec));
+		  * }
+		  * return suggested;
+		 */
+		  var suggested = Number((((1/Math.pow(10,prec)))/(((a*b)/c) - 1)).toFixed(prec));
+		  if(suggested < min){
+		 	return Number(((Number(((suggested * Math.ceil(min/suggested)) * b/c).toFixed(prec2))*a)- (1/Math.pow(10,prec))).toFixed(prec));
+		  }
+		 return suggested;
+	},
+	/**
+   * Solve ideal arbitrage equation when ratio below 1.
+   * @method solveUnder
+   * @param {Number} Qty precision allowed for pair 1
+   * @param {Number} Price of asset A
+   * @param {Number} Price of asset B
+   * @param {Number} Price of asset C
+   * @return {Number} Ideal number to start arbitrage
+   */ 
+	solveUnder: function (prec,a,b,c) {
+		/*For reference
+		 *
+		 * var constant = c/(b*a);
+		 * var suggested = (945/Math.pow(10,prec+1))/(Math.pow(constant,2)-constant);
+		 * suggested = Number((suggested/c).toFixed(prec));
+		 * return suggested 
+		* */
+		return Number(((945/Math.pow(10,prec+1))/(Math.pow((c/(b*a)),2)-(c/(b*a)))/c).toFixed(prec));
+	}	
 }	
 /**
    * Update status of Bittrex socket connection.
