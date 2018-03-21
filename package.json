@@ -12,8 +12,10 @@
     "ws": "^3.3.0"
   },
   "devDependencies": {
+    "coveralls": "^3.0.0",
     "istanbul": "^0.4.5",
     "mocha": "^5.0.1",
+    "mocha-lcov-reporter": "^1.3.0",
     "nyc": "^11.6.0"
   }
 }
