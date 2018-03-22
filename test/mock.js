@@ -12,9 +12,12 @@ var _https = {
 		else if(options.path.search("order?") > -1 && options.method === "POST"){
 			data = {orderId:'111222333'};
 		}
+		else if(options.path === "/api/v1/userDataStream"){
+			data = {listenKey:"pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sv8a65a1"}
+		}
 		else if(options.method === "DELETE"){
 			data = {symbol:'BTCUSDT'};
-		}
+		}		
 		else{
 			return rhttps.request(options,(res)=>{
 				return func(res);
