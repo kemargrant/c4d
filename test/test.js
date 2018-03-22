@@ -1,5 +1,76 @@
 var CryptoBot = require('../c4d.js');
 var Settings = require('../config.json');
+var mockSettings1 ={
+	"Binance":
+		{
+			"apikey":"Binance_API_Key",
+			"secretkey":"Binance_API_Secret",
+			"enabled":true,
+			"pairs":[{
+			"liquidTrades":true,
+			"lowerLimit1":100.2,
+			"lowerLimit2":99,
+			"optimalTrades":true,
+			"pair1":"ltcbtc",
+			"pair2":"btcusdt",
+			"pair3":"ltcusdt",
+			"upperLimit1":100.5,
+			"upperLimit2":99.99
+			}]
+		},
+	"Bittrex":
+		{
+			"apikey":"Bittrex_API_Key",
+			"secret":"Bittrex_API_Secret",
+			"minimum":0.001
+		},
+	"Config":
+		{
+			"enabled":true,
+			"key":"Secret Private Key",	
+			"liquidTrades":true,
+			"logs":3,
+			"lowerLimit":98.3,
+			"pair1":"BTC-XXX",
+			"pair2":"USDT-BTC",
+			"pair3":"USDT-XXX",		
+			"percentage1":1,
+			"percentage2":0.5,					
+			"polling":45000,
+			"port":7073,
+			"saneTrades":true,
+			"upperLimit":101.79,
+			"viewBook":false
+		},
+	"Email":
+		{
+			"addr":"Recipient_Email_Address",
+			"host_smtp":"Email_SMTP_IP_Address",
+			"use":false,
+			"usr":"Email_Account_Address",
+			"pwd":"Email_Password"		
+		},
+	"MongoDB":
+		{
+			"db_string":"mongodb://xxxx:xxxxxxxx@ip_address:port/database",
+			"connect":false
+		},	
+	"Slack":
+		{
+			"channel":"Slack_Channel",
+			"hook":"Slack_Webhook",
+			"use":false,
+			"usr":"Slack_user_to_notify"
+		},
+	"Swing":
+		{
+			"amount":0.001,
+			"pair":"BTC-XXX",
+			"rate":60000,
+			"swing":0.02,
+			"swingTrade":false
+		}		
+}
 var bot = new CryptoBot.bot(Settings);
 var assert = require('assert');
 var WebSocket = require('ws');
@@ -110,12 +181,12 @@ describe('Functions', function() {
 				assert.deepEqual(typeof exchangeData,"object")
 			});					
 			it('Should format precision data for ltc/btc/usdt pairs', async function() {
-				var exchangeData = await bot.binancePrecision([{pair1:"ltcbtc",pair2:"btcusdt",pair3:"ltcusdt"}]);
-				bot.Settings.Binance.pairs[0].pair1 = "ltcbtc";
-				bot.Settings.Binance.pairs[0].pair2 = "btcusdt";
-				bot.Settings.Binance.pairs[0].pair3 = "ltcusdt";
-				bot.binanceFormatPairs(exchangeData);
-				assert.deepEqual(bot.Settings.Binance.pairs[0].prec,[6,2,2,2,6,5])
+				var yBot = new CryptoBot.bot(mockSettings1);
+				return setTimeout(function(){
+					assert.deepEqual(yBot.Settings.Binance.pairs[0].prec,[6,2,2,2,6,5])
+					},900);
+				[{pair1:"ltcbtc",pair2:"btcusdt",pair3:"ltcusdt"}]
+				
 			});			
 		});		
 		
