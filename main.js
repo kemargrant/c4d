@@ -13,17 +13,14 @@ function main(){
 			if(bot.vibrate === true){
 				bot.bittrexSwing();
 			}
-			if(bot.Settings.Binance.enabled){
-				bot.binanceSocketConnections = [];
-			}
 			bot.binanceAccount().then(()=>{
-				if(bot.binanceSocketConnections !== false){
-					bot.binanceMonitor();
+				if(bot.binanceSocketConnections){
+					bot.binanceMonitor(bot.Settings.Binance.pairs);
 					return bot.binanceListenUser();
 				}
 			}).catch((e)=>{
-				if(bot.binanceSocketConnections !== false){
-					bot.binanceMonitor();
+				if(bot.Settings.Binance.enabled){
+					bot.binanceMonitor(bot.Settings.Binance.pairs);
 					return bot.binanceListenUser();
 				}
 			})
@@ -35,8 +32,8 @@ function main(){
 				});
 			}
 		}).catch((e)=>{
-			if(bot.binanceSocketConnections !== false){
-				bot.binanceMonitor();
+			if(bot.Settings.Binance.enabled){
+				bot.binanceMonitor(bot.Settings.Binance.pairs);
 				bot.binanceListenUser();
 			}
 			if(bot.bittrexSocketConnection){
