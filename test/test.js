@@ -111,13 +111,13 @@ describe('Functions', function() {
 				var exchangeData = await bot.binancePrecision([{pair1:"ltcbtc",pair2:"btcusdt",pair3:"ltcusdt"}]);
 				assert.deepEqual(typeof exchangeData,"object")
 			});					
-			it('Should format precision data for ltc/btc/usdt pairs', async function() {
+			it('Should format precision data for ltc/btc/usdt pairs', function(done) {
 				var yBot = new CryptoBot.bot(mock.mockSettings1);
+				ybot.https = mock.https;
 				return setTimeout(function(){
-					assert.deepEqual(yBot.Settings.Binance.pairs[0].prec,[6,2,2,2,6,5])
-					},900);
-				[{pair1:"ltcbtc",pair2:"btcusdt",pair3:"ltcusdt"}]
-				
+					assert.deepEqual(yBot.Settings.Binance.pairs[0].prec,[6,2,2,2,6,5]);
+					done();
+					},1200);			
 			});			
 		});		
 		

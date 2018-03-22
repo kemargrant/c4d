@@ -77,8 +77,6 @@ function CryptoBot(Settings){
 	}).catch((e)=>{
 		this.log(e);
 	})
-	//setup websocket
-	this.wss = new WebSocket.Server({port:Settings.Config.port});
 	//transactions
 	this.Transactions = {};
 }
@@ -1995,6 +1993,7 @@ CryptoBot.prototype.sendEmail = function(email_message){
    * @return {Promise} Resolves when first websocket client connects
    */
 CryptoBot.prototype.setupWebsocket = function(){
+	this.wss = new WebSocket.Server({port:Settings.Config.port});
 	return new Promise((resolve,reject) =>{			
 		this.wss.on('connection',(ws)=>{
 			resolve(this.log("Websocket connection created:",new Date()));

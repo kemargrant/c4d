@@ -1,12 +1,12 @@
+var rhttps = require('https');
+
 var _https = {
 	request:function(options,func){
 		const EventEmitter = require('events');
 		class MyEmitter extends EventEmitter {}
 		const events = new MyEmitter();
-		func(events)
 		var data = {};
-		//mock binanceAccount
-		if(options.path.search("account?timestamp" > -1) && options.method === "GET"){
+		if(options.path.search("account?timestamp") > -1 && options.method === "GET"){
 			data = {balances:[{asset:'BTC',free:'0',locked:'0'},{asset:'LTC',free:'0',locked:'0'},{asset:'ETH',free:'0',locked:'0'}]}
 		}
 		else if(options.path.search("order?") > -1 && options.method === "POST"){
@@ -15,6 +15,10 @@ var _https = {
 		else if(options.method === "DELETE"){
 			data = {symbol:'BTCUSDT'};
 		}
+		else{
+			return rhttps.request(options,func);			
+		}
+		func(events)
 		events.emit("data",JSON.stringify(data));
 		events.emit("end");
 		
