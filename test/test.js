@@ -113,7 +113,7 @@ describe('Functions', function() {
 			});					
 			it('Should format precision data for ltc/btc/usdt pairs', function(done) {
 				var yBot = new CryptoBot.bot(mock.mockSettings1);
-				ybot.https = mock.https;
+				yBot.https = mock.https;
 				return setTimeout(function(){
 					assert.deepEqual(yBot.Settings.Binance.pairs[0].prec,[6,2,2,2,6,5]);
 					done();
