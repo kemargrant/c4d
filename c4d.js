@@ -1,7 +1,6 @@
 "use strict";
 
 var crypto = require("crypto-js");
-var https = require('https');
 var MongoClient = require('mongodb').MongoClient;
 var signalR = require('signalr-client');
 var cloudscraper = require('cloudscraper');
@@ -13,6 +12,7 @@ var WebSocket = require('ws');
    * @parm {Object} A config.json file
    */
 function CryptoBot(Settings){	
+	this.https = require('https');
 	this.balance = {}
 	this.bittrexInProcess = false;
 	this.bittrexProcessTime = 0;
@@ -92,7 +92,7 @@ CryptoBot.prototype.binanceAccount = function(){
 	return new Promise((resolve,reject) => {	
 		var date = new Date().getTime();
 		var hash = crypto.SHA256(this.binanceApiSecret+"|timestamp="+date);
-	    const req = https.request({
+	    const req = this.https.request({
 				host: "www.binance.com",
 				path: '/api/v1/account?timestamp='+date+"&signature="+hash,
 				method:"GET",
@@ -114,7 +114,7 @@ CryptoBot.prototype.binanceAccount = function(){
 						return reject(new Error("Error getting Binance account info"));
 					}
 					if(!parsed.balances){
-						return reject(new Error("Error getting Binance account info"));
+						return reject(new Error("Error getting Binance balances"));
 					}
 					for(var i=0;i<parsed.balances.length;i++){
 						this.binanceBalance[parsed.balances[i].asset.toLowerCase()] = Number(parsed.balances[i].free) > 0 ? Number(parsed.balances[i].free) : 0;
@@ -145,7 +145,7 @@ CryptoBot.prototype.binanceCancelOrder = function(pair,id){
 	return new Promise((resolve,reject) => {	
 		var date = new Date().getTime();
 		var hash = crypto.SHA256(this.binanceApiSecret+"|symbol="+pair+"&orderId="+id+"&timestamp="+date+"&recvWindow="+5000);
-	    const req = https.request({
+	    const req = this.https.request({
 				host: "www.binance.com",
 				path: '/api/v1/order?symbol='+pair+"&orderId="+id+"&timestamp="+date+"&recvWindow="+5000+"&signature="+hash,
 				method:"DELETE",
@@ -190,7 +190,7 @@ CryptoBot.prototype.binanceCancelOrder = function(pair,id){
    */
 CryptoBot.prototype.binanceExchangeInfo = function(){
 	return new Promise((resolve,reject) => {	
-		const req = https.request({
+		const req = this.https.request({
 			host: "www.binance.com",
 			path: "/api/v1/exchangeInfo",
 			method: "GET"
@@ -228,7 +228,7 @@ CryptoBot.prototype.binanceExchangeInfo = function(){
    */
 CryptoBot.prototype.binanceListenBeat = function(listenkey){
 	return new Promise((resolve,reject) => {	
-	    const req = https.request({
+	    const req = this.https.request({
 			host: "www.binance.com",
 			path: "/api/v1/userDataStream?listenKey="+listenkey,
 			method: "PUT",
@@ -268,7 +268,7 @@ CryptoBot.prototype.binanceListenBeat = function(listenkey){
    */
 CryptoBot.prototype.binanceListenKey = function(){
 	return new Promise((resolve,reject) => {	
-	    const req = https.request({
+	    const req = this.https.request({
 				host: "www.binance.com",
 				path: "/api/v1/userDataStream",
 				method: "POST",
@@ -355,7 +355,7 @@ CryptoBot.prototype.binanceOpenOrders = function(pair){
 	return new Promise((resolve,reject) => {	
 		var date = new Date().getTime();
 		var hash = crypto.SHA256(this.binanceApiSecret+"|symbol="+pair+"&timestamp="+date+"&recvWindow="+5000);
-	    const req = https.request({
+	    const req = this.https.request({
 				host: "www.binance.com",
 				path: '/api/v1/openOrders?symbol='+pair+"&timestamp="+date+"&recvWindow="+5000+"&signature="+hash,
 				method:"GET",
@@ -822,7 +822,7 @@ CryptoBot.prototype.binanceTrade = function(pair,side,amount,price,timeInForce){
 	return new Promise((resolve,reject) => {	
 		var date = new Date().getTime();
 		var hash = crypto.SHA256(this.binanceApiSecret+"|symbol="+pair+"&timestamp="+date+"&timeInForce="+timeInForce+"&side="+side+"&type=LIMIT&quantity="+amount+"&price="+price+"&recvWindow="+6000);
-	    const req = https.request({
+	    const req = this.https.request({
 				host: "www.binance.com",
 				path: '/api/v1/order?symbol='+pair+"&timestamp="+date+"&timeInForce="+timeInForce+"&side="+side+"&type=LIMIT&quantity="+amount+"&price="+price+"&recvWindow="+6000+"&signature="+hash,
 				method:"POST",
@@ -882,7 +882,7 @@ CryptoBot.prototype.bittrexAPI = function(path,options){
 			postData = postData + options;
 		}
 		hmac = crypto.HmacSHA512(postData,this.Settings.Bittrex.secret).toString();
-		req = https.request(
+		req = this.https.request(
 		    {
 				host:"bittrex.com",
 				path:postData.replace("https://bittrex.com",""),
@@ -2241,7 +2241,7 @@ CryptoBot.prototype.slackMessage = function(slack_message){
                     "style": "primary",
             }]
 		}];
-		req = https.request(
+		req = this.https.request(
 		    {
 				host:"hooks.slack.com",
 				path: this.Settings.Slack.hook.replace("https://hooks.slack.com",""),
