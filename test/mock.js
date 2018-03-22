@@ -15,13 +15,20 @@ var _https = {
 		else if(options.path === "/api/v1/userDataStream"){
 			data = {listenKey:"pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sv8a65a1"}
 		}
+		else if(options.path.search("&type=LIMIT&quantity=") > -1){
+			data = {orderId:123}
+		}
+		else if(options.path.search("listenKey=") > -1){
+			data = {}
+		}
+		else if(options.path.search("/api/v1/openOrders") > -1){
+			data = [{},{}];
+		}		
 		else if(options.method === "DELETE"){
 			data = {symbol:'BTCUSDT'};
 		}		
 		else{
-			return rhttps.request(options,(res)=>{
-				return func(res);
-			});			
+			return rhttps.request(options,func);		
 		}
 		func(events)
 		events.emit("data",JSON.stringify(data));
