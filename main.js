@@ -13,7 +13,7 @@ function main(){
 			if(bot.vibrate === true){
 				bot.bittrexSwing();
 			}
-			if(bot.binanceSocketConnections){
+			if(bot.Settings.Binance.enabled){
 				bot.binanceSocketConnections = [];
 			}
 			bot.binanceAccount().then(()=>{

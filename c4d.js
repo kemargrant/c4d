@@ -46,7 +46,7 @@ function CryptoBot(Settings){
 	this.binancePrec = {}
 	this.binanceProcessTime = {}
 	this.binanceKill = false;
-	this.binanceSocketConnections = Settings.Binance.enabled;
+	this.binanceSocketConnections = [];
 	this.binanceStrategy = {}
 	this.liquidTradesBinance = {}
 	this.binanceTradesMade = {}
@@ -2138,7 +2138,7 @@ CryptoBot.prototype.setupWebsocket = function(){
 							for(var key in this.binanceInProcess){
 								this.binanceInProcess[key] = "killed";
 							} 
-							this.binanceSocketConnections = false;
+							this.binanceSocketConnections = [];
 							this.broadcastMessage({type:"binanceStatus",connections:0,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
 							return this.log("Binance Socket Connections:",this.binanceSocketConnections);									
 						}
