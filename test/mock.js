@@ -6,7 +6,7 @@ var _https = {
 		class MyEmitter extends EventEmitter {}
 		const events = new MyEmitter();
 		var data = {};
-		if(options.path.search("account?timestamp") > -1 && options.method === "GET"){
+		if(options.path.search("/api/v1/account") > -1 && options.method === "GET"){
 			data = {balances:[{asset:'BTC',free:'0',locked:'0'},{asset:'LTC',free:'0',locked:'0'},{asset:'ETH',free:'0',locked:'0'}]}
 		}
 		else if(options.path.search("order?") > -1 && options.method === "POST"){
@@ -16,12 +16,13 @@ var _https = {
 			data = {symbol:'BTCUSDT'};
 		}
 		else{
-			return rhttps.request(options,func);			
+			return rhttps.request(options,(res)=>{
+				return func(res);
+			});			
 		}
 		func(events)
 		events.emit("data",JSON.stringify(data));
-		events.emit("end");
-		
+		return events.emit("end");
 	}
 }
 var settings1 ={
