@@ -465,7 +465,7 @@ CryptoBot.prototype.binanceFormatPairs = function(exchangeData){
    * @param {String} Base Binance currency pair
    * @return {Boolean} Return true
    */
-CryptoBot.prototype.binanceReset = function(base,){
+CryptoBot.prototype.binanceReset = function(base){
 	this.binanceInProcess[base] = false;
 	this.binanceOrders[base] = [];
 	this.binanceProcessTime[base] = 0;
@@ -511,6 +511,7 @@ CryptoBot.prototype.binanceSaveOrders = function(values,base,percentage,Transact
 		}
 	},480005)
 }
+
 /**
    * Websocket stream Binance currency pair market depth.
    * @method binanceStream
