@@ -142,7 +142,17 @@ describe('Binance', function() {
 			assert(bool);
 		});
 	});	
-	
+	describe('#Binance Save Orders', function() {
+		var base = 'ltcbtc'
+		it('Should return a setTimeout object when percentage < 100%',function() {
+			var val = binanceBot.binanceSaveOrders([{clientOrderId:1},{clientOrderId:2},{clientOrderId:3}],base,99,{'ltc':1,'btc':2,'usdt':3},{'ltcbtc':'ltc'},{'ltcbtc':'btc'},{'ltcbtc':'usdt'});
+			assert.equal(typeof val._idleStart,"number")
+		});
+		it('Should return a setTimeout object when percentage > 100%',function() {
+			var val = binanceBot.binanceSaveOrders([{clientOrderId:1},{clientOrderId:2},{clientOrderId:3}],base,101,{'ltc':1,'btc':2,'usdt':3},{'ltcbtc':'ltc'},{'ltcbtc':'btc'},{'ltcbtc':'usdt'});
+			assert.equal(typeof val._idleStart,"number")
+		});		
+	});
 	describe('#Binance Stream', function() {
 		return it('Should return a connected websocket',function() {
 			this.timeout(3000);
@@ -181,7 +191,7 @@ describe('Bittrex', function() {
 	describe('#Complete Arbitrage', function() {
 		return it('Should return a setTimeout object', async function() {
 			var val = await bot.bittrexCompleteArbitrage({'randomid':false,'randomi2':false,'randomid3':false});
-			assert.equal(typeof val._idleStart,"number")
+			assert.equal(typeof val._idleStart,"number");
 		});
 	});	
 	

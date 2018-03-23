@@ -474,6 +474,43 @@ CryptoBot.prototype.binanceReset = function(base,){
 	this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});	
 	return true;							
 }
+
+/**
+   * Save Binance Orders.
+   * @method binanceSaveOrders
+   * @param {Array} An array of Binance Orders
+   * @param {String} An array of Binance Orders
+   * @param {Number} Binance percentage
+   * @param {Object} Transactions object
+   * @return {Object} Return setTimeout object
+   */
+CryptoBot.prototype.binanceSaveOrders = function(values,base,percentage,Transactions,e1,b1,u1){
+	var _orders = {}
+	var profit1;
+	var profit2;
+	var profit3;
+	_orders[values[0].clientOrderId] = false;
+	_orders[values[1].clientOrderId] = false;
+	_orders[values[2].clientOrderId] = false;
+	if(percentage > 100){
+		profit1 = Number((Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][4])) - Transactions[b1[base]];
+		profit2 = Transactions[e1[base]] - Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]));
+		profit3 = Transactions[u1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].two.c);
+	}
+	else{
+		profit1 = Transactions[b1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].one.a); 
+		profit2 = Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) - Transactions[e1[base]];
+		profit3 = Transactions[u1[base]] - (Transactions[b1[base]] * this.binanceStrategy[base].one.b);
+	}
+	this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":{"Time":this.binanceProcessTime[base],"Percent":percentage,"Exchange":"Binance","Profit":profit1,"Profit2":profit2,"Profit3":profit3,"Pair":base}}});
+	return setTimeout(()=>{
+		this.log("Checking:",Object.keys(_orders),new Date());
+		if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
+			this.log("Binance Arbitrage timeout.....",new Date());
+			return this.binanceReset(base);
+		}
+	},480005)
+}
 /**
    * Websocket stream Binance currency pair market depth.
    * @method binanceStream
@@ -559,9 +596,6 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 				var _orders = {}
 				var message = "Binance Bot:"
 	            var percentage;
-	            var profit;
-	            var profit2;
-	            var profit3;
 	            var Transform_B1;
 	            var Transform_E1;
 	            var Transactions = {}
@@ -609,22 +643,9 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 						this.binanceTrade(pair2.toUpperCase(),"SELL",Transactions[b1[base]],this.binanceStrategy[base].two.b,"GTC"),
 						this.binanceTrade(pair3.toUpperCase(),"BUY",Transactions[e1[base]],this.binanceStrategy[base].two.c,"GTC"),
 						this.binanceTrade(pair1.toUpperCase(),"SELL",Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3])),this.binanceStrategy[base].two.a,"GTC")]).then((values)=>{
-							_orders[values[0].clientOrderId] = false;
-							_orders[values[1].clientOrderId] = false;
-							_orders[values[2].clientOrderId] = false;
-							profit = Number((Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][4])) - Transactions[b1[base]];
-							profit2 = Transactions[e1[base]] - Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]));
-							profit3 = Transactions[u1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].two.c);
-							this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":{"Time":this.binanceProcessTime[base],"Percent":percentage,"Exchange":"Binance","Profit":profit,"Profit2":profit2,"Profit3":profit3,"Pair":base}}});
-							return setTimeout(()=>{
-								this.log("Checking:",Object.keys(_orders),new Date());
-								if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
-									this.log("Binance Arbitrage timeout.....",new Date());
-									return this.binanceReset(base);
-								}
-							},480005)
+							return this.saveBinanceOrders(values,base,percentage,Transactions,e1,b1,u1);
 						}).catch((e)=>{
-							reset();
+							this.binanceReset();
 							this.log("Error:",e,new Date());
 							return this.notify(e.toString());
 						});
@@ -671,22 +692,9 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 						}
 						this.notify(message);
 						Promise.all([this.binanceTrade(pair3.toUpperCase(),"SELL",Transactions[e1[base]],this.binanceStrategy[base].one.c,"GTC"),this.binanceTrade(pair2.toUpperCase(),"BUY",Transactions[b1[base]],this.binanceStrategy[base].one.b,"GTC"),this.binanceTrade(pair1.toUpperCase(),"BUY",(Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3]),this.binanceStrategy[base].one.a,"GTC")]).then((values)=>{
-							_orders[values[0].clientOrderId] = false;
-							_orders[values[1].clientOrderId] = false;
-							_orders[values[2].clientOrderId] = false;
-							profit = Transactions[b1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].one.a); 
-							profit2 = Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) - Transactions[e1[base]];
-							profit3 = Transactions[u1[base]] - (Transactions[b1[base]] * this.binanceStrategy[base].one.b);
-							this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":{"Time":this.binanceProcessTime[base],"Percent":percentage,"Exchange":"Binance","Profit":profit,"Profit2":profit2,"Profit3":profit3,"Pair":base}}});								
-							return setTimeout(()=>{
-								this.log("Checking:",Object.keys(_orders),new Date());
-								if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
-									this.log("Binance Arbitrage timeout.....",new Date());
-									return this.binanceReset(base);
-								}
-							},480005)
+							return this.saveBinanceOrders(values,base,percentage,Transactions,e1,b1,u1);
 						}).catch((e)=>{
-							reset();
+							this.binanceReset();
 							this.log("Error:",e,new Date());
 							return this.notify(e.toString());
 						});
