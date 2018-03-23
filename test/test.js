@@ -220,6 +220,7 @@ describe('Bittrex', function() {
 
 
 describe('Utilities', function() {
+	var bot = new CryptoBot.bot(mock.mockSettings1);
 	describe('#BubbleSort', function() {
 		return it('Should sort in decreasing order', function() {
 			var array = [99.1,99.01,99.4,99.1,99.6,99.7,1,50,54];
