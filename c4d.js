@@ -12,6 +12,7 @@ var WebSocket = require('ws');
    * @parm {Object} A config.json file
    */
 function CryptoBot(Settings){	
+	this.email = require("emailjs");
 	this.https = require('https');
 	this.balance = {}
 	this.bittrexInProcess = false;
@@ -1958,11 +1959,9 @@ CryptoBot.prototype.saveDB = function(type,doc,options){
    */
 CryptoBot.prototype.sendEmail = function(email_message){
 	return new Promise((resolve,reject)=>{
-		var email;
 		var message;
 		var server;		
-		email  = require("emailjs");
-		server = email.server.connect({
+		server = this.email.server.connect({
 		   user: this.Settings.Email.usr, 
 		   password: this.Settings.Email.pwd, 
 		   host: this.Settings.Email.host_smtp, 

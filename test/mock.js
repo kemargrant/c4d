@@ -1,5 +1,17 @@
 var rhttps = require('https');
 
+var _email ={
+	server:{
+		connect:function(){
+			return{
+				send:function(string,cb){
+					return cb(null,true);
+				}
+			}
+		}
+	}
+}
+
 var _https = {
 	request:function(options,func){
 		const EventEmitter = require('events');
@@ -55,6 +67,7 @@ var _https = {
 		return events.emit("end");
 	}
 }
+
 var settings1 ={
 	"Binance":
 		{
@@ -129,5 +142,6 @@ var settings1 ={
 
 module.exports = {
 	mockSettings1:settings1,
+	email:_email,
 	https:_https
 }
