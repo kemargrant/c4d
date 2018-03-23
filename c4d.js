@@ -221,6 +221,55 @@ CryptoBot.prototype.binanceExchangeInfo = function(){
 }   
 
 /**
+   * Formulate Binance Bid/Sell Prices for a base currency pair.
+   * @method binanceGenerateStrategy
+   * @param {String} Base currency pair
+   * @param {String} Index of current currency pair
+   * @param {String} Binance message data
+   */
+CryptoBot.prototype.binanceGenerateStrategy = function(base,index,message){
+	if(index === 0){
+		this.binanceStrategy[base]['one']['a'] = Number((Number(JSON.parse(message.data).a[0][0])).toFixed(this.binancePrec[base][0]));
+		this.binanceStrategy[base]['one']['a_amount'] = Number(JSON.parse(message.data).a[0][1]);
+		this.binanceStrategy[base]['two']['a'] = Number((Number(JSON.parse(message.data).b[0][0])).toFixed(this.binancePrec[base][0]));
+		this.binanceStrategy[base]['two']['a_amount'] = Number(JSON.parse(message.data).b[0][1]);
+		this.binanceDepth[base]['depth']['a'] = JSON.parse(message.data); 
+	}
+	if(index === 1){
+		this.binanceStrategy[base]['one']['b'] =  Number((Number(JSON.parse(message.data).a[0][0])).toFixed(this.binancePrec[base][1]));
+		this.binanceStrategy[base]['one']['b_amount'] = Number(JSON.parse(message.data).a[0][1]);
+		this.binanceStrategy[base]['two']['b'] = Number((Number(JSON.parse(message.data).b[0][0])).toFixed(this.binancePrec[base][1]));					
+		this.binanceStrategy[base]['two']['b_amount'] = Number(JSON.parse(message.data).b[0][1]);
+		this.binanceDepth[base]['depth']['b'] = JSON.parse(message.data);
+	}
+	if(index === 3){
+		this.binanceStrategy[base]['one']['c'] =  Number((Number(JSON.parse(message.data).b[0][0])).toFixed(this.binancePrec[base][2]));
+		this.binanceStrategy[base]['one']['c_amount'] =  Number(JSON.parse(message.data).b[0][1]);
+		var liquidC;
+		var liquidCcount = 0;
+		for(var i = 0;i < JSON.parse(message.data).a.length;i++){
+				if(Number(JSON.parse(message.data).a[i][1] > 0.1)){
+					liquidC = Number(JSON.parse(message.data).a[i][0]);
+					liquidCcount = i;
+					break;
+				}
+		}
+		if(!liquidC){
+			liquidC =  Number((Number(JSON.parse(message.data).a[0][0])).toFixed(this.binancePrec[base][2]));
+			liquidCcount = 0;
+		}
+		this.binanceStrategy[base]['two']['c'] = liquidC;				
+		try{
+			this.binanceStrategy[base]['two']['c_amount'] = Number(JSON.parse(message.data).a[liquidCcount][1]);
+		}
+		catch(e){
+			return this.log(e);
+		}
+		this.binanceDepth[base]['depth']['c'] = JSON.parse(message.data);
+	}
+}
+
+/**
    * Send heartbeat to keep Binance user stream alive.
    * @method binanceListenBeat
    * @param {String} Binance listen key
@@ -524,17 +573,13 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 	var e1 = {}
 	var b1 = {}
 	var u1 = {}
-	var pair1;
-	var pair2;
-	var pair3;
+	var pairs;
 	for(var i=0;i< this.Settings.Binance.pairs.length;i++){
 		if(this.Settings.Binance.pairs[i].pair1 === base){
 			e1[base] = this.Settings.Binance.formatPairs[i].pair1.split("_")[0];
 			b1[base] = this.Settings.Binance.formatPairs[i].pair1.split("_")[1];
 			u1[base] = this.Settings.Binance.formatPairs[i].pair2.split("_")[1];
-			pair1 = this.Settings.Binance.pairs[i].pair1;
-			pair2 = this.Settings.Binance.pairs[i].pair2;
-			pair3 = this.Settings.Binance.pairs[i].pair3;
+			pairs = [this.Settings.Binance.pairs[i].pair1,this.Settings.Binance.pairs[i].pair2,this.Settings.Binance.pairs[i].pair3];
 			break;
 		}
 	}	
@@ -555,45 +600,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 		if(this.binanceBalance.bnb < 0.009){return}			
 		try{
 	        if (message.type === 'message' && JSON.parse(message.data).b[0] && JSON.parse(message.data).a[0]){
-	            if(pair === pair1){
-					this.binanceStrategy[base]['one']['a'] = Number((Number(JSON.parse(message.data).a[0][0])).toFixed(this.binancePrec[base][0]));
-					this.binanceStrategy[base]['one']['a_amount'] = Number(JSON.parse(message.data).a[0][1]);
-					this.binanceStrategy[base]['two']['a'] = Number((Number(JSON.parse(message.data).b[0][0])).toFixed(this.binancePrec[base][0]));
-					this.binanceStrategy[base]['two']['a_amount'] = Number(JSON.parse(message.data).b[0][1]);
-					this.binanceDepth[base]['depth']['a'] = JSON.parse(message.data); 
-				}
-	            if(pair === pair2){
-					this.binanceStrategy[base]['one']['b'] =  Number((Number(JSON.parse(message.data).a[0][0])).toFixed(this.binancePrec[base][1]));
-					this.binanceStrategy[base]['one']['b_amount'] = Number(JSON.parse(message.data).a[0][1]);
-					this.binanceStrategy[base]['two']['b'] = Number((Number(JSON.parse(message.data).b[0][0])).toFixed(this.binancePrec[base][1]));					
-					this.binanceStrategy[base]['two']['b_amount'] = Number(JSON.parse(message.data).b[0][1]);
-					this.binanceDepth[base]['depth']['b'] = JSON.parse(message.data);
-				}
-	            if(pair === pair3){
-					this.binanceStrategy[base]['one']['c'] =  Number((Number(JSON.parse(message.data).b[0][0])).toFixed(this.binancePrec[base][2]));
-					this.binanceStrategy[base]['one']['c_amount'] =  Number(JSON.parse(message.data).b[0][1]);
-					var liquidC;
-					var liquidCcount = 0;
-					for(var i = 0;i < JSON.parse(message.data).a.length;i++){
-							if(Number(JSON.parse(message.data).a[i][1] > 0.1)){
-								liquidC = Number(JSON.parse(message.data).a[i][0]);
-								liquidCcount = i;
-								break;
-							}
-					}
-					if(!liquidC){
-						liquidC =  Number((Number(JSON.parse(message.data).a[0][0])).toFixed(this.binancePrec[base][2]));
-						liquidCcount = 0;
-					}
-					this.binanceStrategy[base]['two']['c'] = liquidC;				
-					try{
-						this.binanceStrategy[base]['two']['c_amount'] = Number(JSON.parse(message.data).a[liquidCcount][1]);
-					}
-					catch(e){
-						return this.log(e);
-					}
-					this.binanceDepth[base]['depth']['c'] = JSON.parse(message.data);
-				}
+				this.binanceGenerateStrategy(base,pairs.indexOf(pair),message);
 				var _orders = {}
 				var message = "Binance Bot:"
 	            var percentage;
@@ -641,10 +648,10 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 						//this.notify(message + "\r\n" + JSON.stringify(this.binanceDepth[base]).replace(new RegExp('"', 'g'),""));
 						this.notify(message);
 						Promise.all([
-						this.binanceTrade(pair2.toUpperCase(),"SELL",Transactions[b1[base]],this.binanceStrategy[base].two.b,"GTC"),
-						this.binanceTrade(pair3.toUpperCase(),"BUY",Transactions[e1[base]],this.binanceStrategy[base].two.c,"GTC"),
-						this.binanceTrade(pair1.toUpperCase(),"SELL",Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3])),this.binanceStrategy[base].two.a,"GTC")]).then((values)=>{
-							return this.binanceSOrders(values,base,percentage,Transactions,e1,b1,u1);
+						this.binanceTrade(pairs[1].toUpperCase(),"SELL",Transactions[b1[base]],this.binanceStrategy[base].two.b,"GTC"),
+						this.binanceTrade(pairs[2].toUpperCase(),"BUY",Transactions[e1[base]],this.binanceStrategy[base].two.c,"GTC"),
+						this.binanceTrade(pairs[0].toUpperCase(),"SELL",Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3])),this.binanceStrategy[base].two.a,"GTC")]).then((values)=>{
+							return this.binanceSaveOrders(values,base,percentage,Transactions,e1,b1,u1);
 						}).catch((e)=>{
 							this.binanceReset();
 							this.log("Error:",e,new Date());
@@ -692,7 +699,10 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 							this.binanceDepth[base]['strategy1']['c%'] = this.binanceDepth[base]['strategy1']['c%'] + "\n Illiquid Trade";
 						}
 						this.notify(message);
-						Promise.all([this.binanceTrade(pair3.toUpperCase(),"SELL",Transactions[e1[base]],this.binanceStrategy[base].one.c,"GTC"),this.binanceTrade(pair2.toUpperCase(),"BUY",Transactions[b1[base]],this.binanceStrategy[base].one.b,"GTC"),this.binanceTrade(pair1.toUpperCase(),"BUY",(Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3]),this.binanceStrategy[base].one.a,"GTC")]).then((values)=>{
+						Promise.all([
+							this.binanceTrade(pairs[2].toUpperCase(),"SELL",Transactions[e1[base]],this.binanceStrategy[base].one.c,"GTC"),
+							this.binanceTrade(pairs[1].toUpperCase(),"BUY",Transactions[b1[base]],this.binanceStrategy[base].one.b,"GTC"),
+							this.binanceTrade(pairs[0].toUpperCase(),"BUY",(Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3]),this.binanceStrategy[base].one.a,"GTC")]).then((values)=>{
 							return this.binanceSaveOrders(values,base,percentage,Transactions,e1,b1,u1);
 						}).catch((e)=>{
 							this.binanceReset();
