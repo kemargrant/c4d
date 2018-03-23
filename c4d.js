@@ -36,6 +36,7 @@ function CryptoBot(Settings){
 	//Binance Settings
 	this.binanceApiKey = Settings.Binance.apikey;
 	this.binanceApiSecret = Settings.Binance.secretkey;
+	this.binanceMarket = 'wss://stream.binance.com:9443/ws/xxx@depth';
 	this.binanceBalance = {account:"Binance"}	
 	this.binanceB1Min = {}
 	this.binanceC1Min = {}
@@ -458,7 +459,21 @@ CryptoBot.prototype.binanceFormatPairs = function(exchangeData){
 	}
 	return;
 }
-
+/**
+   * Reset Binance Currency Pair arbitrage fields.
+   * @method binanceReset
+   * @param {String} Base Binance currency pair
+   * @return {Boolean} Return true
+   */
+CryptoBot.prototype.binanceReset = function(base,){
+	this.binanceInProcess[base] = false;
+	this.binanceOrders[base] = [];
+	this.binanceProcessTime[base] = 0;
+	this.binanceStrategy[base] = {one:{},two:{}}		
+	this.binanceTradesMade[base] = 0;
+	this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});	
+	return true;							
+}
 /**
    * Websocket stream Binance currency pair market depth.
    * @method binanceStream
@@ -467,15 +482,7 @@ CryptoBot.prototype.binanceFormatPairs = function(exchangeData){
    * @return {Object} Websocket client
    */
 CryptoBot.prototype.binanceStream = function(base,pair){
-	var client = new WebSocket('wss://stream.binance.com:9443/ws/'+pair+'@depth');
-	var reset = ()=> {
-		this.binanceInProcess[base] = false;
-		this.binanceOrders[base] = [];
-		this.binanceProcessTime[base] = 0;
-		this.binanceStrategy[base] = {one:{},two:{}}		
-		this.binanceTradesMade[base] = 0;
-		return this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-	}	
+	var client = new WebSocket(this.binanceMarket.replace("xxx",pair));
 	var e1 = {}
 	var b1 = {}
 	var u1 = {}
@@ -590,7 +597,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 					this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
 					if(this.binanceBalance[e1[base]] > Transactions[e1[base]] && this.binanceBalance[u1[base]] > Transactions[u1[base]] && this.binanceBalance[b1[base]] > Transactions[b1[base]]){
 						if(this.liquidTradesBinance[base] && (Transactions[e1[base]] < this.binanceStrategy[base].two.a_amount || Transactions[b1[base]] < this.binanceStrategy[base].two.b_amount)){
-							reset();
+							this.binanceReset(base);
 							return this.log("Illiquid trade:",new Date());
 						}
 						else{
@@ -613,7 +620,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 								this.log("Checking:",Object.keys(_orders),new Date());
 								if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
 									this.log("Binance Arbitrage timeout.....",new Date());
-									return reset();
+									return this.binanceReset(base);
 								}
 							},480005)
 						}).catch((e)=>{
@@ -624,7 +631,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 					}
 					else{
 						this.log("Wallet balance low:",new Date());
-						return reset();
+						return this.binanceReset(base);
 					}
 				}
 	            else{
@@ -656,7 +663,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 					this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
 					if(this.binanceBalance[e1[base]] > Transactions[e1[base]] && this.binanceBalance[b1[base]] > Transactions[b1[base]] && this.binanceBalance[u1[base]] > Transactions[u1[base]]){
 						if(this.liquidTradesBinance[base] && (Transactions[e1[base]] < this.binanceStrategy[base].one.a_amount || Transactions[b1[base]] < this.binanceStrategy[base].one.b_amount)){
-							reset();
+							this.binanceReset(base);
 							return this.log("Illiquid trade:",message);
 						}
 						else{
@@ -667,15 +674,15 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 							_orders[values[0].clientOrderId] = false;
 							_orders[values[1].clientOrderId] = false;
 							_orders[values[2].clientOrderId] = false;
-							profit = Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) - Transactions[e1[base]];
-							profit2 = Transactions[b1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].one.a);
+							profit = Transactions[b1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].one.a); 
+							profit2 = Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) - Transactions[e1[base]];
 							profit3 = Transactions[u1[base]] - (Transactions[b1[base]] * this.binanceStrategy[base].one.b);
 							this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":{"Time":this.binanceProcessTime[base],"Percent":percentage,"Exchange":"Binance","Profit":profit,"Profit2":profit2,"Profit3":profit3,"Pair":base}}});								
 							return setTimeout(()=>{
 								this.log("Checking:",Object.keys(_orders),new Date());
 								if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
 									this.log("Binance Arbitrage timeout.....",new Date());
-									return reset();
+									return this.binanceReset(base);
 								}
 							},480005)
 						}).catch((e)=>{
@@ -686,7 +693,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 					}
 					else{
 						this.log("Wallet Balance Low:",new Date());
-						return reset();
+						return this.binanceReset(base);
 					}
 				}
 			}

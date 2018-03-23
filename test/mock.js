@@ -1,4 +1,5 @@
 var rhttps = require('https');
+var WebSocket = require('ws');
 
 var _email ={
 	server:{
@@ -171,7 +172,26 @@ var settings1 ={
 		}		
 }
 
+//mock Binance Market
+function _marketStream(){
+	var wss = new WebSocket.Server({port:8080});
+	return wss.on('connection',(ws,req)=>{
+		//console.log("Websocket connection created:",req.rawHeaders,req.url);
+		ws.on('error',(e)=>{
+			console.log("Mock socket error:",e);
+		})
+		ws.on('close',(e)=>{
+			return console.log("Mock WebSocket Closed:",e,new Date());
+		})			
+		ws.on('message',(message)=>{
+			ws.send("");
+		});				
+	})	
+}
+
 module.exports = {
+	market:"ws://localhost:8080/pair?=xxx",
+	marketStream:_marketStream,
 	mockSettings1:settings1,
 	email:_email,
 	https:_https,

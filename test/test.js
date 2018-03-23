@@ -136,11 +136,19 @@ describe('Binance', function() {
 			assert.equal(val.url.host,"stream.binance.com:9443");		
 		});
 	});
+	describe('#Binance Reset', function() {
+		return it('Should return true',function() {
+			var bool = binanceBot.binanceReset('ltcbtc');
+			assert(bool);
+		});
+	});	
 	
 	describe('#Binance Stream', function() {
 		return it('Should return a connected websocket',function() {
+			this.timeout(3000);
+			var _mockMarket = new mock.marketStream();
+			binanceBot.binanceMarket = mock.market;
 			binanceBot.binanceMonitor([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
-			binanceBot.binanceKill = true;
 			assert.equal(binanceBot.binanceSocketConnections[0].readyState,0);
 		});
 	});		
