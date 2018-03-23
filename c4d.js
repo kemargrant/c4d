@@ -644,7 +644,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 						this.binanceTrade(pair2.toUpperCase(),"SELL",Transactions[b1[base]],this.binanceStrategy[base].two.b,"GTC"),
 						this.binanceTrade(pair3.toUpperCase(),"BUY",Transactions[e1[base]],this.binanceStrategy[base].two.c,"GTC"),
 						this.binanceTrade(pair1.toUpperCase(),"SELL",Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3])),this.binanceStrategy[base].two.a,"GTC")]).then((values)=>{
-							return this.saveBinanceOrders(values,base,percentage,Transactions,e1,b1,u1);
+							return this.binanceSOrders(values,base,percentage,Transactions,e1,b1,u1);
 						}).catch((e)=>{
 							this.binanceReset();
 							this.log("Error:",e,new Date());
@@ -693,7 +693,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 						}
 						this.notify(message);
 						Promise.all([this.binanceTrade(pair3.toUpperCase(),"SELL",Transactions[e1[base]],this.binanceStrategy[base].one.c,"GTC"),this.binanceTrade(pair2.toUpperCase(),"BUY",Transactions[b1[base]],this.binanceStrategy[base].one.b,"GTC"),this.binanceTrade(pair1.toUpperCase(),"BUY",(Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3]),this.binanceStrategy[base].one.a,"GTC")]).then((values)=>{
-							return this.saveBinanceOrders(values,base,percentage,Transactions,e1,b1,u1);
+							return this.binanceSaveOrders(values,base,percentage,Transactions,e1,b1,u1);
 						}).catch((e)=>{
 							this.binanceReset();
 							this.log("Error:",e,new Date());
