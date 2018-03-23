@@ -1,7 +1,6 @@
 "use strict";
 
 var crypto = require("crypto-js");
-var MongoClient = require('mongodb').MongoClient;
 var signalR = require('signalr-client');
 var cloudscraper = require('cloudscraper');
 var WebSocket = require('ws');
@@ -14,6 +13,7 @@ var WebSocket = require('ws');
 function CryptoBot(Settings){	
 	this.email = require("emailjs");
 	this.https = require('https');
+	this.MongoClient = require('mongodb').MongoClient;
 	this.balance = {}
 	this.bittrexInProcess = false;
 	this.bittrexProcessTime = 0;
@@ -1707,7 +1707,7 @@ CryptoBot.prototype.database = function(){
 	var DB = {}
 	if(this.Settings.MongoDB.connect){
 		try{
-			MongoClient.connect(this.Settings.MongoDB.db_string, (err, client)=>{
+			this.MongoClient.connect(this.Settings.MongoDB.db_string, (err, client)=>{
 				var db = client.db(this.Settings.MongoDB.db_string.split("/")[this.Settings.MongoDB.db_string.split("/").length - 1]);
 				if(err) { 
 					return (this.log("Unable to connect to the database:",err)); 
@@ -1741,7 +1741,7 @@ CryptoBot.prototype.database = function(){
 			});			
 		}
 		catch(e){
-			this.log(e);
+			this.log("Database Error:",e);
 		}	
 	}
 	else{

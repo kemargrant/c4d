@@ -5,8 +5,10 @@ var assert = require('assert');
 var WebSocket = require('ws');
 
 describe('General Functions', function() {
-	var bot = new CryptoBot.bot(Settings);
+	var bot = new CryptoBot.bot(mock.mockSettings1);
 	bot.https = mock.https;
+	bot.MongoClient = mock.MongoClient;
+	bot.DB = bot.database();
 	describe('#Connect To Database', function() {
 		this.timeout(2100);
 		return it('Should return a db connection with trade and balance collections', function(done) {
@@ -20,12 +22,12 @@ describe('General Functions', function() {
 				catch(e){
 					done(e);
 				}
-			},950)
+			},1050)
 		});
 	});
 	
 	describe('#Save to Database', function() {
-		this.timeout(3000);
+		this.timeout(2000);
 		return it('Should save and delete record from the database', function(done) {
 			var date = new Date().getTime();
 			return setTimeout( async function(){

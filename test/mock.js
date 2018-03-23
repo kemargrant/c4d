@@ -20,43 +20,43 @@ var _https = {
 		var data = {};
 		//get Account proxy
 		if(options.path.search("/api/v1/account") > -1 && options.method === "GET"){
-			console.log("proxy get Binance Account");
+			//console.log("proxy get Binance Account");
 			data = {balances:[{asset:'BTC',free:'0',locked:'0'},{asset:'LTC',free:'0',locked:'0'},{asset:'ETH',free:'0',locked:'0'}]}
 		}
 		//get existing orders proxy
 		else if(options.path.search("order?") > -1 && options.method === "POST"){
-			console.log("proxy get existing Binance order");
+			//console.log("proxy get existing Binance order");
 			data = {orderId:'111222333'};
 		}
 		//get listen key proxy
 		else if(options.path === "/api/v1/userDataStream"){
-			console.log("proxy get Binance listen key");
+			//console.log("proxy get Binance listen key");
 			data = {listenKey:"pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sv8a65a1"}
 		}
 		//place trade proxy
 		else if(options.path.search("&type=LIMIT&quantity=") > -1){
-			console.log("proxy place Binance trade");
+			//console.log("proxy place Binance trade");
 			data = {orderId:123}
 		}
 		//use listen key proxy
 		else if(options.path.search("listenKey=") > -1){
-			console.log("proxy use Binance listen key");
+			//console.log("proxy use Binance listen key");
 			data = {}
 		}
 		//get open orders proxy
 		else if(options.path.search("/api/v1/openOrders") > -1){
-			console.log("proxy get Binance open orders");
+			//console.log("proxy get Binance open orders");
 			data = [{},{}];
 		}		
 		//slack proxy
 		else if(options.path.search("Slack") > -1){
-			console.log("Proxy slack message");
+			//console.log("Proxy slack message");
 			func(events);
 			events.emit("data",'ok');
 			return events.emit("end");
 		}		
 		else if(options.method === "DELETE"){
-			console.log("proxy cancel Binance order");
+			//console.log("proxy cancel Binance order");
 			data = {symbol:'BTCUSDT'};
 		}		
 		else{
@@ -67,6 +67,37 @@ var _https = {
 		return events.emit("end");
 	}
 }
+
+var _MongoClient = {
+	connect:function(string,func){
+		function update(name){
+			database[name] = {
+				remove:function(options,cb){
+					cb(null);
+				}
+			}
+		}
+		var database = {
+			createCollection:function(coll,opts,func){
+				func(true);
+			},
+			collection:(_name)=>{
+				return {
+					insert:function(x,y,func){func(false,true);},
+					remove:function(x,func){func(false,true);},
+					update:function(x,y,func){func(false,true);}
+				};
+			}
+		}
+		var dbConnection = {
+			db:function(){
+				return database;
+			}
+		}
+		return func(undefined,dbConnection);
+	}
+}
+
 
 var settings1 ={
 	"Binance":
@@ -120,8 +151,8 @@ var settings1 ={
 		},
 	"MongoDB":
 		{
-			"db_string":"mongodb://xxxx:xxxxxxxx@ip_address:port/database",
-			"connect":false
+			"db_string":"mongodb://xxxx:xxxxxxxx@ipaddress:port/database",
+			"connect":true
 		},	
 	"Slack":
 		{
@@ -143,5 +174,6 @@ var settings1 ={
 module.exports = {
 	mockSettings1:settings1,
 	email:_email,
-	https:_https
+	https:_https,
+	MongoClient:_MongoClient
 }
