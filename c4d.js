@@ -4,7 +4,7 @@ var crypto = require("crypto-js");
 var signalR = require('signalr-client');
 var cloudscraper = require('cloudscraper');
 var WebSocket = require('ws');
-
+var https = require('https');
 /**
    * CryptoBot constructor.
    * @method CryptoBot
@@ -334,13 +334,15 @@ CryptoBot.prototype.binanceListenUser = function(){
    */
 CryptoBot.prototype.binanceMonitor = function(pairData){
 	var _depth = {}
+	var _list = [];
 	for(var i=0;i< pairData.length;i++){
 		_depth[pairData[i].pair1] = {depth:{},strategy1:{'a%':{},'b%':{},'c%':{}},strategy2:{'a%':{},'b%':{},'c%':{}}}
-		this.binanceStream(pairData[i].pair1,pairData[i].pair1);
-		this.binanceStream(pairData[i].pair1,pairData[i].pair2);
-		this.binanceStream(pairData[i].pair1,pairData[i].pair3);
+		_list.push(this.binanceStream(pairData[i].pair1,pairData[i].pair1));
+		_list.push(this.binanceStream(pairData[i].pair1,pairData[i].pair2));
+		_list.push(this.binanceStream(pairData[i].pair1,pairData[i].pair3));
 	}	
 	this.binanceDepth = _depth;
+	this.binanceSocketConnections = _list;
 }
 
 
@@ -495,16 +497,13 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 	    this.log(pair+'- Binance Connection Closed:',new Date());
 	        return setTimeout(()=>{
 				if(!this.binanceKill){
-					this.binanceStream(base,pair);
+					client = this.binanceStream(base,pair);
 				}
-			},2000);
+			},1000);
 	}
 	
 	client.onopen = ()=> {
 	    this.log(pair+' - Binance WebSocket Client Connected:',new Date());
-	    if(this.binanceSocketConnections instanceof Array){
-			this.binanceSocketConnections.push(client);
-		}    
 	};
 	client.onmessage = (message) => {
 		if(this.binanceInProcess[base]){return}

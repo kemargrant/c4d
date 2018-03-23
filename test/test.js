@@ -138,13 +138,10 @@ describe('Binance', function() {
 	});
 	
 	describe('#Binance Stream', function() {
-		return it('Should return a connected websocket', function() {
-			var client = binanceBot.binanceStream("btcusdt","btcusdt");
-			setTimeout(()=>{
-				binanceBot.binanceKill = true;
-				client.terminate();
-			},900);
-			assert(client.readyState === 0);
+		return it('Should return a connected websocket',function() {
+			binanceBot.binanceMonitor([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
+			binanceBot.binanceKill = true;
+			assert.equal(binanceBot.binanceSocketConnections[0].readyState,0);
 		});
 	});		
 	
