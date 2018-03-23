@@ -1991,7 +1991,7 @@ CryptoBot.prototype.sendEmail = function(email_message){
    * @return {Promise} Resolves when first websocket client connects
    */
 CryptoBot.prototype.setupWebsocket = function(){
-	this.wss = new WebSocket.Server({port:Settings.Config.port});
+	this.wss = new WebSocket.Server({port:this.Settings.Config.port});
 	return new Promise((resolve,reject) =>{			
 		this.wss.on('connection',(ws)=>{
 			resolve(this.log("Websocket connection created:",new Date()));
