@@ -1,3 +1,6 @@
+const EventEmitter = require('events');
+class MyEmitter extends EventEmitter {}
+const userEvents = new MyEmitter();
 var rhttps = require('https');
 var WebSocket = require('ws');
 
@@ -80,17 +83,16 @@ var _email ={
 
 var _https = {
 	request:function(options,func){
-		const EventEmitter = require('events');
-		class MyEmitter extends EventEmitter {}
 		const events = new MyEmitter();
 		var data = {};
 		//get Account proxy
+		//console.log("proxy:",options.path);
 		if(options.path.search("/api/v1/account") > -1 && options.method === "GET"){
 			//console.log("proxy get Binance Account");
 			data = {balances:[{asset:'BTC',free:'0',locked:'0'},{asset:'LTC',free:'0',locked:'0'},{asset:'ETH',free:'0',locked:'0'}]}
 		}
 		//get existing orders proxy
-		else if(options.path.search("order?") > -1 && options.method === "POST"){
+		else if(options.path.search("openOrders") > -1 && options.method === "POST"){
 			//console.log("proxy get existing Binance order");
 			data = {orderId:'111222333'};
 		}
@@ -101,8 +103,70 @@ var _https = {
 		}
 		//place trade proxy
 		else if(options.path.search("&type=LIMIT&quantity=") > -1){
-			//console.log("proxy place Binance trade");
 			data = {orderId:123}
+			var x = Math.round(Math.random(1)*10);
+			var _data1={
+					  "e": "executionReport",        
+					  "E": 1499405658658,            
+					  "s": "LTCBTC",                
+					  "c": "mUvoqJxFIILMdfAW5iGSOW", 
+					  "S": "BUY",                   
+					  "o": "LIMIT",                 
+					  "f": "GTC",                   
+					  "q": "1.00000000",            
+					  "p": "0.10264410",            
+					  "P": "0.00000000",            
+					  "F": "0.00000000",             
+					  "g": -1,                      
+					  "C": "null",                   
+					  "x": "FILLED",                    
+					  "X": "FILLED",                    
+					  "r": "NONE",                  
+					  "i": 4293153,                 
+					  "l": "0.00000000",             
+					  "z": "0.00000000",             
+					  "L": "0.00000000",             
+					  "n": "0",                     
+					  "N": null,                     
+					  "T": 1499405658657,            
+					  "t": -1,                       
+					  "I": 8641984,                 
+					  "w": true,                     
+					  "m": false,                    
+					  "M": false              
+			}
+			var _data2={
+					  "e": "executionReport",        
+					  "E": 1499405658658,            
+					  "s": "LTCBTC",                
+					  "c": "mUvoqJxFIILMdfAW5iGSOW", 
+					  "S": "BUY",                   
+					  "o": "LIMIT",                 
+					  "f": "GTC",                   
+					  "q": "1.00000000",            
+					  "p": "0.10264410",            
+					  "P": "0.00000000",            
+					  "F": "0.00000000",             
+					  "g": -1,                      
+					  "C": "null",                   
+					  "x": "NEW",                    
+					  "X": "NEW",                    
+					  "r": "NONE",                  
+					  "i": 4293153,                 
+					  "l": "0.00000000",             
+					  "z": "0.00000000",             
+					  "L": "0.00000000",             
+					  "n": "0",                     
+					  "N": null,                     
+					  "T": 1499405658657,            
+					  "t": -1,                       
+					  "I": 8641984,                 
+					  "w": true,                     
+					  "m": false,                    
+					  "M": false              
+			}		
+			var data2 = x%2 == 0 ? _data1 : _data2;	
+			userEvents.emit("trade",data2);
 		}
 		//use listen key proxy
 		else if(options.path.search("listenKey=") > -1){
@@ -124,6 +188,7 @@ var _https = {
 		else if(options.method === "DELETE"){
 			//console.log("proxy cancel Binance order");
 			data = {symbol:'BTCUSDT'};
+			userEvents.emit("delete",options);
 		}		
 		else{
 			return rhttps.request(options,func);		
@@ -156,7 +221,6 @@ var _MongoClient = {
 		return func(undefined,dbConnection);
 	}
 }
-
 
 var settings1 ={
 	"Binance":
@@ -247,9 +311,36 @@ function _marketStream(){
 	})	
 }
 
+//mock Binance Userstream
+function _userStream(){
+	var wss = new WebSocket.Server({port:8090});
+	var clients = []
+	userEvents.on('trade',(data)=>{
+		for(var i = 0;i < clients.length;i++){
+			try{
+				clients[i].send(JSON.stringify(data));
+			}
+			catch(e){
+				console.log(e);
+			}
+		}
+	});
+	return wss.on('connection',(ws,req)=>{
+		clients.push(ws);
+		ws.on('error',(e)=>{
+			console.log("Mock socket error:",e);
+		})
+		ws.on('close',(e)=>{
+			return console.log("Mock WebSocket Closed:",e,new Date());
+		})					
+	})	
+}
+
+
 module.exports = {
 	market:"ws://localhost:8080/pair?=xxx",
 	marketStream:_marketStream,
+	userStream:_userStream,
 	mockSettings1:settings1,
 	email:_email,
 	https:_https,

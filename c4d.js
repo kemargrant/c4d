@@ -36,6 +36,7 @@ function CryptoBot(Settings){
 	this.binanceApiKey = Settings.Binance.apikey;
 	this.binanceApiSecret = Settings.Binance.secretkey;
 	this.binanceMarket = 'wss://stream.binance.com:9443/ws/xxx@depth';
+	this.binanceUserStreamString = 'wss://stream.binance.com:9443/ws/';
 	this.binanceBalance = {account:"Binance"}	
 	this.binanceB1Min = {}
 	this.binanceC1Min = {}
@@ -752,7 +753,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
    * @return {Object} Websocket client
    */
 CryptoBot.prototype.binanceUserStream = function(key){
-	var client = new WebSocket('wss://stream.binance.com:9443/ws/'+key);		
+	var client = new WebSocket(this.binanceUserStreamString+key);		
 	var pairs ={}
 	for(var i=0;i< this.Settings.Binance.pairs.length;i++){
 		pairs[this.Settings.Binance.pairs[i].pair1] = [this.Settings.Binance.pairs[i].pair1,this.Settings.Binance.pairs[i].pair2,this.Settings.Binance.pairs[i].pair3];

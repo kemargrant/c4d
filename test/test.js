@@ -68,15 +68,21 @@ describe('General Functions', function() {
 	});
 	
 	describe('#Setup WebSocket', function() {
-		return it('Should setup a web socket server and connect to it', async function() {			
-			return setTimeout(function(){
-				var client = new WebSocket("http://localhost:7071");
-				client.onopen = ()=>{
+		return it('Should setup a web socket server and connect to it', async function(done) {
+			return setTimeout(()=>{
+				var client = new WebSocket("ws://127.0.0.1:7071/");
+				client.onopen = (connected)=>{
+					assert(connected);
 					client.terminate();
+					done();
+				}
+				client.onerror = (e) =>{
+					console.log("Error:",e.code);
+					assert(false);
+					done();
 				}	
-			},300);
-			var val = await bot.setupWebsocket();
-			assert(val);
+			},1500);
+			await bot.setupWebsocket();			
 		});
 	});	
 	return
@@ -87,6 +93,20 @@ describe('Binance', function() {
 	var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 	var yBot = new CryptoBot.bot(mock.mockSettings1);
 	binanceBot.https = mock.https;
+	binanceBot.binanceUserStreamString = "ws://127.0.0.1:8090/";
+	new mock.userStream();
+	
+	describe('#Listen User Account', function() {
+		it('Should return a connected websocket client',function(done) {
+			var val = binanceBot.binanceUserStream('randomekey');
+			setTimeout(()=>{
+				assert(binanceBot.binanceUserStreamString.search(val.url.host) > -1);
+				done();
+			},400);
+			
+		});
+	});	
+	
 	describe('#ApiKeys', function() {
 		return it('should return true when the apikey and apisecret are present', function() {
 			assert.equal(binanceBot.Settings.Binance.apikey.length > 0 && binanceBot.Settings.Binance.secretkey.length > 0, true);
@@ -184,13 +204,7 @@ describe('Binance', function() {
 			assert.equal(JSON.stringify(val2),"{}");
 		});
 	});
-
-	describe('#Listen User Account', function() {
-		return it('Should return a connected websocket client', async function() {
-			var val = await binanceBot.binanceListenUser();
-			assert.equal(val.url.host,"stream.binance.com:9443");		
-		});
-	});
+	
 	describe('#Reset', function() {
 		return it('Should return true',function() {
 			var bool = binanceBot.binanceReset('ltcbtc');
@@ -229,7 +243,6 @@ describe('Binance', function() {
 			assert.equal(yBot.binanceStrategy['ltcbtc']['one']['c'],170);
 		});
 	});		
-	
 	
 	describe('#Stream', function() {
 		return it('Should return a connected websocket',function() {
