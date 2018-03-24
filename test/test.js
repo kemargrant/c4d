@@ -82,7 +82,7 @@ describe('General Functions', function() {
 	return
 })
 
-//Binance Tests
+//~ //Binance Tests
 describe('Binance', function() {
 	var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 	var yBot = new CryptoBot.bot(mock.mockSettings1);
@@ -99,7 +99,42 @@ describe('Binance', function() {
 			assert.equal(typeof val,"object")
 		});
 	});
-	describe('#Binance Precision', function() {			
+	
+	describe('#Arbitrage', function() {
+		var testBot = new CryptoBot.bot(mock.mockSettings1);
+		testBot.MongoClient = mock.MongoClient;
+		testBot.DB = testBot.database();
+		testBot.https = mock.https;
+		testBot.Settings.Binance.pairs[0].prec = [6,2,2,2,6,5];
+		var base = 'ltcbtc';
+		var pairs = ['ltcbtc','btcusdt','ltcusdt'];
+		var e1 = {'ltcbtc':'ltc'} 
+		var b1 = {'ltcbtc':'btc'} 
+		var u1 = {'ltcbtc':'usdt'} 
+		it('Should return true',function() {
+			testBot.binanceStrategy[base] = {
+			  one:{
+				 b: 8836,
+			     b_amount: 0,
+			     c: 18.38,
+			     c_amount: 0,
+			     a: 0.002077,
+			     a_amount: 416.84 },
+			  two: 
+			   { b: 8841,
+			     b_amount: 0.500171,
+			     c: 18.379,
+			     c_amount: 20.146,
+			     a: 0.002073,
+			     a_amount: 282 } 
+			}
+			testBot.binanceBalance = {'bnb':1,'ltc':50,'btc':0.5,'usdt':4000}
+			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
+			assert(val)
+		});
+	});	
+	
+	describe('#Precision', function() {			
 		return it('Should format precision data for ltc/btc/usdt pairs', function() {
 			return setTimeout(function(done){
 				assert.deepEqual(yBot.Settings.Binance.pairs[0].prec,[6,2,2,2,6,5]);
@@ -107,9 +142,7 @@ describe('Binance', function() {
 			},1000);			
 		});			
 	});		
-	
-	
-	
+		
 	describe('#Get Orders', function() {
 		return it('Should return a list of open orders for btcusdt', async function() {
 			var val = await binanceBot.binanceOpenOrders("BTCUSDT");
@@ -138,14 +171,16 @@ describe('Binance', function() {
 			assert.equal(val.url.host,"stream.binance.com:9443");		
 		});
 	});
-	describe('#Binance Reset', function() {
+	describe('#Reset', function() {
 		return it('Should return true',function() {
 			var bool = binanceBot.binanceReset('ltcbtc');
 			assert(bool);
 		});
 	});	
-	describe('#Binance Save Orders', function() {
-		var base = 'ltcbtc'
+	describe('#Save Orders', function() {
+		var base = 'ltcbtc';
+		binanceBot.MongoClient = mock.MongoClient;
+		binanceBot.DB = binanceBot.database();
 		it('Should return a setTimeout object when percentage < 100%',function() {
 			var val = binanceBot.binanceSaveOrders([{clientOrderId:1},{clientOrderId:2},{clientOrderId:3}],base,99,{'ltc':1,'btc':2,'usdt':3},{'ltcbtc':'ltc'},{'ltcbtc':'btc'},{'ltcbtc':'usdt'});
 			assert.equal(typeof val._idleStart,"number")
@@ -156,7 +191,7 @@ describe('Binance', function() {
 		});		
 	});
 
-	describe('#Binance Strategy', function() {
+	describe('#Strategy', function() {
 		var messages = mock.binanceMessages;
 		yBot.binanceStrategy['ltcbtc'] = {one:{},two:{}}
 		yBot.binanceDepth = {}
@@ -176,7 +211,7 @@ describe('Binance', function() {
 	});		
 	
 	
-	describe('#Binance Stream', function() {
+	describe('#Stream', function() {
 		return it('Should return a connected websocket',function() {
 			this.timeout(3000);
 			var _mockMarket = new mock.marketStream();

@@ -136,13 +136,6 @@ var _https = {
 
 var _MongoClient = {
 	connect:function(string,func){
-		function update(name){
-			database[name] = {
-				remove:function(options,cb){
-					cb(null);
-				}
-			}
-		}
 		var database = {
 			createCollection:function(coll,opts,func){
 				func(true);
@@ -151,7 +144,7 @@ var _MongoClient = {
 				return {
 					insert:function(x,y,func){func(false,true);},
 					remove:function(x,func){func(false,true);},
-					update:function(x,y,func){func(false,true);}
+					update:function(x,y,z,func){func(false,true);}
 				};
 			}
 		}
@@ -179,7 +172,7 @@ var settings1 ={
 			"pair1":"ltcbtc",
 			"pair2":"btcusdt",
 			"pair3":"ltcusdt",
-			"upperLimit1":100.5,
+			"upperLimit1":100,
 			"upperLimit2":99.99
 			}]
 		},
