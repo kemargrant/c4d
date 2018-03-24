@@ -363,43 +363,43 @@ CryptoBot.prototype.binanceExchangeInfo = function(){
    */
 CryptoBot.prototype.binanceGenerateStrategy = function(base,index,message){
 	if(index === 0){
-		this.binanceStrategy[base]['one']['a'] = Number((Number(message.data.a[0][0])).toFixed(this.binancePrec[base][0]));
-		this.binanceStrategy[base]['one']['a_amount'] = Number(message.data.a[0][1]);
-		this.binanceStrategy[base]['two']['a'] = Number((Number(message.data.b[0][0])).toFixed(this.binancePrec[base][0]));
-		this.binanceStrategy[base]['two']['a_amount'] = Number(message.data.b[0][1]);
-		this.binanceDepth[base]['depth']['a'] = message.data; 
+		this.binanceStrategy[base]['one']['a'] = Number((Number(message.a[0][0])).toFixed(this.binancePrec[base][0]));
+		this.binanceStrategy[base]['one']['a_amount'] = Number(message.a[0][1]);
+		this.binanceStrategy[base]['two']['a'] = Number((Number(message.b[0][0])).toFixed(this.binancePrec[base][0]));
+		this.binanceStrategy[base]['two']['a_amount'] = Number(message.b[0][1]);
+		this.binanceDepth[base]['depth']['a'] = message; 
 	}
 	if(index === 1){
-		this.binanceStrategy[base]['one']['b'] =  Number((Number(message.data.a[0][0])).toFixed(this.binancePrec[base][1]));
-		this.binanceStrategy[base]['one']['b_amount'] = Number(message.data.a[0][1]);
-		this.binanceStrategy[base]['two']['b'] = Number((Number(message.data.b[0][0])).toFixed(this.binancePrec[base][1]));					
-		this.binanceStrategy[base]['two']['b_amount'] = Number(message.data.b[0][1]);
-		this.binanceDepth[base]['depth']['b'] = message.data;
+		this.binanceStrategy[base]['one']['b'] =  Number((Number(message.a[0][0])).toFixed(this.binancePrec[base][1]));
+		this.binanceStrategy[base]['one']['b_amount'] = Number(message.a[0][1]);
+		this.binanceStrategy[base]['two']['b'] = Number((Number(message.b[0][0])).toFixed(this.binancePrec[base][1]));					
+		this.binanceStrategy[base]['two']['b_amount'] = Number(message.b[0][1]);
+		this.binanceDepth[base]['depth']['b'] = message;
 	}
 	if(index === 2){
-		this.binanceStrategy[base]['one']['c'] =  Number((Number(message.data.b[0][0])).toFixed(this.binancePrec[base][2]));
-		this.binanceStrategy[base]['one']['c_amount'] =  Number(message.data.b[0][1]);
+		this.binanceStrategy[base]['one']['c'] =  Number((Number(message.b[0][0])).toFixed(this.binancePrec[base][2]));
+		this.binanceStrategy[base]['one']['c_amount'] =  Number(message.b[0][1]);
 		var liquidC;
 		var liquidCcount = 0;
-		for(var i = 0;i < message.data.a.length;i++){
-				if(Number(message.data.a[i][1] > 0.1)){
-					liquidC = Number(message.data.a[i][0]);
+		for(var i = 0;i < message.a.length;i++){
+				if(Number(message.a[i][1] > 0.1)){
+					liquidC = Number(message.a[i][0]);
 					liquidCcount = i;
 					break;
 				}
 		}
 		if(!liquidC){
-			liquidC =  Number((Number(message.data.a[0][0])).toFixed(this.binancePrec[base][2]));
+			liquidC =  Number((Number(message.a[0][0])).toFixed(this.binancePrec[base][2]));
 			liquidCcount = 0;
 		}
 		this.binanceStrategy[base]['two']['c'] = liquidC;				
 		try{
-			this.binanceStrategy[base]['two']['c_amount'] = Number(message.data.a[liquidCcount][1]);
+			this.binanceStrategy[base]['two']['c_amount'] = Number(message.a[liquidCcount][1]);
 		}
 		catch(e){
 			return this.log(e);
 		}
-		this.binanceDepth[base]['depth']['c'] = message.data;
+		this.binanceDepth[base]['depth']['c'] = message;
 	}
 }
 

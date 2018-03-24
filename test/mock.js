@@ -2,7 +2,7 @@ var rhttps = require('https');
 var WebSocket = require('ws');
 
 var _binanceMessages = [
-{data:{
+{
   "e": "depthUpdate", 
   "E": 123456789,     
   "s": "LTCBTC",      
@@ -22,8 +22,8 @@ var _binanceMessages = [
       []              
     ]
   ]
-}},
-{data:{
+},
+{
   "e": "depthUpdate", 
   "E": 123456789,     
   "s": "BTCUSDT",      
@@ -43,8 +43,8 @@ var _binanceMessages = [
       []              
     ]
   ]
-}},
-{data:{
+},
+{
   "e": "depthUpdate", 
   "E": 123456789,     
   "s": "LTCUSDT",      
@@ -64,7 +64,7 @@ var _binanceMessages = [
       []              
     ]
   ]
-}}
+}
 ]
 var _email ={
 	server:{
