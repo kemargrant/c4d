@@ -111,7 +111,7 @@ describe('Binance', function() {
 		var e1 = {'ltcbtc':'ltc'} 
 		var b1 = {'ltcbtc':'btc'} 
 		var u1 = {'ltcbtc':'usdt'} 
-		it('Should return true',function() {
+		it('Should return false (illiquid Trade)',function() {
 			testBot.binanceStrategy[base] = {
 			  one:{
 				 b: 8836,
@@ -130,8 +130,28 @@ describe('Binance', function() {
 			}
 			testBot.binanceBalance = {'bnb':1,'ltc':50,'btc':0.5,'usdt':4000}
 			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
-			assert(val)
+			assert(!val)
 		});
+		it('Should return true',function() {
+			testBot.binanceStrategy[base] = { 
+			one:{ 
+			     b: 8854,
+			     b_amount: 0.02048,
+			     c: 18.311,
+			     c_amount: 25,
+			     a: 0.00208,
+			     a_amount: 277.84 },
+			two: 
+			   { b: 8843.99,
+			     b_amount: 0.09,
+			     c: 18.321,
+			     c_amount: 4.102,
+			     a: 0.002072,
+			     a_amount: 66.05 } 
+			}
+			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
+			assert(val)
+		});		
 	});	
 	
 	describe('#Precision', function() {			

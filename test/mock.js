@@ -166,13 +166,13 @@ var settings1 ={
 			"enabled":true,
 			"pairs":[{
 			"liquidTrades":true,
-			"lowerLimit1":100.2,
+			"lowerLimit1":100,
 			"lowerLimit2":99,
 			"optimalTrades":true,
 			"pair1":"ltcbtc",
 			"pair2":"btcusdt",
 			"pair3":"ltcusdt",
-			"upperLimit1":100,
+			"upperLimit1":100.5,
 			"upperLimit2":99.99
 			}]
 		},
