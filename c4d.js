@@ -229,43 +229,44 @@ CryptoBot.prototype.binanceExchangeInfo = function(){
    */
 CryptoBot.prototype.binanceGenerateStrategy = function(base,index,message){
 	if(index === 0){
-		this.binanceStrategy[base]['one']['a'] = Number((Number(JSON.parse(message.data).a[0][0])).toFixed(this.binancePrec[base][0]));
-		this.binanceStrategy[base]['one']['a_amount'] = Number(JSON.parse(message.data).a[0][1]);
-		this.binanceStrategy[base]['two']['a'] = Number((Number(JSON.parse(message.data).b[0][0])).toFixed(this.binancePrec[base][0]));
-		this.binanceStrategy[base]['two']['a_amount'] = Number(JSON.parse(message.data).b[0][1]);
-		this.binanceDepth[base]['depth']['a'] = JSON.parse(message.data); 
+		console.log(base,index);
+		this.binanceStrategy[base]['one']['a'] = Number((Number(message.data.a[0][0])).toFixed(this.binancePrec[base][0]));
+		this.binanceStrategy[base]['one']['a_amount'] = Number(message.data.a[0][1]);
+		this.binanceStrategy[base]['two']['a'] = Number((Number(message.data.b[0][0])).toFixed(this.binancePrec[base][0]));
+		this.binanceStrategy[base]['two']['a_amount'] = Number(message.data.b[0][1]);
+		this.binanceDepth[base]['depth']['a'] = message.data; 
 	}
 	if(index === 1){
-		this.binanceStrategy[base]['one']['b'] =  Number((Number(JSON.parse(message.data).a[0][0])).toFixed(this.binancePrec[base][1]));
-		this.binanceStrategy[base]['one']['b_amount'] = Number(JSON.parse(message.data).a[0][1]);
-		this.binanceStrategy[base]['two']['b'] = Number((Number(JSON.parse(message.data).b[0][0])).toFixed(this.binancePrec[base][1]));					
-		this.binanceStrategy[base]['two']['b_amount'] = Number(JSON.parse(message.data).b[0][1]);
-		this.binanceDepth[base]['depth']['b'] = JSON.parse(message.data);
+		this.binanceStrategy[base]['one']['b'] =  Number((Number(message.data.a[0][0])).toFixed(this.binancePrec[base][1]));
+		this.binanceStrategy[base]['one']['b_amount'] = Number(message.data.a[0][1]);
+		this.binanceStrategy[base]['two']['b'] = Number((Number(message.data.b[0][0])).toFixed(this.binancePrec[base][1]));					
+		this.binanceStrategy[base]['two']['b_amount'] = Number(message.data.b[0][1]);
+		this.binanceDepth[base]['depth']['b'] = message.data;
 	}
-	if(index === 3){
-		this.binanceStrategy[base]['one']['c'] =  Number((Number(JSON.parse(message.data).b[0][0])).toFixed(this.binancePrec[base][2]));
-		this.binanceStrategy[base]['one']['c_amount'] =  Number(JSON.parse(message.data).b[0][1]);
+	if(index === 2){
+		this.binanceStrategy[base]['one']['c'] =  Number((Number(message.data.b[0][0])).toFixed(this.binancePrec[base][2]));
+		this.binanceStrategy[base]['one']['c_amount'] =  Number(message.data.b[0][1]);
 		var liquidC;
 		var liquidCcount = 0;
-		for(var i = 0;i < JSON.parse(message.data).a.length;i++){
-				if(Number(JSON.parse(message.data).a[i][1] > 0.1)){
-					liquidC = Number(JSON.parse(message.data).a[i][0]);
+		for(var i = 0;i < message.data.a.length;i++){
+				if(Number(message.data.a[i][1] > 0.1)){
+					liquidC = Number(message.data.a[i][0]);
 					liquidCcount = i;
 					break;
 				}
 		}
 		if(!liquidC){
-			liquidC =  Number((Number(JSON.parse(message.data).a[0][0])).toFixed(this.binancePrec[base][2]));
+			liquidC =  Number((Number(message.data.a[0][0])).toFixed(this.binancePrec[base][2]));
 			liquidCcount = 0;
 		}
 		this.binanceStrategy[base]['two']['c'] = liquidC;				
 		try{
-			this.binanceStrategy[base]['two']['c_amount'] = Number(JSON.parse(message.data).a[liquidCcount][1]);
+			this.binanceStrategy[base]['two']['c_amount'] = Number(message.data.a[liquidCcount][1]);
 		}
 		catch(e){
 			return this.log(e);
 		}
-		this.binanceDepth[base]['depth']['c'] = JSON.parse(message.data);
+		this.binanceDepth[base]['depth']['c'] = message.data;
 	}
 }
 
@@ -598,9 +599,9 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 	client.onmessage = (message) => {
 		if(this.binanceInProcess[base]){return}
 		if(this.binanceBalance.bnb < 0.009){return}			
-		try{
+		try{ 
 	        if (message.type === 'message' && JSON.parse(message.data).b[0] && JSON.parse(message.data).a[0]){
-				this.binanceGenerateStrategy(base,pairs.indexOf(pair),message);
+				this.binanceGenerateStrategy(base,pairs.indexOf(pair),JSON.parse(message.data));
 				var _orders = {}
 				var message = "Binance Bot:"
 	            var percentage;

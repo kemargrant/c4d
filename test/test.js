@@ -85,6 +85,7 @@ describe('General Functions', function() {
 //Binance Tests
 describe('Binance', function() {
 	var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+	var yBot = new CryptoBot.bot(mock.mockSettings1);
 	binanceBot.https = mock.https;
 	describe('#ApiKeys', function() {
 		return it('should return true when the apikey and apisecret are present', function() {
@@ -100,13 +101,14 @@ describe('Binance', function() {
 	});
 	describe('#Binance Precision', function() {			
 		return it('Should format precision data for ltc/btc/usdt pairs', function() {
-			var yBot = new CryptoBot.bot(mock.mockSettings1);
 			return setTimeout(function(done){
 				assert.deepEqual(yBot.Settings.Binance.pairs[0].prec,[6,2,2,2,6,5]);
 				done();
-			},1200);			
+			},1000);			
 		});			
 	});		
+	
+	
 	
 	describe('#Get Orders', function() {
 		return it('Should return a list of open orders for btcusdt', async function() {
@@ -153,6 +155,27 @@ describe('Binance', function() {
 			assert.equal(typeof val._idleStart,"number")
 		});		
 	});
+
+	describe('#Binance Strategy', function() {
+		var messages = mock.binanceMessages;
+		yBot.binanceStrategy['ltcbtc'] = {one:{},two:{}}
+		yBot.binanceDepth = {}
+		yBot.binanceDepth['ltcbtc'] = {depth:{},strategy1:{'a%':{},'b%':{},'c%':{}},strategy2:{'a%':{},'b%':{},'c%':{}}}
+		it('Should create a Binance Strategy using pair1',function() {
+			yBot.binanceGenerateStrategy('ltcbtc',0,messages[0]);
+			assert.equal(yBot.binanceStrategy['ltcbtc']['one']['a'],0.018881);
+		});
+			it('Should create a Binance Strategy using pair2',function() {
+			yBot.binanceGenerateStrategy('ltcbtc',1,messages[1]);
+			assert.equal(yBot.binanceStrategy['ltcbtc']['one']['b'],8500);
+		});
+		it('Should create a Binance Strategy using pair3',function() {
+			yBot.binanceGenerateStrategy('ltcbtc',2,messages[2]);
+			assert.equal(yBot.binanceStrategy['ltcbtc']['one']['c'],170);
+		});
+	});		
+	
+	
 	describe('#Binance Stream', function() {
 		return it('Should return a connected websocket',function() {
 			this.timeout(3000);

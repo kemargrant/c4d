@@ -1,6 +1,71 @@
 var rhttps = require('https');
 var WebSocket = require('ws');
 
+var _binanceMessages = [
+{data:{
+  "e": "depthUpdate", 
+  "E": 123456789,     
+  "s": "LTCBTC",      
+  "U": 157,           
+  "u": 160,           
+  "b": [              
+    [
+      "0.018882",       
+      "10",
+      []              
+    ]
+  ],
+  "a": [              
+    [
+      "0.018881",       
+      "100",         
+      []              
+    ]
+  ]
+}},
+{data:{
+  "e": "depthUpdate", 
+  "E": 123456789,     
+  "s": "BTCUSDT",      
+  "U": 157,           
+  "u": 160,           
+  "b": [              
+    [
+      "9000",       
+      "10",
+      []              
+    ]
+  ],
+  "a": [              
+    [
+      "8500",       
+      "100",         
+      []              
+    ]
+  ]
+}},
+{data:{
+  "e": "depthUpdate", 
+  "E": 123456789,     
+  "s": "LTCUSDT",      
+  "U": 157,           
+  "u": 160,           
+  "b": [              
+    [
+      "170",       
+      "10",
+      []              
+    ]
+  ],
+  "a": [              
+    [
+      "164",       
+      "100",         
+      []              
+    ]
+  ]
+}}
+]
 var _email ={
 	server:{
 		connect:function(){
@@ -195,5 +260,6 @@ module.exports = {
 	mockSettings1:settings1,
 	email:_email,
 	https:_https,
-	MongoClient:_MongoClient
+	MongoClient:_MongoClient,
+	binanceMessages:_binanceMessages
 }
