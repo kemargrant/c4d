@@ -9,6 +9,7 @@ describe('General Functions', function() {
 	bot.https = mock.https;
 	bot.MongoClient = mock.MongoClient;
 	bot.DB = bot.database();
+	bot.setupWebsocket();	
 	describe('#Connect To Database', function() {
 		this.timeout(2100);
 		return it('Should return a db connection with trade and balance collections', function(done) {
@@ -22,7 +23,7 @@ describe('General Functions', function() {
 				catch(e){
 					done(e);
 				}
-			},1050)
+			},150)
 		});
 	});
 	
@@ -40,7 +41,7 @@ describe('General Functions', function() {
 				catch(e){
 					done(e);
 				}
-			},1150)
+			},150)
 		});
 	});		
 	
@@ -52,7 +53,6 @@ describe('General Functions', function() {
 	});	
 	
 	describe('#Send Email', function() {
-		this.timeout(2500)
 		return it('Should send an email message', async function() {
 			bot.email = mock.email;
 			var val = await bot.sendEmail("Hello World");
@@ -68,27 +68,24 @@ describe('General Functions', function() {
 	});
 	
 	describe('#Setup WebSocket', function() {
-		return it('Should setup a web socket server and connect to it', async function(done) {
-			return setTimeout(()=>{
-				var client = new WebSocket("ws://127.0.0.1:7071/");
-				client.onopen = (connected)=>{
-					assert(connected);
-					client.terminate();
-					done();
-				}
-				client.onerror = (e) =>{
-					console.log("Error:",e.code);
-					assert(false);
-					done();
-				}	
-			},1500);
-			await bot.setupWebsocket();			
+		return it('Should setup a web socket server and connect to it', function(done) {
+			var client = new WebSocket("ws://127.0.0.1:7073");
+			client.onopen = (connected)=>{
+				assert(connected);
+				client.terminate();
+				done();
+			}
+			client.onerror = (e) =>{
+				console.log("Error:",e.code);
+				assert(false);
+				done();
+			}	
 		});
 	});	
 	return
 })
 
-//~ //Binance Tests
+//Binance Tests
 describe('Binance', function() {
 	var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 	var yBot = new CryptoBot.bot(mock.mockSettings1);
