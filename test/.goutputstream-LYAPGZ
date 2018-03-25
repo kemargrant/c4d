@@ -94,14 +94,18 @@ describe('Binance', function() {
 	new mock.userStream();
 	
 	describe('#Listen User Account', function() {
-		it('Should return a connected websocket client',function(done) {
+		it('Should return a connected websocket client(UserStream)',function() {
 			var val = binanceBot.binanceUserStream('randomekey');
-			setTimeout(()=>{
-				assert(binanceBot.binanceUserStreamString.search(val.url.host) > -1);
-				done();
-			},400);
-			
+			assert(binanceBot.binanceUserStreamString.search(val.url.host) > -1);		
 		});
+		//~ it('Should return a connected websocket client (ListenUser)',async function() {
+			//~ var val = await Promise.resolve(binanceBot.binanceListenUser());
+			//~ setTimeout(()=>{
+				//~ console.log("value:",val.url.search(binanceBot.binanceUserStreamString) > -1);
+				//~ assert(val.url.search(binanceBot.binanceUserStreamString) > -1);
+			//~ },600);
+			
+		//~ });		
 	});	
 	
 	describe('#ApiKeys', function() {
@@ -217,7 +221,7 @@ describe('Binance', function() {
 			assert.equal(typeof val._idleStart,"number")
 		});
 		it('Should return a setTimeout object when percentage > 100%',function() {
-			var val = binanceBot.binanceSaveOrders([{clientOrderId:1},{clientOrderId:2},{clientOrderId:3}npm te],base,101,{'ltc':1,'btc':2,'usdt':3},{'ltcbtc':'ltc'},{'ltcbtc':'btc'},{'ltcbtc':'usdt'});
+			var val = binanceBot.binanceSaveOrders([{clientOrderId:1},{clientOrderId:2},{clientOrderId:3}],base,101,{'ltc':1,'btc':2,'usdt':3},{'ltcbtc':'ltc'},{'ltcbtc':'btc'},{'ltcbtc':'usdt'});
 			assert.equal(typeof val._idleStart,"number")
 		});		
 	});
@@ -261,88 +265,86 @@ describe('Binance', function() {
   return
 });
 
-describe('Bittrex', function() {
-    var bot = new CryptoBot.bot(mock.mockSettings1);
-    bot.https = mock.https;
-	bot.MongoClient = mock.MongoClient;
-	bot.DB = bot.database();
-	describe('#ApiKeys', function() {
-		return it('should return true when the apikey and apisecret are present', function() {
-			assert.equal(bot.Settings.Bittrex.apikey.length > 0 && bot.Settings.Bittrex.secret.length > 0, true);
-		});
-	});
+//~ describe('Bittrex', function() {
+
+	//~ describe('#ApiKeys', function() {
+		//~ return it('should return true when the apikey and apisecret are present', function() {
+			//~ assert.equal(bot.Settings.Bittrex.apikey.length > 0 && bot.Settings.Bittrex.secret.length > 0, true);
+		//~ });
+	//~ });
 	
-	describe('#Account Data', function() {
-		return it('Should return account data', async function() {
-			var val = await bot.bittrexAccount();
-			assert.equal(typeof val,"object")
-		});
-	});
+	//~ describe('#Account Data', function() {
+		//~ return it('Should return account data', async function() {
+			//~ var val = await bot.bittrexAccount();
+			//~ assert.equal(val,true)
+		//~ });
+	//~ });
 	
-	describe('#Complete Arbitrage', function() {
-		return it('Should return a setTimeout object', async function() {
-			var val = await bot.bittrexCompleteArbitrage({'randomid':false,'randomi2':false,'randomid3':false});
-			assert.equal(typeof val._idleStart,"number");
-		});
-	});	
+	//~ describe('#Complete Arbitrage', function() {
+		//~ return it('Should return a setTimeout object', async function() {
+			//~ var val = await bot.bittrexCompleteArbitrage({'randomid':false,'randomi2':false,'randomid3':false});
+			//~ assert.equal(typeof val._idleStart,"number");
+		//~ });
+	//~ });	
 	
-	describe('#Market Depth', function() {
-		return it('Should return an object with bid and ask price', async function() {
-			var val = await bot.bittrexDepthPure('USDT-BTC');
-			assert(val.buy && val.sell)
-		});
-	});		
+	//~ describe('#Market Depth', function() {
+		//~ return it('Should return an object with bid and ask price', async function() {
+			//~ var val = await bot.bittrexDepthPure('USDT-BTC');
+			//~ assert(val.buy && val.sell)
+		//~ });
+	//~ });		
 
-	describe('#Place and Remove Order', function() {
-		it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
-			var val = await bot.bittrexTrade("buy","USDT-BTC",1,20.00);
-			var val2 = await bot.bittrexCancelOrder(val);
-			assert.equal(val2.success,true);
-		});
-	});	
+	//~ describe('#Place and Remove Order', function() {
+		//~ it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
+			//~ var val = await bot.bittrexTrade("buy","USDT-BTC",1,20.00);
+			//~ var val2 = await bot.bittrexCancelOrder(val);
+			//~ assert.equal(val2.success,true);
+		//~ });
+	//~ });	
 
-	describe('#Completed Trades', function() {
-		return it('Should return a settimeout object', function() {
-			var val = bot.completedTrades(['xxxx']);
-			assert.equal(Number(val._idleStart > 0),true);
-		});
-	});
+	//~ describe('#Completed Trades', function() {
+		//~ this.timeout(15000);
+		//~ return it('Should return a settimeout object', function() {
+			//~ var val = bot.completedTrades(['xxxx']);
+			//~ assert.equal(Number(val._idleStart > 0),true);
+		//~ });
+	//~ });
 
-	describe('#Stream', function() {
-		this.timeout(10000);
-		return it('Should return signalr client', async function() {
-			var val = await bot.bittrexPrepareStream();
-			var val2 = await bot.bittrexStream(val[0],val[1]);
-			setTimeout(()=>{
-					bot.bittrexSocketConnection.close();
-					client.terminate();
-				},400);
-			assert(val2.headers.cookie);
-		});
-	});
+	//~ describe('#Stream', function() {
+		//~ this.timeout(15000);
+		//~ return it('Should return signalr client', async function() {
+			//~ var val = await bot.bittrexPrepareStream();
+			//~ var val2 = await bot.bittrexStream(val[0],val[1]);
+				//~ setTimeout(()=>{
+					//~ bot.bittrexSocketConnection.close();
+					//~ client.terminate();
+				//~ },400);
+			//~ assert(val2.headers.cookie);
+		//~ });
+	//~ });
 	
-});
+//~ });
 
 
-describe('Utilities', function() {
-	var bot = new CryptoBot.bot(mock.mockSettings1);
-	describe('#BubbleSort', function() {
-		return it('Should sort in decreasing order', function() {
-			var array = [99.1,99.01,99.4,99.1,99.6,99.7,1,50,54];
-			var sorted = bot.utilities.BubbleSort(array,99.5);
-			assert.deepEqual([99.7,99.6,99.4,99.1,99.1,99.01],sorted);
-		});
-	});
-	describe('#Solve > 100%', function() {
-		return it('Should return the ideal solution when ratio > 100%', function() {
-			var solution = bot.utilities.solveOver(0.0046,6,2,0.002185,8838,19.279);
-			assert.equal(solution,0.004828);
-		});
-	});
-	describe('#Solve < 100%', function() {
-		return it('Should return the ideal solution when ratio < 100%', function() {
-			var solution = bot.utilities.solveUnder(3,0.075332,11525,869.5);
-			assert.equal(0.073,solution);
-		});
-	});	
-});
+//~ describe('Utilities', function() {
+	//~ var bot = new CryptoBot.bot(mock.mockSettings1);
+	//~ describe('#BubbleSort', function() {
+		//~ return it('Should sort in decreasing order', function() {
+			//~ var array = [99.1,99.01,99.4,99.1,99.6,99.7,1,50,54];
+			//~ var sorted = bot.utilities.BubbleSort(array,99.5);
+			//~ assert.deepEqual([99.7,99.6,99.4,99.1,99.1,99.01],sorted);
+		//~ });
+	//~ });
+	//~ describe('#Solve > 100%', function() {
+		//~ return it('Should return the ideal solution when ratio > 100%', function() {
+			//~ var solution = bot.utilities.solveOver(0.0046,6,2,0.002185,8838,19.279);
+			//~ assert.equal(solution,0.004828);
+		//~ });
+	//~ });
+	//~ describe('#Solve < 100%', function() {
+		//~ return it('Should return the ideal solution when ratio < 100%', function() {
+			//~ var solution = bot.utilities.solveUnder(3,0.075332,11525,869.5);
+			//~ assert.equal(0.073,solution);
+		//~ });
+	//~ });	
+//~ });

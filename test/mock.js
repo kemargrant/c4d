@@ -85,7 +85,7 @@ var _https = {
 	request:function(options,func){
 		const events = new MyEmitter();
 		var data = {};
-		//get Account proxy
+		//Binance Proxies
 		//console.log("proxy:",options.path);
 		if(options.path.search("/api/v1/account") > -1 && options.method === "GET"){
 			//console.log("proxy get Binance Account");
@@ -189,7 +189,30 @@ var _https = {
 			//console.log("proxy cancel Binance order");
 			data = {symbol:'BTCUSDT'};
 			userEvents.emit("delete",options);
-		}		
+		}
+		//Bittrex proxies
+		//Get balance
+		else if(options.path.search("account/getbalances") > -1){
+			data = {result:[{Currency:"BTC",Available:1}]}
+		}	
+		//Bittrex Trade
+		else if( (options.path.search("market/buylimit") > -1) || (options.path.search("market/selllimit") > -1 )){
+			data = {
+				"success" : true,
+				"message" : "",
+				"result" : {
+						"uuid" : "614c34e4-8d71-11e3-94b5-425861b86ab6"
+					}
+			}
+		}	
+		//cancel trade
+		else if(options.path.search("market/cancel") > -1){
+			data = {
+				    "success" : true,
+				    "message" : "",
+				    "result" : null
+				}
+		}				
 		else{
 			return rhttps.request(options,func);		
 		}

@@ -944,6 +944,7 @@ CryptoBot.prototype.bittrexAPI = function(path,options){
 					var parsed;
 					try{
 						parsed = JSON.parse(body);
+						parsed.result = postData.search("market/cancel") > -1 ? parsed : parsed.result;
 						return resolve(parsed.result);		
 					}
 					catch(e){
@@ -997,11 +998,13 @@ CryptoBot.prototype.bittrexAccount = function(){
 CryptoBot.prototype.bittrexCancelOrder = function(orderid){
 	return new Promise((resolve,reject)=>{
 		return this.bittrexAPI("market/cancel","&uuid="+orderid).then((res)=>{
-			if(!res.success){
+			if(res.success){
+				return resolve(res);
+			}	
+			else{
 				this.log("Error Canceling Bittrex Order:",orderid);
 				return reject(false);
-			}	
-			return resolve(res);				
+			}
 		}).catch((e)=>{
 			this.log("Error Canceling Bittrex Order:",e,orderid);
 			return reject(false);
