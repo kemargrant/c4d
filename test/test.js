@@ -173,9 +173,9 @@ describe('Binance', function() {
 	
 	describe('#Precision', function() {			
 		return it('Should format precision data for ltc/btc/usdt pairs', function() {
-			return setTimeout(function(done){
-				assert.deepEqual(yBot.Settings.Binance.pairs[0].prec,[6,2,2,2,6,5]);
-				done();
+			var zBot = new CryptoBot.bot(mock.mockSettings1);
+			return setTimeout((done)=>{
+				assert.deepEqual(zBot.Settings.Binance.pairs[0].prec,[6,2,2,2,6,5]);
 			},1000);			
 		});			
 	});		
@@ -217,7 +217,7 @@ describe('Binance', function() {
 			assert.equal(typeof val._idleStart,"number")
 		});
 		it('Should return a setTimeout object when percentage > 100%',function() {
-			var val = binanceBot.binanceSaveOrders([{clientOrderId:1},{clientOrderId:2},{clientOrderId:3}npm te],base,101,{'ltc':1,'btc':2,'usdt':3},{'ltcbtc':'ltc'},{'ltcbtc':'btc'},{'ltcbtc':'usdt'});
+			var val = binanceBot.binanceSaveOrders([{clientOrderId:1},{clientOrderId:2},{clientOrderId:3}],base,101,{'ltc':1,'btc':2,'usdt':3},{'ltcbtc':'ltc'},{'ltcbtc':'btc'},{'ltcbtc':'usdt'});
 			assert.equal(typeof val._idleStart,"number")
 		});		
 	});
@@ -309,7 +309,7 @@ describe('Bittrex', function() {
 	});
 
 	describe('#Stream', function() {
-		this.timeout(10000);
+		this.timeout(15000);
 		return it('Should return signalr client', async function() {
 			var val = await bot.bittrexPrepareStream();
 			var val2 = await bot.bittrexStream(val[0],val[1]);
