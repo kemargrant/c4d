@@ -346,6 +346,11 @@ describe('Bittrex', function() {
 				var val = await bot.bittrexSwing();
 				assert.equal(val,2);
 			});
+			it('Should return 0', async function() {
+				bot.vibrate = false;
+				var val = await bot.bittrexSwing();
+				assert.equal(val,0);
+			});
 		})
 		
 		describe('#Prepare Swing Order',function() {
@@ -354,6 +359,7 @@ describe('Bittrex', function() {
 				assert.equal(typeof val._idleStart,"number");
 			});
 		})
+
 	});
 	
 });
