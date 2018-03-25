@@ -336,7 +336,7 @@ var settings1 ={
 		{
 			"addr":"Recipient_Email_Address",
 			"host_smtp":"Email_SMTP_IP_Address",
-			"use":false,
+			"use":true,
 			"usr":"Email_Account_Address",
 			"pwd":"Email_Password"		
 		},
@@ -349,7 +349,7 @@ var settings1 ={
 		{
 			"channel":"Slack_Channel",
 			"hook":"Slack_Webhook",
-			"use":false,
+			"use":true,
 			"usr":"Slack_user_to_notify"
 		},
 	"Swing":
