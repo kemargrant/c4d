@@ -85,7 +85,7 @@ describe('General Functions', function() {
 	return
 })
 
-//Binance Tests
+//~ //Binance Tests
 describe('Binance', function() {
 	var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 	var yBot = new CryptoBot.bot(mock.mockSettings1);
@@ -279,6 +279,13 @@ describe('Bittrex', function() {
 		});
 	});
 	
+	describe('#Get Open Orders', function() {
+		return it('Should return open orders list', async function() {
+			var val = await bot.bittrexGetOrders();
+			assert(val instanceof Array)
+		});
+	});	
+	
 	describe('#Complete Arbitrage', function() {
 		return it('Should return a setTimeout object', async function() {
 			var val = await bot.bittrexCompleteArbitrage({'randomid':false,'randomi2':false,'randomid3':false});
@@ -309,16 +316,32 @@ describe('Bittrex', function() {
 	});
 
 	describe('#Stream', function() {
-		this.timeout(15000);
+		this.timeout(12500);
 		return it('Should return signalr client', async function() {
 			var val = await bot.bittrexPrepareStream();
 			var val2 = await bot.bittrexStream(val[0],val[1]);
 			setTimeout(()=>{
 					bot.bittrexSocketConnection.close();
 					client.terminate();
-				},400);
+				},300);
 			assert(val2.headers.cookie);
 		});
+	});
+	
+	describe('#Swing Order', function() {
+		describe('#Should reset the swing order',function() {
+			it('Should return true', async function() {
+				var val = await bot.bittrexResetSwingOrder();
+				assert(val);
+			});
+		})
+		
+		describe('#Should return a setTimeout id',function() {
+			it('Should return a number > 0', async function() {
+				var val = await bot.bittrexSwingOrder();
+				assert.equal(typeof val._idleStart,"number");
+			});
+		})
 	});
 	
 });

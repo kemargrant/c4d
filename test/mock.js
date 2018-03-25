@@ -195,6 +195,51 @@ var _https = {
 		else if(options.path.search("account/getbalances") > -1){
 			data = {result:[{Currency:"BTC",Available:1}]}
 		}	
+		//Get Open Orders
+		else if(options.path.search("market/getopenorders") > -1){
+			data = {
+				"success" : true,
+				"message" : "",
+				"result" : [{
+						"Uuid" : null,
+						"OrderUuid" : "09aa5bb6-8232-41aa-9b78-a5a1093e0211",
+						"Exchange" : "BTC-LTC",
+						"OrderType" : "LIMIT_SELL",
+						"Quantity" : 5.00000000,
+						"QuantityRemaining" : 5.00000000,
+						"Limit" : 2.00000000,
+						"CommissionPaid" : 0.00000000,
+						"Price" : 0.00000000,
+						"PricePerUnit" : null,
+						"Opened" : "2014-07-09T03:55:48.77",
+						"Closed" : null,
+						"CancelInitiated" : false,
+						"ImmediateOrCancel" : false,
+						"IsConditional" : false,
+						"Condition" : null,
+						"ConditionTarget" : null
+					}, {
+						"Uuid" : null,
+						"OrderUuid" : "8925d746-bc9f-4684-b1aa-e507467aaa99",
+						"Exchange" : "BTC-LTC",
+						"OrderType" : "LIMIT_BUY",
+						"Quantity" : 100000.00000000,
+						"QuantityRemaining" : 100000.00000000,
+						"Limit" : 0.00000001,
+						"CommissionPaid" : 0.00000000,
+						"Price" : 0.00000000,
+						"PricePerUnit" : null,
+						"Opened" : "2014-07-09T03:55:48.583",
+						"Closed" : null,
+						"CancelInitiated" : false,
+						"ImmediateOrCancel" : false,
+						"IsConditional" : false,
+						"Condition" : null,
+						"ConditionTarget" : null
+					}
+				]
+			}
+		}			
 		//Bittrex Trade
 		else if( (options.path.search("market/buylimit") > -1) || (options.path.search("market/selllimit") > -1 )){
 			data = {
@@ -310,10 +355,10 @@ var settings1 ={
 	"Swing":
 		{
 			"amount":0.001,
-			"pair":"BTC-XXX",
+			"pair":"BTC-USDT",
 			"rate":60000,
 			"swing":0.02,
-			"swingTrade":false
+			"swingTrade":true
 		}		
 }
 
