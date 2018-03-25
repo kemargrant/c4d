@@ -85,7 +85,7 @@ describe('General Functions', function() {
 	return
 })
 
-//~ //Binance Tests
+//Binance Tests
 describe('Binance', function() {
 	var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 	var yBot = new CryptoBot.bot(mock.mockSettings1);
@@ -321,22 +321,34 @@ describe('Bittrex', function() {
 			var val = await bot.bittrexPrepareStream();
 			var val2 = await bot.bittrexStream(val[0],val[1]);
 			setTimeout(()=>{
-					bot.bittrexSocketConnection.close();
-					client.terminate();
-				},300);
+					try{
+						bot.bittrexSocketConnection.close();
+						client.terminate();
+					}
+					catch(e){
+						console.log(e);
+					}
+				},500);
 			assert(val2.headers.cookie);
 		});
 	});
 	
-	describe('#Swing Order', function() {
-		describe('#Should reset the swing order',function() {
+	describe('#Swing Orders', function() {
+		describe('#Reset a swing order',function() {
 			it('Should return true', async function() {
 				var val = await bot.bittrexResetSwingOrder();
 				assert(val);
 			});
 		})
+
+		describe('#Swing',function() {
+			it('Should return 2', async function() {
+				var val = await bot.bittrexSwing();
+				assert.equal(val,2);
+			});
+		})
 		
-		describe('#Should return a setTimeout id',function() {
+		describe('#Prepare Swing Order',function() {
 			it('Should return a number > 0', async function() {
 				var val = await bot.bittrexSwingOrder();
 				assert.equal(typeof val._idleStart,"number");
