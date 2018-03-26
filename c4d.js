@@ -146,7 +146,8 @@ CryptoBot.prototype.binanceAccount = function(){
    * @param {Obect} U1 pair object
    * @return {Boolean} Return boolean
    */
-CryptoBot.prototype.binanceArbitrage = function(base,pairs,e1,b1,u1){	
+CryptoBot.prototype.binanceArbitrage = function(base,pairs,e1,b1,u1,index,messageData){	
+	this.binanceGenerateStrategy(base,index,messageData)
 	var percentage = (this.binanceStrategy[base].one.a * this.binanceStrategy[base].one.b/this.binanceStrategy[base].one.c)*100;	
 	if(!Number(percentage)){return false;}
 	var _orders = {}
@@ -735,8 +736,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 		if(this.binanceBalance.bnb < 0.009){return}			
 		try{ 
 	        if (message.type === 'message' && JSON.parse(message.data).b[0] && JSON.parse(message.data).a[0]){
-				this.binanceGenerateStrategy(base,pairs.indexOf(pair),JSON.parse(message.data));
-				this.binanceArbitrage(base,pairs,e1,b1,u1);
+				this.binanceArbitrage(base,pairs,e1,b1,u1,pairs.indexOf(pair),JSON.parse(message.data));
 			}
 		}
 		 catch(e){
