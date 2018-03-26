@@ -1206,6 +1206,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 	var u2;
 	var b3;
 	var _b3;
+	var timeout;
 	e1 = pair1.split('-')[1].toLowerCase();
 	_e1 = "_" + pair1.split('-')[1].toLowerCase();
 	b3 = pair1.split('-')[0].toLowerCase();
@@ -1290,7 +1291,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 			this.bittrexSocketConnection = connection;
 			this.log("Bittrex Websocket connected:",new Date()); 
 			this.updateBittrexSocketStatus(true);
-			setTimeout(()=>{
+			timeout = setTimeout(()=>{
 				if(this.bittrexSocketConnection){
 					this.log("Resetting Bittrex Connection:",new Date())
 					this.bittrexSocketConnection.close();
@@ -1300,11 +1301,15 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 		},
 		disconnected: ()=> { 
 			this.log("Bittrex Websocket disconnected:",new Date()); 
-			if(this.bittrexKill){this.log("Connection closed by user");}
+			clearTimeout(timeout);
+			if(this.bittrexKill){
+				this.log("Connection closed by user");
+			}
 			return this.updateBittrexSocketStatus(false);
 		},
 		onerror:(error)=> { 
 			this.log("Bittrex Websocket onerror: ", error); 
+			clearTimeout(timeout);
 			this.updateBittrexSocketStatus(false);
 			if(!this.bittrexKill){
 				return this.bittrexPrepareStream().then((info2)=>{
