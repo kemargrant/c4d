@@ -9,7 +9,9 @@ describe('General Functions', function() {
 	bot.https = mock.https;
 	bot.MongoClient = mock.MongoClient;
 	bot.DB = bot.database();
-	bot.setupWebsocket();	
+	bot.setupWebsocket().then(()=>{
+		bot.wss.close();
+	});	
 	describe('#Connect To Database', function() {
 		this.timeout(2100);
 		return it('Should return a db connection with trade and balance collections', function(done) {
