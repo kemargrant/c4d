@@ -88,7 +88,7 @@ describe('General Functions', function() {
 	return
 })
 
-//~ //Binance Tests
+//Binance Tests
 describe('Binance', function() {
 	var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 	var yBot = new CryptoBot.bot(mock.mockSettings1);
@@ -322,24 +322,23 @@ describe('Bittrex', function() {
 	});
 
 	describe('#Stream', function() {
-		this.timeout(12500);
+		this.timeout(20500);
 		return it('Should return signalr client', async function() {
 			var val = await bot.bittrexPrepareStream();
 			var val2 = await bot.bittrexStream(val[0],val[1]);
-			assert(val2.headers.cookie);
-			return setTimeout(()=>{
+			setTimeout(()=>{
 					try{
-						console.log("closing client:",val2);
-						val2.end();
+						
 						bot.bittrexKill = true;
 						if(bot.bittrexSocketConnection.close){
+							assert(val2.headers.cookie);
 							bot.bittrexSocketConnection.close();
 						}
 					}
 					catch(e){
 						console.log(e);
 					}
-				},10000);
+				},15000);
 			
 		});
 	});
