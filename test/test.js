@@ -4,6 +4,7 @@ var mock = require('./mock.js');
 var assert = require('assert');
 var WebSocket = require('ws');
 
+//General Tests
 describe('General Functions', function() {
 	var bot = new CryptoBot.bot(mock.mockSettings1);
 	bot.https = mock.https;
@@ -87,7 +88,7 @@ describe('General Functions', function() {
 	return
 })
 
-//Binance Tests
+//~ //Binance Tests
 describe('Binance', function() {
 	var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 	var yBot = new CryptoBot.bot(mock.mockSettings1);
@@ -263,6 +264,7 @@ describe('Binance', function() {
   return
 });
 
+//~ //Bittrex Tests
 describe('Bittrex', function() {
     var bot = new CryptoBot.bot(mock.mockSettings1);
     bot.https = mock.https;
@@ -327,6 +329,8 @@ describe('Bittrex', function() {
 			assert(val2.headers.cookie);
 			return setTimeout(()=>{
 					try{
+						console.log("closing client:",val2);
+						val2.end();
 						bot.bittrexKill = true;
 						if(bot.bittrexSocketConnection.close){
 							bot.bittrexSocketConnection.close();
@@ -335,7 +339,7 @@ describe('Bittrex', function() {
 					catch(e){
 						console.log(e);
 					}
-				},12551);
+				},10000);
 			
 		});
 	});
@@ -351,12 +355,13 @@ describe('Bittrex', function() {
 		describe('#Swing',function() {
 			it('Should return 2', async function() {
 				var val = await bot.bittrexSwing();
-				assert.equal(val,2);
+				assert.equal(val.status,2);
+				clearTimeout(val.Timeout);
 			});
 			it('Should return 0', async function() {
 				bot.vibrate = false;
 				var val = await bot.bittrexSwing();
-				assert.equal(val,0);
+				assert.equal(val.status,0);
 			});
 		})
 		
@@ -364,14 +369,14 @@ describe('Bittrex', function() {
 			it('Should return a setTimeout Object > 0', async function() {
 				var val = await bot.bittrexSwingOrder();
 				assert.equal(typeof val._idleStart,"number");
-				return clearTimeout(val);
+				clearTimeout(val);
 			});
 		})
 
 	});
 });
 
-
+//Utility Tests
 describe('Utilities', function() {
 	var bot = new CryptoBot.bot(mock.mockSettings1);
 	describe('#BubbleSort', function() {
