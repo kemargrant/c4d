@@ -320,16 +320,17 @@ describe('Bittrex', function() {
 		return it('Should return signalr client', async function() {
 			var val = await bot.bittrexPrepareStream();
 			var val2 = await bot.bittrexStream(val[0],val[1]);
-			setTimeout(()=>{
+			assert(val2.headers.cookie);
+			return setTimeout(()=>{
 					try{
 						bot.bittrexSocketConnection.close();
-						client.terminate();
+						return client.terminate();
 					}
 					catch(e){
 						console.log(e);
 					}
-				},500);
-			assert(val2.headers.cookie);
+				},12501);
+			
 		});
 	});
 	
@@ -361,7 +362,7 @@ describe('Bittrex', function() {
 		})
 
 	});
-	
+	setTimeout(()=>{});
 });
 
 
