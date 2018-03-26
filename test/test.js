@@ -323,13 +323,13 @@ describe('Bittrex', function() {
 			assert(val2.headers.cookie);
 			return setTimeout(()=>{
 					try{
+						bot.bittrexKill = true;
 						bot.bittrexSocketConnection.close();
-						return client.terminate();
 					}
 					catch(e){
 						console.log(e);
 					}
-				},12501);
+				},12551);
 			
 		});
 	});
@@ -355,14 +355,14 @@ describe('Bittrex', function() {
 		})
 		
 		describe('#Prepare Swing Order',function() {
-			it('Should return a number > 0', async function() {
+			it('Should return a setTimeout Object > 0', async function() {
 				var val = await bot.bittrexSwingOrder();
 				assert.equal(typeof val._idleStart,"number");
+				return clearTimeout(val);
 			});
 		})
 
 	});
-	setTimeout(()=>{});
 });
 
 
