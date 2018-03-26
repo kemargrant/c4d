@@ -365,7 +365,7 @@ var settings1 ={
 //mock Binance Market
 function _marketStream(){
 	var wss = new WebSocket.Server({port:8080});
-	return wss.on('connection',(ws,req)=>{
+	wss.on('connection',(ws,req)=>{
 		//console.log("Websocket connection created:",req.rawHeaders,req.url);
 		ws.on('error',(e)=>{
 			console.log("Mock socket error:",e);
@@ -377,6 +377,7 @@ function _marketStream(){
 			ws.send("");
 		});				
 	})	
+	return wss;
 }
 
 //mock Binance Userstream
@@ -393,7 +394,7 @@ function _userStream(){
 			}
 		}
 	});
-	return wss.on('connection',(ws,req)=>{
+	wss.on('connection',(ws,req)=>{
 		clients.push(ws);
 		ws.on('error',(e)=>{
 			console.log("Mock socket error:",e);
@@ -401,7 +402,8 @@ function _userStream(){
 		ws.on('close',(e)=>{
 			return console.log("Mock WebSocket Closed:",e,new Date());
 		})					
-	})	
+	})
+	return wss;	
 }
 
 

@@ -94,15 +94,15 @@ describe('Binance', function() {
 	var yBot = new CryptoBot.bot(mock.mockSettings1);
 	binanceBot.https = mock.https;
 	binanceBot.binanceUserStreamString = "ws://127.0.0.1:8090/";
-	new mock.userStream();
+	var userStream = new mock.userStream();
 	
 	describe('#Listen User Account', function() {
-		it('Should return a connected websocket client',function(done) {
+		it('Should return a connected websocket client',function() {
 			var val = binanceBot.binanceUserStream('randomekey');
 			setTimeout(()=>{
 				assert(binanceBot.binanceUserStreamString.search(val.url.host) > -1);
-				done();
-			},400);
+				userStream.close();
+			},800);
 			
 		});
 	});	
@@ -250,7 +250,12 @@ describe('Binance', function() {
 			var _mockMarket = new mock.marketStream();
 			binanceBot.binanceMarket = mock.market;
 			binanceBot.binanceMonitor([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
-			assert.equal(binanceBot.binanceSocketConnections[0].readyState,0);
+			setTimeout(()=>{
+				assert.equal(binanceBot.binanceSocketConnections[0].readyState,0);
+				binanceBot.binanceSocketConnections[0].close();
+				_mockMarket.close();
+				
+			},1000);
 		});
 	});		
 	
@@ -264,7 +269,7 @@ describe('Binance', function() {
   return
 });
 
-//~ //Bittrex Tests
+//Bittrex Tests
 describe('Bittrex', function() {
     var bot = new CryptoBot.bot(mock.mockSettings1);
     bot.https = mock.https;
@@ -322,7 +327,7 @@ describe('Bittrex', function() {
 	});
 
 	describe('#Stream', function() {
-		this.timeout(20500);
+		this.timeout(15500);
 		return it('Should return signalr client', async function() {
 			var val = await bot.bittrexPrepareStream();
 			var val2 = await bot.bittrexStream(val[0],val[1]);
