@@ -290,6 +290,7 @@ describe('Bittrex', function() {
 		return it('Should return a setTimeout object', async function() {
 			var val = await bot.bittrexCompleteArbitrage({'randomid':false,'randomi2':false,'randomid3':false});
 			assert.equal(typeof val._idleStart,"number");
+			clearTimeout(val);
 		});
 	});	
 	
@@ -312,6 +313,7 @@ describe('Bittrex', function() {
 		return it('Should return a settimeout object', function() {
 			var val = bot.completedTrades(['xxxx']);
 			assert.equal(Number(val._idleStart > 0),true);
+			clearTimeout(val);
 		});
 	});
 
@@ -324,7 +326,9 @@ describe('Bittrex', function() {
 			return setTimeout(()=>{
 					try{
 						bot.bittrexKill = true;
-						bot.bittrexSocketConnection.close();
+						if(bot.bittrexSocketConnection.close){
+							bot.bittrexSocketConnection.close();
+						}
 					}
 					catch(e){
 						console.log(e);
