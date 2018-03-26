@@ -101,7 +101,7 @@ describe('Binance', function() {
 			var val = binanceBot.binanceUserStream('randomekey');
 			setTimeout(()=>{
 				assert(binanceBot.binanceUserStreamString.search(val.url.host) > -1);
-				userStream.close();
+				//userStream.close();
 			},800);
 			
 		});
@@ -122,11 +122,12 @@ describe('Binance', function() {
 	
 	describe('#Arbitrage', function() {
 		var testBot = new CryptoBot.bot(mock.mockSettings1);
+		var base = 'ltcbtc';
 		testBot.MongoClient = mock.MongoClient;
 		testBot.DB = testBot.database();
 		testBot.https = mock.https;
-		testBot.Settings.Binance.pairs[0].prec = [6,2,2,2,6,5];
-		var base = 'ltcbtc';
+		testBot.binancePre = {}
+		testBot.binancePre[base] = [6,2,2,2,6,5];
 		var pairs = ['ltcbtc','btcusdt','ltcusdt'];
 		var e1 = {'ltcbtc':'ltc'} 
 		var b1 = {'ltcbtc':'btc'} 
@@ -149,6 +150,7 @@ describe('Binance', function() {
 			     a_amount: 282 } 
 			}
 			testBot.binanceBalance = {'bnb':1,'ltc':50,'btc':0.5,'usdt':4000}
+			console.log(testBot);
 			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
 			assert(!val)
 		});
@@ -269,7 +271,7 @@ describe('Binance', function() {
   return
 });
 
-//Bittrex Tests
+//~ //Bittrex Tests
 describe('Bittrex', function() {
     var bot = new CryptoBot.bot(mock.mockSettings1);
     bot.https = mock.https;
