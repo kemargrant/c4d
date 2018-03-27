@@ -8,7 +8,7 @@ describe('Binance', function() {
 	var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 	var yBot = new CryptoBot.bot(mock.mockSettings1);
 	binanceBot.https = mock.https;
-	 bot.email = mock.email;
+	binanceBot.email = mock.email;
 	binanceBot.binanceUserStreamString = "ws://127.0.0.1:8090/";
 	var userStream = new mock.userStream();
 	
