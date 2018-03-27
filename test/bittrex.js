@@ -62,12 +62,17 @@ describe('Bittrex', function() {
 	});
 
 	describe('#Stream', function() {
-		return it('Should return signalr client', async function() {
-			this.timeout(9000);
-			bot.bittrexKill = true;
+		it('Should return signalr client', async function() {
+			this.timeout(15000);
 			var val = await bot.bittrexPrepareStream();
 			var val2 = await bot.bittrexStream(val[0],val[1]);
-			assert(val2.headers.cookie);
+			console.log("signal==>:",val2);
+			setTimeout(()=>{
+				bot.bittrexKill = true;
+				console.log("asserting");
+				assert(val2.headers.cookie);
+				done();
+			},13000)
 		});
 	});
 	

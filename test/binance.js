@@ -165,15 +165,12 @@ describe('Binance', function() {
 	
 	describe('#Stream', function() {
 		return it('Should return a connected websocket',function() {
-			this.timeout(3000);
+			this.timeout(2500);
 			var _mockMarket = new mock.marketStream();
 			binanceBot.binanceMarket = mock.market;
 			binanceBot.binanceMonitor([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
 			setTimeout(()=>{
 				assert.equal(binanceBot.binanceSocketConnections[0].readyState,0);
-				binanceBot.binanceSocketConnections[0].close();
-				_mockMarket.close();
-				
 			},1000);
 		});
 	});		

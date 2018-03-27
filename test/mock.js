@@ -365,6 +365,9 @@ var settings1 ={
 //mock Binance Market
 function _marketStream(){
 	var wss = new WebSocket.Server({port:8080});
+		setTimeout(()=>{
+		wss.close();
+	},5000);
 	wss.on('connection',(ws,req)=>{
 		//console.log("Websocket connection created:",req.rawHeaders,req.url);
 		ws.on('error',(e)=>{
@@ -394,6 +397,9 @@ function _userStream(){
 			}
 		}
 	});
+	setTimeout(()=>{
+		wss.close();
+	},5000);
 	wss.on('connection',(ws,req)=>{
 		clients.push(ws);
 		ws.on('error',(e)=>{
