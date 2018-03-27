@@ -1291,13 +1291,16 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 			this.bittrexSocketConnection = connection;
 			this.log("Bittrex Websocket connected:",new Date()); 
 			this.updateBittrexSocketStatus(true);
-			timeout = setTimeout(()=>{
-				if(this.bittrexSocketConnection){
-					this.log("Resetting Bittrex Connection:",new Date())
-					this.bittrexSocketConnection.close();
-					return this.bittrexStream(cookie,agent);
-				}
-			},1800000);
+			if(!this.bittrexKill){
+				console.log("settng timeout");
+				timeout = setTimeout(()=>{
+					if(this.bittrexSocketConnection){
+						this.log("Resetting Bittrex Connection:",new Date())
+						this.bittrexSocketConnection.close();
+						return this.bittrexStream(cookie,agent);
+					}
+				},1800000);
+			}
 		},
 		disconnected: ()=> { 
 			this.log("Bittrex Websocket disconnected:",new Date()); 

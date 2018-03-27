@@ -7,6 +7,7 @@ var WebSocket = require('ws');
 describe('Bittrex', function() {
     var bot = new CryptoBot.bot(mock.mockSettings1);
     bot.https = mock.https;
+    bot.email = mock.email;
 	bot.MongoClient = mock.MongoClient;
 	bot.DB = bot.database();
 	describe('#ApiKeys', function() {
@@ -61,12 +62,12 @@ describe('Bittrex', function() {
 	});
 
 	describe('#Stream', function() {
-		this.timeout(15500);
 		return it('Should return signalr client', async function() {
+			this.timeout(9000);
 			bot.bittrexKill = true;
 			var val = await bot.bittrexPrepareStream();
 			var val2 = await bot.bittrexStream(val[0],val[1]);
-			return assert(val2.headers.cookie);
+			assert(val2.headers.cookie);
 		});
 	});
 	
