@@ -66,7 +66,6 @@ describe('Binance', function() {
 			     a_amount: 282 } 
 			}
 			testBot.binanceBalance = {'bnb':1,'ltc':50,'btc':0.5,'usdt':4000}
-			console.log(testBot);
 			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
 			assert(!val)
 		});
