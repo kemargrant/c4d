@@ -134,11 +134,13 @@ describe('Binance', function() {
 		binanceBot.DB = binanceBot.database();
 		it('Should return a setTimeout object when percentage < 100%',function() {
 			var val = binanceBot.binanceSaveOrders([{clientOrderId:1},{clientOrderId:2},{clientOrderId:3}],base,99,{'ltc':1,'btc':2,'usdt':3},{'ltcbtc':'ltc'},{'ltcbtc':'btc'},{'ltcbtc':'usdt'});
-			assert.equal(typeof val._idleStart,"number")
+			assert.equal(typeof val._idleStart,"number");
+			clearTimeout(val);
 		});
 		it('Should return a setTimeout object when percentage > 100%',function() {
 			var val = binanceBot.binanceSaveOrders([{clientOrderId:1},{clientOrderId:2},{clientOrderId:3}],base,101,{'ltc':1,'btc':2,'usdt':3},{'ltcbtc':'ltc'},{'ltcbtc':'btc'},{'ltcbtc':'usdt'});
-			assert.equal(typeof val._idleStart,"number")
+			assert.equal(typeof val._idleStart,"number");
+			clearTimeout(val);
 		});		
 	});
 
