@@ -48,7 +48,7 @@ describe('Binance', function() {
 		var e1 = {'ltcbtc':'ltc'} 
 		var b1 = {'ltcbtc':'btc'} 
 		var u1 = {'ltcbtc':'usdt'} 
-		it('Should return false (illiquid Trade)',function() {
+		it('Should return true)',function() {
 			testBot.binanceStrategy[base] = {
 			  one:{
 				 b: 8836,
@@ -66,10 +66,10 @@ describe('Binance', function() {
 			     a_amount: 282 } 
 			}
 			testBot.binanceLimits = {}
-			testBot.binanceLimits[base] = {over:{lowerLimit:100,upperLimit:104},under:{lowerLimit:99,upperLimit:99.99}}
+			testBot.binanceLimits[base] = {over:{lowerLimit:100,upperLimit:104},under:{lowerLimit:99,upperLimit:99.9}}
 			testBot.binanceBalance = {'bnb':1,'ltc':50,'btc':0.5,'usdt':4000}
 			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
-			assert(!val)
+			assert.equal(true,val)
 		});
 		it('Should return true',function() {
 			testBot.binanceStrategy[base] = { 
@@ -134,6 +134,8 @@ describe('Binance', function() {
 		var base = 'ltcbtc';
 		binanceBot.MongoClient = mock.MongoClient;
 		binanceBot.DB = binanceBot.database();
+		binanceBot.binancePrec = {}
+		binanceBot.binancePrec[base] = [6,2,2,2,6,5];
 		it('Should return a setTimeout object when percentage < 100%',function() {
 			var val = binanceBot.binanceSaveOrders([{clientOrderId:1},{clientOrderId:2},{clientOrderId:3}],base,99,{'ltc':1,'btc':2,'usdt':3},{'ltcbtc':'ltc'},{'ltcbtc':'btc'},{'ltcbtc':'usdt'});
 			assert.equal(typeof val._idleStart,"number");
