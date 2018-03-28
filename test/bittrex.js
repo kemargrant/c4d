@@ -60,21 +60,6 @@ describe('Bittrex', function() {
 			clearTimeout(val);
 		});
 	});
-
-	describe('#Stream', function() {
-		it('Should return signalr client', async function() {
-			this.timeout(15000);
-			var val = await bot.bittrexPrepareStream();
-			var val2 = await bot.bittrexStream(val[0],val[1]);
-			console.log("signal==>:",val2);
-			setTimeout(()=>{
-				bot.bittrexKill = true;
-				console.log("asserting");
-				assert(val2.headers.cookie);
-				done();
-			},13000)
-		});
-	});
 	
 	describe('#Swing Orders', function() {
 		describe('#Reset a swing order',function() {
@@ -105,5 +90,15 @@ describe('Bittrex', function() {
 			});
 		})
 
+	});
+	describe('#Stream', function() {
+		it('Should return signalr client', function(done) {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			return bot.bittrexPrepareStream().then( (val) => {
+				return bot.bittrexStream(val[0],val[1])}).then( (result) => {
+					console.log("Result failing early:",result)
+					returnassert(result);
+			  }).then(done()).catch((e)=>{done(e)});
+		});
 	});
 });

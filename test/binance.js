@@ -169,7 +169,7 @@ describe('Binance', function() {
 	});		
 	
 	describe('#Stream', function() {
-		return it('Should return a connected websocket',function() {
+		it('Should return a connected websocket',function() {
 			this.timeout(2500);
 			var _mockMarket = new mock.marketStream();
 			binanceBot.binanceMarket = mock.market;
