@@ -150,20 +150,21 @@ describe('Binance', function() {
 
 	describe('#Strategy', function() {
 		var messages = mock.binanceMessages;
-		yBot.binanceStrategy['ltcbtc'] = {one:{},two:{}}
-		yBot.binanceDepth = {}
-		yBot.binanceDepth['ltcbtc'] = {depth:{},strategy1:{'a%':{},'b%':{},'c%':{}},strategy2:{'a%':{},'b%':{},'c%':{}}}
+		var base = 'ltcbtc'
+		yBot.binanceStrategy[base] = {one:{},two:{}}
+		yBot.binancePrec = {}
+		yBot.binancePrec[base] = [6,2,2,2,6,5];
 		it('Should create a Binance Strategy using pair1',function() {
 			yBot.binanceGenerateStrategy('ltcbtc',0,messages[0]);
-			assert.equal(yBot.binanceStrategy['ltcbtc']['one']['a'],0.018881);
+			assert.equal(yBot.binanceStrategy[base]['one']['a'],0.018881);
 		});
 			it('Should create a Binance Strategy using pair2',function() {
 			yBot.binanceGenerateStrategy('ltcbtc',1,messages[1]);
-			assert.equal(yBot.binanceStrategy['ltcbtc']['one']['b'],8500);
+			assert.equal(yBot.binanceStrategy[base]['one']['b'],8500);
 		});
 		it('Should create a Binance Strategy using pair3',function() {
 			yBot.binanceGenerateStrategy('ltcbtc',2,messages[2]);
-			assert.equal(yBot.binanceStrategy['ltcbtc']['one']['c'],170);
+			assert.equal(yBot.binanceStrategy[base]['one']['c'],170);
 		});
 	});		
 	
