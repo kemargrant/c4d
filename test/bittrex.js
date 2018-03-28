@@ -96,8 +96,7 @@ describe('Bittrex', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			return bot.bittrexPrepareStream().then( (val) => {
 				return bot.bittrexStream(val[0],val[1])}).then( (result) => {
-					console.log("Result failing early:",result)
-					returnassert(result);
+					return assert(result);
 			  }).then(done()).catch((e)=>{done(e)});
 		});
 	});
