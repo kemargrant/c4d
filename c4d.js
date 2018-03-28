@@ -189,10 +189,6 @@ CryptoBot.prototype.binanceArbitrage = function(base,pairs,e1,b1,u1,index,messag
 				this.binanceReset(base);
 				return this.log("Illiquid trade:",new Date());
 			}
-			else{
-				this.binanceDepth[base]['strategy2']['c%'] = this.binanceDepth[base]['strategy2']['c%'] + "(Possible Illiquid Trade)";
-			}
-			//this.notify(message + "\r\n" + JSON.stringify(this.binanceDepth[base]).replace(new RegExp('"', 'g'),""));
 			this.notify(message);
 			Promise.all([
 			this.binanceTrade(pairs[1].toUpperCase(),"SELL",Transactions[b1[base]],this.binanceStrategy[base].two.b,"GTC"),
@@ -214,7 +210,7 @@ CryptoBot.prototype.binanceArbitrage = function(base,pairs,e1,b1,u1,index,messag
 	}
 	else{
 		this.broadcastMessage({"type":"binancePercent","percentage":percentage,"info":this.binanceStrategy});		
-		if(percentage < this.binanceLimits[base].under.lowerLimit || percentage > this.binanceLimits[base].under.upperLimit){return false}					
+		if(percentage < this.binanceLimits[base].under.lowerLimit || percentage > this.binanceLimits[base].under.upperLimit){return false}			
 		Transform_E1 = this.utilities.solveUnder(this.binancePrec[base][3],this.binanceStrategy[base].one.a,this.binanceStrategy[base].one.b,this.binanceStrategy[base].one.c);
 		Transactions[e1[base]] = Transform_E1;					
 		Transactions[u1[base]] = this.binanceStrategy[base].one.c * Transactions[e1[base]];
@@ -247,9 +243,6 @@ CryptoBot.prototype.binanceArbitrage = function(base,pairs,e1,b1,u1,index,messag
 				this.binanceReset(base);
 				this.log("Illiquid trade:",message);
 				return false;
-			}
-			else{
-				this.binanceDepth[base]['strategy1']['c%'] = this.binanceDepth[base]['strategy1']['c%'] + "\n Illiquid Trade";
 			}
 			this.notify(message);
 			Promise.all([
@@ -369,14 +362,12 @@ CryptoBot.prototype.binanceGenerateStrategy = function(base,index,message){
 		this.binanceStrategy[base]['one']['a_amount'] = Number(message.a[0][1]);
 		this.binanceStrategy[base]['two']['a'] = Number((Number(message.b[0][0])).toFixed(this.binancePrec[base][0]));
 		this.binanceStrategy[base]['two']['a_amount'] = Number(message.b[0][1]);
-		this.binanceDepth[base]['depth']['a'] = message; 
 	}
 	if(index === 1){
 		this.binanceStrategy[base]['one']['b'] =  Number((Number(message.a[0][0])).toFixed(this.binancePrec[base][1]));
 		this.binanceStrategy[base]['one']['b_amount'] = Number(message.a[0][1]);
 		this.binanceStrategy[base]['two']['b'] = Number((Number(message.b[0][0])).toFixed(this.binancePrec[base][1]));					
 		this.binanceStrategy[base]['two']['b_amount'] = Number(message.b[0][1]);
-		this.binanceDepth[base]['depth']['b'] = message;
 	}
 	if(index === 2){
 		this.binanceStrategy[base]['one']['c'] =  Number((Number(message.b[0][0])).toFixed(this.binancePrec[base][2]));
@@ -401,7 +392,6 @@ CryptoBot.prototype.binanceGenerateStrategy = function(base,index,message){
 		catch(e){
 			return this.log(e);
 		}
-		this.binanceDepth[base]['depth']['c'] = message;
 	}
 }
 
@@ -519,15 +509,12 @@ CryptoBot.prototype.binanceListenUser = function(){
    * @param {Array} Array of pair data information
    */
 CryptoBot.prototype.binanceMonitor = function(pairData){
-	var _depth = {}
 	var _list = [];
 	for(var i=0;i< pairData.length;i++){
-		_depth[pairData[i].pair1] = {depth:{},strategy1:{'a%':{},'b%':{},'c%':{}},strategy2:{'a%':{},'b%':{},'c%':{}}}
 		_list.push(this.binanceStream(pairData[i].pair1,pairData[i].pair1));
 		_list.push(this.binanceStream(pairData[i].pair1,pairData[i].pair2));
 		_list.push(this.binanceStream(pairData[i].pair1,pairData[i].pair3));
 	}	
-	this.binanceDepth = _depth;
 	this.binanceSocketConnections = _list;
 }
 

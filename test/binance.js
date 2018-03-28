@@ -42,8 +42,8 @@ describe('Binance', function() {
 		testBot.MongoClient = mock.MongoClient;
 		testBot.DB = testBot.database();
 		testBot.https = mock.https;
-		testBot.binancePre = {}
-		testBot.binancePre[base] = [6,2,2,2,6,5];
+		testBot.binancePrec = {}
+		testBot.binancePrec[base] = [6,2,2,2,6,5];
 		var pairs = ['ltcbtc','btcusdt','ltcusdt'];
 		var e1 = {'ltcbtc':'ltc'} 
 		var b1 = {'ltcbtc':'btc'} 
@@ -65,6 +65,8 @@ describe('Binance', function() {
 			     a: 0.002073,
 			     a_amount: 282 } 
 			}
+			testBot.binanceLimits = {}
+			testBot.binanceLimits[base] = {over:{lowerLimit:100,upperLimit:104},under:{lowerLimit:99,upperLimit:99.99}}
 			testBot.binanceBalance = {'bnb':1,'ltc':50,'btc':0.5,'usdt':4000}
 			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
 			assert(!val)
