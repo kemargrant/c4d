@@ -2052,6 +2052,220 @@ CryptoBot.prototype.sendEmail = function(email_message){
 }
 
 /**
+   * Available Webserver commands.
+   * @method serverCommand
+   * @return {Boolean} 
+   */
+CryptoBot.prototype.serverCommand = function(message){
+	try{
+		message = JSON.parse(crypto.AES.decrypt(message,this.Settings.Config.key).toString(crypto.enc.Utf8));												
+		if(message.command === "binance_balance"){
+			this.binanceAccount();
+		}					
+		if(message.command === "binance_orders"){
+			var check = [];
+			this.Settings.Binance.pairs.forEach((i,v)=>{
+				this.binanceOpenOrders(this.Settings.Binance.pairs[v].pair1.toUpperCase())
+				.then(_orders=>{
+					check = check.concat(_orders);
+				})
+				.then(()=>{
+					this.binanceOpenOrders(this.Settings.Binance.pairs[v].pair2.toUpperCase())
+					.then(_orders2=>{
+						check = check.concat(_orders2);
+					})
+					.then(()=>{
+						this.binanceOpenOrders(this.Settings.Binance.pairs[v].pair3.toUpperCase())
+						.then(_orders3=>{
+							check = check.concat(_orders3);
+						})
+						.then(()=>{					
+							check.forEach((order)=>{
+							return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'order',"exchange":"Binance","otype":order.side,"timestamp_created":order.time,"rate":order.price,"status":order.status,"pair":order.symbol,"filled":order.origQty - order.executedQty,"amount":order.origQty,"order_id":order.clientOrderId}),this.Settings.Config.key).toString());
+								});
+						}).catch((e)=>{
+							this.log(e);
+						})
+					})	
+				})
+				.catch((e)=>{
+					this.log(e);
+				})
+			});
+		}	
+		if(message.command === "binanceB1Minimum"){
+			this.binanceB1Min[message.pair] = Number(message.min);
+			this.log("Minimum Binance B1 Order:",message.pair,this.binanceB1Min[message.pair]);
+		}	
+		if(message.command === "binanceC1Minimum"){
+			this.binanceC1Min[message.pair] = Number(message.min);
+			this.log("Minimum Binance "+message.pair+" Order:",this.binanceC1Min[message.pair]);
+		}	
+		if(message.command === "binanceLimits"){
+			var key = message.selection.split(".")
+			this.binanceLimits[message.pair][key[0]][key[1]] =  message.value;
+			this.log("Binance Limits ("+message.pair+") Order:",this.binanceLimits[message.pair]);
+		}	
+		if(message.command === "binanceOptimal"){
+			this.binanceOptimalTrades[message.pair] =  message.bool
+			this.log("Binance Optimal Trades ("+message.pair+") Order:",this.binanceOptimalTrades[message.pair]);
+		}	
+		if(message.command === "binanceMonitor"){
+			this.binanceInProcess[message.pair] = message.bool;
+			this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,time:this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
+			this.log("Binance Monitor Status:",this.binanceInProcess);
+		}	
+		if(message.command === "bittrexMonitor"){
+			this.bittrexInProcess = message.bool;
+			this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});		
+			this.log("Bittrex Monitor Status:",this.bittrexInProcess);								
+		}											
+		if(message.command === "bittrex_orders"){
+			this.bittrexGetOrders().then((orders)=>{
+				orders.forEach(function(order){
+					return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'order',"exchange":"Bittrex","otype":order.OrderType,"timestamp_created":order.Opened,"rate":order.Limit,"status":order.Closed,"pair":order.Exchange,"filled":order.QuantityRemaining,"amount":order.Quantity,"order_id":order.OrderUuid}),this.Settings.Config.key).toString());
+				});
+			}).catch((e)=>{
+				this.log(e);
+			})
+		}	
+		if(message.command === "bittrex_db"){
+			this.retrieveDB(message.db).then((que)=>{
+				return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'db_'+message.db,"info":que}),this.Settings.Config.key).toString());														
+			}).catch((e)=>{
+				this.log(e);
+				return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'log',"log":e}),this.Settings.Config.key).toString());
+			})								
+		}						
+		if(message.command === "connect"){
+			ws.send(crypto.AES.encrypt(JSON.stringify({"type":'balance',"balance":this.balance,"p1":this.p1,"p2":this.p2,"polling":this.rate}),this.Settings.Config.key).toString());
+			ws.send(crypto.AES.encrypt(JSON.stringify({"type":'config',"logLevel":this.logLevel,"swingPercentage":this.swingPercentage,"swingRate":this.swingRate,"sanity":this.saneTrades,"liquid":this.liquidTrades,"vibrate":this.vibrate,"upperLimit":this.upperLimit,"lowerLimit":this.lowerLimit,"status":this.bittrexInProcess,"time":this.bittrexProcessTime,"wsStatus":this.bittrexSocketStatus,"viewBook":this.viewBittrexBook}),this.Settings.Config.key).toString());
+			ws.send(crypto.AES.encrypt(JSON.stringify({"type":'swingStatus',"amount":this.Settings.Swing.amount,"pair":this.Settings.Swing.pair,"order":this.swingTrade,"swing":this.Settings.Swing.swing,"on":this.Settings.Swing.swingTrade}),this.Settings.Config.key).toString());
+			ws.send(crypto.AES.encrypt(JSON.stringify({"type":'configBinance',
+				"balance":this.binanceBalance,
+				"status":this.binanceInProcess,
+				"time":this.binanceProcessTime,
+				"ustream":this.binanceUserStreamStatus,
+				"optimal":this.binanceOptimalTrades,
+				"minB1":this.binanceB1Min,
+				"minC1":this.binanceC1Min,
+				"limits":this.binanceLimits,
+				"liquid":this.liquidTradesBinance,
+				"connections":this.binanceSocketConnections.length,
+				"pairs":this.Settings.Binance.formatPairs}),this.Settings.Config.key).toString());
+		}			
+		if(message.command === "logs"){
+			this.logLevel = Number(message.logLevel);
+			this.log("LogLevel:",this.logLevel);
+		}						
+		if(message.command === "lowerLimit"){
+			this.lowerLimit = message.limit;
+			return this.log("Lower Limit:",this.lowerLimit);
+		}															
+		if(message.command === "poll"){
+			if(Number(message.rate)){this.rate = message.rate * 1000;}
+			this.log("poll_rate:",this.rate/1000 +" seconds");
+		}									
+		if(message.command === "poll_rate"){
+			this.broadcastMessage({"type":"poll_rate","polling":this.rate});
+		}											
+		if(message.command === "bittrex_balance"){
+			this.bittrexAccount().catch(e=>this.log(e));
+		}	
+		if(message.command === "bittrex_book"){
+			this.viewBittrexBook = message.bool;
+			this.log("View Bittrex Book:",this.viewBittrexBook);
+		}
+		if(message.command === "binance_control"){
+			this.binanceKill = !message.bool;
+			if(this.binanceKill === true){
+				for(var i = 0; i < this.binanceSocketConnections.length;i++){
+					this.binanceSocketConnections[i].terminate();
+				}
+				for(var key in this.binanceInProcess){
+					this.binanceInProcess[key] = "killed";
+				} 
+				this.binanceSocketConnections = [];
+				this.broadcastMessage({type:"binanceStatus",connections:0,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
+				this.log("Binance Socket Connections:",this.binanceSocketConnections);									
+			}
+			else if(this.binanceKill === false){
+				for(var key in this.binanceInProcess){
+					this.binanceInProcess[key] = false;
+				} 
+				this.binanceSocketConnections = [];
+				this.binanceMonitor(this.Settings.Binance.pairs);
+				if(!this.binanceUserStreamStatus){
+					this.binanceListenUser();
+				}
+				this.log("Starting Binance Socket Connections");
+			}
+		}
+		if(message.command === "bittrex_control"){
+			this.bittrexKill = !message.bool;
+			if(!message.bool && this.bittrexSocketConnection){
+				this.bittrexSocketConnection.close();
+				this.bittrexSocketConnection = undefined;
+				this.log("Bittrex Stream Closed");
+			}
+			else if(message.bool && !this.bittrexSocketConnection){
+				this.log("Starting Bittrex Stream");
+				this.bittrexPrepareStream().then((info)=>{
+					this.bittrexStream(info[0],info[1])
+				}).catch((e)=>{
+					this.log("Error connecting to Bittrex Websocket");
+				});
+			}
+		}						
+		if(message.command === "liquidTrade"){
+			this.liquidTrades = message.bool;
+			this.log("liquidTrades:",this.liquidTrades);
+		}	
+		if(message.command === "liquidTradeBinance"){
+			this.liquidTradesBinance[message.pair] = message.bool;
+			this.log("liquidTradesBinance:",message.pair,this.liquidTradesBinance[message.pair]);
+		}					
+		if(message.command === "sanity"){
+			this.saneTrades = message.bool;
+			this.log("saneTrades:",this.saneTrades);
+		}
+		if(message.command === "swingPercentage"){
+			this.swingPercentage = message.percentage/100;
+			this.log("Swing Percentage:",this.swingPercentage);
+		}												
+		if(message.command === "swingPoll"){
+			if(Number(message.rate)){this.swingRate = message.rate * 1000;}
+			this.log("poll_rate:",this.swingRate/1000 +" seconds");
+		}	
+		if(message.command === "swingReset"){
+			this.bittrexResetSwingOrder();
+			this.log("swingTrading has been reset");
+		}	
+		if(message.command === "swingTrade"){
+			this.vibrate = message.bool;
+			if(message.bool === true && this.vibrate === false){
+				this.bittrexSwing();
+			}
+			this.log("Swing Trade:",this.vibrate);
+		}		
+		if(message.command === "update_percentage"){
+			this.p1 = message.percentage1;
+			this.p2 = message.percentage2;
+		}
+		if(message.command === "upperLimit"){
+			this.upperLimit = message.limit;
+			this.log("Upper Limit:",this.upperLimit);
+		}	
+	}
+	catch(e){
+		this.log(e);
+		return false
+	}	
+	return true;		
+}
+
+
+/**
    * Setup websocket server.
    * @method setupWebsocket
    * @return {Promise} Resolves when first websocket client connects
@@ -2068,214 +2282,7 @@ CryptoBot.prototype.setupWebsocket = function(){
 				return this.log("WebSocket Closed:",e,new Date());
 			})			
 			ws.on('message',(message)=>{
-				try{
-					try{
-						message = JSON.parse(crypto.AES.decrypt(message,this.Settings.Config.key).toString(crypto.enc.Utf8));												
-					}
-					catch(e){
-						return this.log(e);
-					}
-					if(message.command === "binance_balance"){
-						return this.binanceAccount();
-					}					
-					if(message.command === "binance_orders"){
-						var check = [];
-						this.Settings.Binance.pairs.forEach((i,v)=>{
-							this.binanceOpenOrders(this.Settings.Binance.pairs[v].pair1.toUpperCase())
-							.then(_orders=>{
-								check = check.concat(_orders);
-							})
-							.then(()=>{
-								this.binanceOpenOrders(this.Settings.Binance.pairs[v].pair2.toUpperCase())
-								.then(_orders2=>{
-									check = check.concat(_orders2);
-								})
-								.then(()=>{
-									this.binanceOpenOrders(this.Settings.Binance.pairs[v].pair3.toUpperCase())
-									.then(_orders3=>{
-										check = check.concat(_orders3);
-									})
-									.then(()=>{					
-										check.forEach((order)=>{
-										return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'order',"exchange":"Binance","otype":order.side,"timestamp_created":order.time,"rate":order.price,"status":order.status,"pair":order.symbol,"filled":order.origQty - order.executedQty,"amount":order.origQty,"order_id":order.clientOrderId}),this.Settings.Config.key).toString());
-											});
-									}).catch((e)=>{
-										this.log(e);
-									})
-								})	
-							})
-							.catch((e)=>{
-								this.log(e);
-							})
-						});
-					}	
-					if(message.command === "binanceB1Minimum"){
-						this.binanceB1Min[message.pair] = Number(message.min);
-						return this.log("Minimum Binance B1 Order:",message.pair,this.binanceB1Min[message.pair]);
-					}	
-					if(message.command === "binanceC1Minimum"){
-						this.binanceC1Min[message.pair] = Number(message.min);
-						return this.log("Minimum Binance "+message.pair+" Order:",this.binanceC1Min[message.pair]);
-					}	
-					if(message.command === "binanceLimits"){
-						var key = message.selection.split(".")
-						this.binanceLimits[message.pair][key[0]][key[1]] =  message.value;
-						return this.log("Binance Limits ("+message.pair+") Order:",this.binanceLimits[message.pair]);
-					}	
-					if(message.command === "binanceOptimal"){
-						this.binanceOptimalTrades[message.pair] =  message.bool
-						return this.log("Binance Optimal Trades ("+message.pair+") Order:",this.binanceOptimalTrades[message.pair]);
-					}	
-					if(message.command === "binanceMonitor"){
-						this.binanceInProcess[message.pair] = message.bool;
-						this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,time:this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-						return this.log("Binance Monitor Status:",this.binanceInProcess);
-					}	
-					if(message.command === "bittrexMonitor"){
-						this.bittrexInProcess = message.bool;
-						this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});		
-						return this.log("Bittrex Monitor Status:",this.bittrexInProcess);								
-					}											
-					if(message.command === "bittrex_orders"){
-						return this.bittrexGetOrders().then((orders)=>{
-							orders.forEach(function(order){
-								return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'order',"exchange":"Bittrex","otype":order.OrderType,"timestamp_created":order.Opened,"rate":order.Limit,"status":order.Closed,"pair":order.Exchange,"filled":order.QuantityRemaining,"amount":order.Quantity,"order_id":order.OrderUuid}),this.Settings.Config.key).toString());
-							});
-						}).catch((e)=>{
-							this.log(e);
-						})
-					}	
-					if(message.command === "bittrex_db"){
-						return this.retrieveDB(message.db).then((que)=>{
-							return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'db_'+message.db,"info":que}),this.Settings.Config.key).toString());														
-						}).catch((e)=>{
-							this.log(e);
-							return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'log',"log":e}),this.Settings.Config.key).toString());
-						})								
-					}						
-					if(message.command === "connect"){
-						ws.send(crypto.AES.encrypt(JSON.stringify({"type":'balance',"balance":this.balance,"p1":this.p1,"p2":this.p2,"polling":this.rate}),this.Settings.Config.key).toString());
-						ws.send(crypto.AES.encrypt(JSON.stringify({"type":'config',"logLevel":this.logLevel,"swingPercentage":this.swingPercentage,"swingRate":this.swingRate,"sanity":this.saneTrades,"liquid":this.liquidTrades,"vibrate":this.vibrate,"upperLimit":this.upperLimit,"lowerLimit":this.lowerLimit,"status":this.bittrexInProcess,"time":this.bittrexProcessTime,"wsStatus":this.bittrexSocketStatus,"viewBook":this.viewBittrexBook}),this.Settings.Config.key).toString());
-						ws.send(crypto.AES.encrypt(JSON.stringify({"type":'swingStatus',"amount":this.Settings.Swing.amount,"pair":this.Settings.Swing.pair,"order":this.swingTrade,"swing":this.Settings.Swing.swing,"on":this.Settings.Swing.swingTrade}),this.Settings.Config.key).toString());
-						return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'configBinance',
-							"balance":this.binanceBalance,
-							"status":this.binanceInProcess,
-							"time":this.binanceProcessTime,
-							"ustream":this.binanceUserStreamStatus,
-							"optimal":this.binanceOptimalTrades,
-							"minB1":this.binanceB1Min,
-							"minC1":this.binanceC1Min,
-							"limits":this.binanceLimits,
-							"liquid":this.liquidTradesBinance,
-							"connections":this.binanceSocketConnections.length,
-							"pairs":this.Settings.Binance.formatPairs}),this.Settings.Config.key).toString());
-					}			
-					if(message.command === "logs"){
-						this.logLevel = Number(message.logLevel);
-						return this.log("LogLevel:",this.logLevel);
-					}						
-					if(message.command === "lowerLimit"){
-						this.lowerLimit = message.limit;
-						return this.log("Lower Limit:",this.lowerLimit);
-					}															
-					if(message.command === "poll"){
-						if(Number(message.rate)){this.rate = message.rate * 1000;}
-						return this.log("poll_rate:",this.rate/1000 +" seconds");
-					}									
-					if(message.command === "poll_rate"){
-						return this.broadcastMessage({"type":"poll_rate","polling":this.rate});
-					}											
-					if(message.command === "bittrex_balance"){
-						return this.bittrexAccount().catch(e=>this.log(e));
-					}	
-					if(message.command === "bittrex_book"){
-						this.viewBittrexBook = message.bool;
-						return this.log("View Bittrex Book:",this.viewBittrexBook);
-					}
-					if(message.command === "binance_control"){
-						this.binanceKill = !message.bool;
-						if(this.binanceKill === true){
-							for(var i = 0; i < this.binanceSocketConnections.length;i++){
-								this.binanceSocketConnections[i].terminate();
-							}
-							for(var key in this.binanceInProcess){
-								this.binanceInProcess[key] = "killed";
-							} 
-							this.binanceSocketConnections = [];
-							this.broadcastMessage({type:"binanceStatus",connections:0,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-							return this.log("Binance Socket Connections:",this.binanceSocketConnections);									
-						}
-						else if(this.binanceKill === false){
-							for(var key in this.binanceInProcess){
-								this.binanceInProcess[key] = false;
-							} 
-							this.binanceSocketConnections = [];
-							this.binanceMonitor(this.Settings.Binance.pairs);
-							if(!this.binanceUserStreamStatus){
-								this.binanceListenUser();
-							}
-							return this.log("Starting Binance Socket Connections");
-						}
-					}
-					if(message.command === "bittrex_control"){
-						this.bittrexKill = !message.bool;
-						if(!message.bool && this.bittrexSocketConnection){
-							this.bittrexSocketConnection.close();
-							this.bittrexSocketConnection = undefined;
-							return this.log("Bittrex Stream Closed");
-						}
-						else if(message.bool && !this.bittrexSocketConnection){
-							this.log("Starting Bittrex Stream");
-							return this.bittrexPrepareStream().then((info)=>{
-								this.bittrexStream(info[0],info[1])
-							}).catch((e)=>{
-								this.log("Error connecting to Bittrex Websocket");
-							});
-						}
-					}						
-					if(message.command === "liquidTrade"){
-						this.liquidTrades = message.bool;
-						return this.log("liquidTrades:",this.liquidTrades);
-					}	
-					if(message.command === "liquidTradeBinance"){
-						this.liquidTradesBinance[message.pair] = message.bool;
-						return this.log("liquidTradesBinance:",message.pair,this.liquidTradesBinance[message.pair]);
-					}					
-					if(message.command === "sanity"){
-						this.saneTrades = message.bool;
-						return this.log("saneTrades:",this.saneTrades);
-					}
-					if(message.command === "swingPercentage"){
-						this.swingPercentage = message.percentage/100;
-						return this.log("Swing Percentage:",this.swingPercentage);
-					}												
-					if(message.command === "swingPoll"){
-						if(Number(message.rate)){this.swingRate = message.rate * 1000;}
-						return this.log("poll_rate:",this.swingRate/1000 +" seconds");
-					}	
-					if(message.command === "swingReset"){
-						this.bittrexResetSwingOrder();
-						return this.log("swingTrading has been reset");
-					}	
-					if(message.command === "swingTrade"){
-						this.vibrate = message.bool;
-						if(message.bool === true && this.vibrate === false){
-							this.bittrexSwing();
-						}
-						return this.log("Swing Trade:",this.vibrate);
-					}		
-					if(message.command === "update_percentage"){
-						this.p1 = message.percentage1;
-						return this.p2 = message.percentage2;
-					}
-					if(message.command === "upperLimit"){
-						this.upperLimit = message.limit;
-						return this.log("Upper Limit:",this.upperLimit);
-					}																																																									
-				}
-				catch(e){
-					this.log(e);
-				}
+				return this.serverCommand(message);
 			});				
 		});	
 	});				
