@@ -91,6 +91,47 @@ var _binanceMessages = [
   ]
 }
 ]
+var _binanceUserAccount = {type:'message',data:JSON.stringify({
+  "e": "outboundAccountInfo",   
+  "E": 1499405658849,           
+  "m": 0,                       
+  "t": 0,                      
+  "b": 0,                       
+  "s": 0,                       
+  "T": true,                    
+  "W": true,                    
+  "D": true,                    
+  "u": 1499405658848,          
+  "B": [                       
+    {
+      "a": "LTC",               
+      "f": "17366.18538083",    
+      "l": "0.00000000"        
+    },
+    {
+      "a": "BTC",
+      "f": "10537.85314051",
+      "l": "2.19464093"
+    },
+    {
+      "a": "ETH",
+      "f": "17902.35190619",
+      "l": "0.00000000"
+    },
+    {
+      "a": "BNC",
+      "f": "1114503.29769312",
+      "l": "0.00000000"
+    },
+    {
+      "a": "NEO",
+      "f": "0.00000000",
+      "l": "0.00000000"
+    }
+  ]
+})
+}
+
 var _email ={
 	server:{
 		connect:function(){
@@ -304,6 +345,23 @@ var _https = {
 		return events.emit("end");
 	}
 }
+var _httpsError = {
+	request:function(options,func){
+		const events = new MyEmitter();
+		var data = {};
+		func(events)
+		const error = Error('Unexpected Error');
+		return events.emit("error",error);
+	}
+}
+var _httpsBadData = {
+	request:function(options,func){
+		const events = new MyEmitter();
+		func(events)
+		events.emit("data","x}");
+		return events.emit("end");;
+	}
+}
 
 var _MongoClient = {
 	connect:function(string,func){
@@ -468,5 +526,6 @@ module.exports = {
 	email:_email,
 	https:_https,
 	MongoClient:_MongoClient,
-	binanceMessages:_binanceMessages
+	binanceMessages:_binanceMessages,
+	binanceUserEvents: [_binanceUserAccount]
 }

@@ -124,6 +124,13 @@ describe('Binance', function() {
 		});
 	});
 
+	describe('#ParseUserEvent - outbound', function() {
+		it('Should return true',function() {
+			var outbound = mock.binanceUserEvents[0];
+			assert(binanceBot.binanceParseUserEvent(outbound,{'ltcbtc':['ltcbtc','btcusdt','ltcusdt']}));
+		});
+	});	
+	
 	describe('#CheckTrade (true)', function() {
 		return it('Should return true',function() {
 			assert(binanceBot.binanceCheckTrade('ltcbtc',{}));

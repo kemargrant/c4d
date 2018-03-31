@@ -556,6 +556,90 @@ CryptoBot.prototype.binanceOpenOrders = function(pair){
 	});			
 }
 
+/**
+   * Parse a Binance user event.
+   * @method binanceParseUserEvent
+   * @return {Promise} Should resolve with Binance exchange data
+	**/
+CryptoBot.prototype.binanceParseUserEvent = function(message,pairs){
+	if (message.type === 'message') {
+		var base;
+		var data;
+		try{
+			data = JSON.parse(message.data);
+			if(data.e == "executionReport"){
+				if(data.x == "NEW"){
+					for(key in pairs){
+						if(pairs[key].indexOf(data.s.toLowerCase()) > -1){
+							base = key;
+							break;
+						}
+					}
+					if(this.binanceOrders[base] && this.binanceInProcess[base]){
+						var _key= "Orders."+data.c;
+						var _set = {}
+						_set[_key] = false;
+						this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":_set}});
+						this.binanceOrders[base].push(data.c);
+						this.binanceTradesMade[base]++;
+						var order = {type:"order","exchange":"Binance","otype":data.S,"order_id":data.c,"amount":data.q,"pair":data.s,"status":data.x,"rate":data.p,"timestamp_created":data.E}
+						this.broadcastMessage(order);
+						this.log("Binance Order Added:",data.c,new Date());
+					}
+				}
+				if(data.x == "CANCELED" || data.X === "FILLED"){
+					for(key in pairs){
+						if(pairs[key].indexOf(data.s.toLowerCase()) > -1){
+							base = key;
+							break;
+						}
+					}
+					if(this.binanceOrders[base]){
+						var key= "Orders."+data.c;
+						var update = {key:true}
+						var lookupOrder = {}
+						var _set = {}
+						lookupOrder[key] = false;
+						_set[key] = true;
+						_set['Filled'] = new Date().getTime();
+						this.saveDB("trade",{},{extra:{"w":1},method:"update",query:lookupOrder,modifier:{"$set":_set,"$inc":{"OrdersFilled":1}}});
+						if(this.binanceOrders[base].indexOf(data.c) > -1){
+							if(this.binanceOrders[base][0] === data.c){
+								this.binanceOrders[base].shift();
+							}
+							else if(this.binanceOrders[base][this.binanceOrders[base].length - 1] === data.c){
+								this.binanceOrders[base].pop();
+							}
+							else{
+								this.binanceOrders[base] = [this.binanceOrders[base][0],this.binanceOrders[base][2]];
+							}
+						}
+						this.log("Binance Order Removed:",data.c,new Date().toString()+":"+this.binanceOrders[base].length+"/"+this.binanceTradesMade[base]);
+						this.broadcastMessage({type:"orderRemove",order_id:data.c});
+						if(this.binanceOrders[base].length === 0 && this.binanceTradesMade[base] === 3){
+							this.binanceStrategy[base] = {one:{},two:{}}
+							this.binanceTradesMade[base] = false;
+							this.binanceInProcess[base] = false;	
+							this.binanceProcessTime[base] = 0;	
+							this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
+						}
+					} 
+				}
+			}
+			else if(data.e === "outboundAccountInfo"){
+				for(var i=0;i<data.B.length;i++){
+					this.binanceBalance[data.B[i].a.toLowerCase()] = Number(data.B[i].f) > 0 ? Number(data.B[i].f) : 0;
+				}
+				this.broadcastMessage({type:"balanceBinance",balance:this.binanceBalance});
+			}
+			return true;									
+		}
+		catch(e){
+			this.log("Error:",e);
+			return false;
+		}
+	}
+}
 
 /**
    * Get Binance precision.
@@ -733,9 +817,7 @@ CryptoBot.prototype.binanceUserStream = function(key){
 			this.binanceUserStreamStatus = false;
 		    this.log('Binance User Account Connect Error: ' + error.toString(),new Date());
 			this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-			return setTimeout(()=>{
-				this.binanceUserStream(key)
-			},10000);
+			return setTimeout(()=>{this.binanceUserStream(key)},10000);
 		}
 	};
 	client.onerror = client.onclose;
@@ -745,81 +827,7 @@ CryptoBot.prototype.binanceUserStream = function(key){
 	    this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
 	};		
 	client.onmessage = (message)=> {
-        if (message.type === 'message') {
-			var base;
-            var data;
-            try{
-				 data = JSON.parse(message.data);
-				 if(data.e == "executionReport"){
-					if(data.x == "NEW"){
-						for(key in pairs){
-							if(pairs[key].indexOf(data.s.toLowerCase()) > -1){
-								base = key;
-								break;
-							}
-						}
-						if(this.binanceOrders[base] && this.binanceInProcess[base]){
-							var _key= "Orders."+data.c;
-							var _set = {}
-							_set[_key] = false;
-							this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":_set}});
-							this.binanceOrders[base].push(data.c);
-							this.binanceTradesMade[base]++;
-							var order = {type:"order","exchange":"Binance","otype":data.S,"order_id":data.c,"amount":data.q,"pair":data.s,"status":data.x,"rate":data.p,"timestamp_created":data.E}
-							this.broadcastMessage(order);
-							this.log("Binance Order Added:",data.c,new Date());
-						}
-					}
-					if(data.x == "CANCELED" || data.X === "FILLED"){
-						for(key in pairs){
-							if(pairs[key].indexOf(data.s.toLowerCase()) > -1){
-								base = key;
-								break;
-							}
-						}
-						if(this.binanceOrders[base]){
-							var key= "Orders."+data.c;
-							var update = {key:true}
-							var lookupOrder = {}
-							var _set = {}
-							lookupOrder[key] = false;
-							_set[key] = true;
-							_set['Filled'] = new Date().getTime();
-							this.saveDB("trade",{},{extra:{"w":1},method:"update",query:lookupOrder,modifier:{"$set":_set,"$inc":{"OrdersFilled":1}}});
-							if(this.binanceOrders[base].indexOf(data.c) > -1){
-								if(this.binanceOrders[base][0] === data.c){
-									this.binanceOrders[base].shift();
-								}
-								else if(this.binanceOrders[base][this.binanceOrders[base].length - 1] === data.c){
-									this.binanceOrders[base].pop();
-								}
-								else{
-									this.binanceOrders[base] = [this.binanceOrders[base][0],this.binanceOrders[base][2]];
-								}
-							}
-							this.log("Binance Order Removed:",data.c,new Date().toString()+":"+this.binanceOrders[base].length+"/"+this.binanceTradesMade[base]);
-							this.broadcastMessage({type:"orderRemove",order_id:data.c});
-							if(this.binanceOrders[base].length === 0 && this.binanceTradesMade[base] === 3){
-								this.binanceStrategy[base] = {one:{},two:{}}
-								this.binanceTradesMade[base] = false;
-								this.binanceInProcess[base] = false;	
-								this.binanceProcessTime[base] = 0;	
-								this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-							}
-						} 
-					}
-				}
-				else if(data.e === "outboundAccountInfo"){
-					for(var i=0;i<data.B.length;i++){
-						this.binanceBalance[data.B[i].a.toLowerCase()] = Number(data.B[i].f) > 0 ? Number(data.B[i].f) : 0;
-					}
-					this.broadcastMessage({type:"balanceBinance",balance:this.binanceBalance});
-				}									
-			}
-			catch(e){
-				return this.log("Error:",e);
-			}
-        }
+		this.binanceParseUserEvent(message,pairs);
 	 };
 	return client;
 }	
