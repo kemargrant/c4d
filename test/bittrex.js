@@ -38,9 +38,14 @@ describe('Bittrex', function() {
 	});	
 	
 	describe('#Market Depth', function() {
-		return it('Should return an object with bid and ask price', async function() {
-			var val = await bot.bittrexDepthPure('USDT-BTC');
-			assert(val.buy && val.sell)
+		it('Should return an object with bid and ask price', function(done) {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.https;
+			bot.bittrexDepthPure('USDT-BTC').then((val)=>{
+				assert(val.buy && val.sell);
+				done()
+			})
+			
 		});
 	});		
 
