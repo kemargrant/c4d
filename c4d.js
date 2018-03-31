@@ -386,26 +386,8 @@ CryptoBot.prototype.binanceGenerateStrategy = function(base,index,message){
 	if(index === 2){
 		this.binanceStrategy[base]['one']['c'] =  Number((Number(message.b[0][0])).toFixed(this.binancePrec[base][2]));
 		this.binanceStrategy[base]['one']['c_amount'] =  Number(message.b[0][1]);
-		var liquidC;
-		var liquidCcount = 0;
-		for(var i = 0;i < message.a.length;i++){
-				if(Number(message.a[i][1] > 0.1)){
-					liquidC = Number(message.a[i][0]);
-					liquidCcount = i;
-					break;
-				}
-		}
-		if(!liquidC){
-			liquidC =  Number((Number(message.a[0][0])).toFixed(this.binancePrec[base][2]));
-			liquidCcount = 0;
-		}
-		this.binanceStrategy[base]['two']['c'] = liquidC;				
-		try{
-			this.binanceStrategy[base]['two']['c_amount'] = Number(message.a[liquidCcount][1]);
-		}
-		catch(e){
-			return this.log(e);
-		}
+		this.binanceStrategy[base]['two']['c']  = Number((Number(message.a[0][0])).toFixed(this.binancePrec[base][2]));
+		this.binanceStrategy[base]['two']['c_amount'] = Number(message.a[0][1]);
 	}
 }
 
