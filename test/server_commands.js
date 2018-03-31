@@ -138,9 +138,9 @@ describe('Bittrex Server Commands (Offline)', function() {
 	});	
 	describe('#SwingTrade', function() {
 		it('Should return true', function() {
-			bot.vibrate = true;
+			bot.vibrate = false;
 			bot.serverCommand(encrypt({'command':'swingTrade','bool':true}));
-			assert.equal(bot.vibrate,false);
+			assert.equal(bot.vibrate,true);
 		});
 	});	
 

@@ -2262,10 +2262,10 @@ CryptoBot.prototype.serverCommand = function(message,ws){
 			this.log("swingTrading has been reset");
 		}	
 		if(message.command === "swingTrade"){
-			this.vibrate = message.bool;
 			if(message.bool === true && this.vibrate === false){
 				this.bittrexSwing();
 			}
+			this.vibrate = message.bool;
 			this.log("Swing Trade:",this.vibrate);
 		}		
 		if(message.command === "update_percentage"){
