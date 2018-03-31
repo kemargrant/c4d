@@ -100,4 +100,10 @@ describe('Bittrex', function() {
 			  }).then(done()).catch((e)=>{done(e)});
 		});
 	});
+	describe('#UpdateBittrexSocketStatus', function() {
+		it('Should update Bittrex socket status', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			assert(bot.updateBittrexSocketStatus(false),false);
+		});
+	});	
 });

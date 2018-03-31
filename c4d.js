@@ -2203,7 +2203,7 @@ CryptoBot.prototype.serverCommand = function(message,ws){
 				} 
 				this.binanceSocketConnections = [];
 				this.broadcastMessage({type:"binanceStatus",connections:0,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-				this.log("Binance Socket Connections:",this.binanceSocketConnections);									
+				this.log("Binance Socket Connections Closed:",this.binanceSocketConnections);									
 			}
 			else if(this.binanceKill === false){
 				for(var key in this.binanceInProcess){
@@ -2446,11 +2446,13 @@ CryptoBot.prototype.utilities = {
 /**
    * Update status of Bittrex socket connection.
    * @method updateBittrexSocketStatus
-   * @param {Boolean}
+   * @param {Boolean} New Bittrex Socket Status
+   *  @return {Boolean} Return new Bittrex socket status
    */
 CryptoBot.prototype.updateBittrexSocketStatus = function(bool){
 	this.bittrexSocketStatus = bool;
 	this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
+	return this.bittrexSocketStatus;
 }
 
 module.exports = {bot:CryptoBot}
