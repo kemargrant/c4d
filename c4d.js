@@ -1841,9 +1841,9 @@ CryptoBot.prototype.log = function(){
 /**
    * Chain functions with a delay of 2 seconds.
    * @method niceOrderChain
-   * @param {Array} An array of functions [func1,func2,callback]
+   * @param {Array} An array of promise functions and an object to modify with the results [[func1,func2,func3],ob]
    * @param {Object} An object to modify with the result of function calls
-   * @return {Object} Return object with 'chain' Promise function
+   * @return {Object} Return object with 'chain' Promise function; Finally resolves to the modified object
    */
 CryptoBot.prototype.niceOrderChain = function(functions,obj){
 	return{	
