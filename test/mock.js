@@ -4,6 +4,28 @@ const userEvents = new MyEmitter();
 var rhttps = require('https');
 var WebSocket = require('ws');
 
+var balance = {
+  "makerCommission": 15,
+  "takerCommission": 15,
+  "buyerCommission": 0,
+  "sellerCommission": 0,
+  "canTrade": true,
+  "canWithdraw": true,
+  "canDeposit": true,
+  "updateTime": 123456789,
+  "balances": [
+    {
+      "asset": "BTC",
+      "free": "4723846.89208129",
+      "locked": "0.00000000"
+    },
+    {
+      "asset": "LTC",
+      "free": "4763368.68006011",
+      "locked": "0.00000000"
+    }
+  ]
+}
 var _binanceMessages = [
 {
   "e": "depthUpdate", 
@@ -80,7 +102,24 @@ var _email ={
 		}
 	}
 }
-
+var orders = [
+  {
+    "symbol": "LTCBTC",
+    "orderId": 1,
+    "clientOrderId": "myOrder1",
+    "price": "0.1",
+    "origQty": "1.0",
+    "executedQty": "0.0",
+    "status": "NEW",
+    "timeInForce": "GTC",
+    "type": "LIMIT",
+    "side": "BUY",
+    "stopPrice": "0.0",
+    "icebergQty": "0.0",
+    "time": 1499827319559,
+    "isWorking": true
+  }
+]
 var _https = {
 	request:function(options,func){
 		const events = new MyEmitter();
@@ -88,8 +127,7 @@ var _https = {
 		//Binance Proxies
 		//console.log("proxy:",options.path);
 		if(options.path.search("/api/v1/account") > -1 && options.method === "GET"){
-			//console.log("proxy get Binance Account");
-			data = {balances:[{asset:'BTC',free:'0',locked:'0'},{asset:'LTC',free:'0',locked:'0'},{asset:'ETH',free:'0',locked:'0'}]}
+			data = balance
 		}
 		//get existing orders proxy
 		else if(options.path.search("openOrders") > -1 && options.method === "POST"){
@@ -176,7 +214,7 @@ var _https = {
 		//get open orders proxy
 		else if(options.path.search("/api/v1/openOrders") > -1){
 			//console.log("proxy get Binance open orders");
-			data = [{},{}];
+			data = orders;
 		}		
 		//slack proxy
 		else if(options.path.search("Slack") > -1){

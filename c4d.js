@@ -1279,7 +1279,6 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 			this.log("Bittrex Websocket connected:",new Date()); 
 			this.updateBittrexSocketStatus(true);
 			if(!this.bittrexKill){
-				console.log("settng timeout");
 				timeout = setTimeout(()=>{
 					if(this.bittrexSocketConnection){
 						this.log("Resetting Bittrex Connection:",new Date())
@@ -2054,9 +2053,9 @@ CryptoBot.prototype.sendEmail = function(email_message){
 /**
    * Available Webserver commands.
    * @method serverCommand
-   * @return {Boolean} 
+   * @return {Boolean} returns a boolean || {Promise} returns a promise that resolves to a boolean
    */
-CryptoBot.prototype.serverCommand = function(message){
+CryptoBot.prototype.serverCommand = function(message,ws){
 	try{
 		message = JSON.parse(crypto.AES.decrypt(message,this.Settings.Config.key).toString(crypto.enc.Utf8));												
 		if(message.command === "binance_balance"){
@@ -2064,34 +2063,39 @@ CryptoBot.prototype.serverCommand = function(message){
 		}					
 		if(message.command === "binance_orders"){
 			var check = [];
-			this.Settings.Binance.pairs.forEach((i,v)=>{
-				this.binanceOpenOrders(this.Settings.Binance.pairs[v].pair1.toUpperCase())
-				.then(_orders=>{
-					check = check.concat(_orders);
-				})
-				.then(()=>{
-					this.binanceOpenOrders(this.Settings.Binance.pairs[v].pair2.toUpperCase())
-					.then(_orders2=>{
-						check = check.concat(_orders2);
+			return new Promise((resolve,reject)=>{
+				this.Settings.Binance.pairs.forEach((i,v)=>{
+					this.binanceOpenOrders(this.Settings.Binance.pairs[v].pair1.toUpperCase())
+					.then(_orders=>{
+						check = check.concat(_orders);
 					})
 					.then(()=>{
-						this.binanceOpenOrders(this.Settings.Binance.pairs[v].pair3.toUpperCase())
-						.then(_orders3=>{
-							check = check.concat(_orders3);
+						this.binanceOpenOrders(this.Settings.Binance.pairs[v].pair2.toUpperCase())
+						.then(_orders2=>{
+							check = check.concat(_orders2);
 						})
-						.then(()=>{					
-							check.forEach((order)=>{
-							return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'order',"exchange":"Binance","otype":order.side,"timestamp_created":order.time,"rate":order.price,"status":order.status,"pair":order.symbol,"filled":order.origQty - order.executedQty,"amount":order.origQty,"order_id":order.clientOrderId}),this.Settings.Config.key).toString());
+						.then(()=>{
+							this.binanceOpenOrders(this.Settings.Binance.pairs[v].pair3.toUpperCase())
+							.then(_orders3=>{
+								check = check.concat(_orders3);
+							})
+							.then(()=>{					
+								check.forEach((order)=>{
+									ws.send(crypto.AES.encrypt(JSON.stringify({"type":'order',"exchange":"Binance","otype":order.side,"timestamp_created":order.time,"rate":order.price,"status":order.status,"pair":order.symbol,"filled":order.origQty - order.executedQty,"amount":order.origQty,"order_id":order.clientOrderId}),this.Settings.Config.key).toString());
+									return resolve(true)
 								});
-						}).catch((e)=>{
-							this.log(e);
-						})
-					})	
-				})
-				.catch((e)=>{
-					this.log(e);
-				})
-			});
+							}).catch((e)=>{
+								this.log(e);
+								return reject(e);
+							})
+						})	
+					})
+					.catch((e)=>{
+						this.log(e);
+						return reject(e);
+					})
+				});
+			})
 		}	
 		if(message.command === "binanceB1Minimum"){
 			this.binanceB1Min[message.pair] = Number(message.min);
@@ -2121,21 +2125,28 @@ CryptoBot.prototype.serverCommand = function(message){
 			this.log("Bittrex Monitor Status:",this.bittrexInProcess);								
 		}											
 		if(message.command === "bittrex_orders"){
-			this.bittrexGetOrders().then((orders)=>{
-				orders.forEach(function(order){
-					return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'order',"exchange":"Bittrex","otype":order.OrderType,"timestamp_created":order.Opened,"rate":order.Limit,"status":order.Closed,"pair":order.Exchange,"filled":order.QuantityRemaining,"amount":order.Quantity,"order_id":order.OrderUuid}),this.Settings.Config.key).toString());
+			return new Promise((resolve,reject)=>{
+				this.bittrexGetOrders().then((orders)=>{
+					orders.forEach((order)=>{
+						ws.send(crypto.AES.encrypt(JSON.stringify({"type":'order',"exchange":"Bittrex","otype":order.OrderType,"timestamp_created":order.Opened,"rate":order.Limit,"status":order.Closed,"pair":order.Exchange,"filled":order.QuantityRemaining,"amount":order.Quantity,"order_id":order.OrderUuid}),this.Settings.Config.key).toString());
+						return resolve(true);
+					});
+				}).catch((e)=>{
+					this.log(e);
+					return resolve(false)
 				});
-			}).catch((e)=>{
-				this.log(e);
 			})
 		}	
 		if(message.command === "bittrex_db"){
-			this.retrieveDB(message.db).then((que)=>{
-				return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'db_'+message.db,"info":que}),this.Settings.Config.key).toString());														
-			}).catch((e)=>{
-				this.log(e);
-				return ws.send(crypto.AES.encrypt(JSON.stringify({"type":'log',"log":e}),this.Settings.Config.key).toString());
-			})								
+			return new Promise((resolve,reject)=>{
+				this.retrieveDB(message.db).then((que)=>{
+					ws.send(crypto.AES.encrypt(JSON.stringify({"type":'db_'+message.db,"info":que}),this.Settings.Config.key).toString());	
+					return resolve(true);													
+				}).catch((e)=>{
+					this.log(e);
+					return reject(e);
+				});			
+			})					
 		}						
 		if(message.command === "connect"){
 			ws.send(crypto.AES.encrypt(JSON.stringify({"type":'balance',"balance":this.balance,"p1":this.p1,"p2":this.p2,"polling":this.rate}),this.Settings.Config.key).toString());
@@ -2170,7 +2181,12 @@ CryptoBot.prototype.serverCommand = function(message){
 			this.broadcastMessage({"type":"poll_rate","polling":this.rate});
 		}											
 		if(message.command === "bittrex_balance"){
-			this.bittrexAccount().catch(e=>this.log(e));
+			return new Promise((resolve,reject)=>{
+				return this.bittrexAccount(resolve(true)).catch(e=>{
+					this.log(e);
+					reject(false);
+				});
+			})
 		}	
 		if(message.command === "bittrex_book"){
 			this.viewBittrexBook = message.bool;
@@ -2203,18 +2219,22 @@ CryptoBot.prototype.serverCommand = function(message){
 		}
 		if(message.command === "bittrex_control"){
 			this.bittrexKill = !message.bool;
-			if(!message.bool && this.bittrexSocketConnection){
+			if(this.bittrexKill && this.bittrexSocketConnection){
 				this.bittrexSocketConnection.close();
 				this.bittrexSocketConnection = undefined;
 				this.log("Bittrex Stream Closed");
 			}
-			else if(message.bool && !this.bittrexSocketConnection){
-				this.log("Starting Bittrex Stream");
-				this.bittrexPrepareStream().then((info)=>{
-					this.bittrexStream(info[0],info[1])
-				}).catch((e)=>{
-					this.log("Error connecting to Bittrex Websocket");
-				});
+			else if(!this.bittrexKill && !this.bittrexSocketConnection){
+				return new Promise((resolve,reject)=>{
+					this.log("Starting Bittrex Stream");
+					this.bittrexPrepareStream().then((info)=>{
+						this.bittrexStream(info[0],info[1])
+						return resolve(true)
+					}).catch((e)=>{
+						this.log("Error connecting to Bittrex Websocket:",e);
+						return reject(e);
+					});
+				})
 			}
 		}						
 		if(message.command === "liquidTrade"){
@@ -2282,7 +2302,7 @@ CryptoBot.prototype.setupWebsocket = function(){
 				return this.log("WebSocket Closed:",e,new Date());
 			})			
 			ws.on('message',(message)=>{
-				return this.serverCommand(message);
+				return this.serverCommand(message,ws);
 			});				
 		});	
 	});				
