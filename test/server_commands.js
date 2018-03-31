@@ -241,7 +241,7 @@ describe('Bittrex Server Commands (Network)', function() {
 	});		
 	describe('#bittrex_control boolean(true)', function() {
 		it('Should start Bittrex arbitrage process', async (done)=> {
-			this.timeout(12000)
+			this.timeout(14000)
 			bot.bittrexSocketConnection = false;
 			bot.bittrexKill=true
 			var streamStarted = Promise.resolve(bot.serverCommand(encrypt({'command':'bittrex_control','bool':true})));
@@ -251,11 +251,11 @@ describe('Bittrex Server Commands (Network)', function() {
 	});		
 	describe('#bittrex_control boolean(false)', function() {
 		it('Should stop Bittrex arbitrage process', function(done) {
-			this.timeout(13000)
+			this.timeout(15000)
 			setTimeout(()=>{
 				assert(bot.serverCommand(encrypt({'command':'bittrex_control','bool':false})))
 				done();
-			},10000);
+			},14000);
 		});
 	});	
 	bot.MongoClient = mock.MongoClient;
