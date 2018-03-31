@@ -2206,7 +2206,7 @@ CryptoBot.prototype.serverCommand = function(message,ws){
 		if(message.command === "bittrex_control"){
 			this.bittrexKill = !message.bool;
 			if(this.bittrexKill && this.bittrexSocketConnection){
-				this.bittrexSocketConnection.close();
+				this.bittrexSocketConnection.end();
 				this.bittrexSocketConnection = undefined;
 				this.log("Bittrex Stream Closed");
 			}
