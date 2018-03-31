@@ -165,41 +165,17 @@ CryptoBot.prototype.binanceArbitrage = function(base,pairs,e1,b1,u1,index,messag
 		message += this.binanceArbitrageMessageFormat(Transactions,b1[base],u1[base],this.binanceStrategy[base].two.b,e1[base],this.binanceStrategy[base].two.c,this.binancePrec[base][3],this.binanceStrategy[base].two.a,this.binancePrec[base][0],percentage);
 		if( Number((Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][0])) >= Transform_B1 && (Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3])) <= Transactions[e1[base]])){
 			this.log(message);
-		}
-		else{
-			return this.log("Optimal Trade Not Found:",new Date());
-		}
-		if((Transactions[u1[base]] - (Transactions[e1[base]] * this.binanceStrategy[base].two.c)) < 0 && this.binanceOptimalTrades[base]){
-			return this.log("Optimal Trade Not Found:",new Date());
-		}	
-		if ((Transactions[e1[base]] * this.binanceStrategy[base].two.c) < this.binanceU1Min[base]){
-			return this.log("Minimum "+u1[base]+ " order not satisfied",new Date());
-		}
-		this.binanceInProcess[base] = true;
-		this.binanceProcessTime[base] = new Date().getTime();
-		this.binanceTradesMade[base] = 0;
-		this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-		if(this.binanceBalance[e1[base]] > Transactions[e1[base]] && this.binanceBalance[u1[base]] > Transactions[u1[base]] && this.binanceBalance[b1[base]] > Transactions[b1[base]]){
-			if(this.liquidTradesBinance[base] && (Transactions[e1[base]] < this.binanceStrategy[base].two.a_amount || Transactions[b1[base]] < this.binanceStrategy[base].two.b_amount)){
-				this.binanceReset(base);
-				return this.log("Illiquid trade:",new Date());
+			if(!this.binanceCheckConditions(Transactions,percentage,base,e1[base],b1[base],u1[base],this.binanceStrategy[base].two.c,this.binanceStrategy[base].two.c,this.binanceStrategy[base].two.a_amount,this.binanceStrategy[base].two.b_amount)){
+				return false;
 			}
-			this.notify(message);
-			Promise.all([
-			this.binanceTrade(pairs[1].toUpperCase(),"SELL",Transactions[b1[base]],this.binanceStrategy[base].two.b,"GTC"),
-			this.binanceTrade(pairs[2].toUpperCase(),"BUY",Transactions[e1[base]],this.binanceStrategy[base].two.c,"GTC"),
-			this.binanceTrade(pairs[0].toUpperCase(),"SELL",Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3])),this.binanceStrategy[base].two.a,"GTC")]).then((values)=>{
-				return this.binanceSaveOrders(values,base,percentage,Transactions,e1,b1,u1);
-			}).catch((e)=>{
-				this.binanceReset();
-				this.log("Error:",e,new Date());
-				return this.notify(e.toString());
-			});
-			return true;
+			this.binanceBeginArbitrage(base,percentage,message,Transactions,e1,b1,u1,[
+				this.binanceTrade(pairs[1].toUpperCase(),"SELL",Transactions[b1[base]],this.binanceStrategy[base].two.b,"GTC"),
+				this.binanceTrade(pairs[2].toUpperCase(),"BUY",Transactions[e1[base]],this.binanceStrategy[base].two.c,"GTC"),
+				this.binanceTrade(pairs[0].toUpperCase(),"SELL",Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3])),this.binanceStrategy[base].two.a,"GTC")
+			])
 		}
 		else{
-			this.log("Wallet balance low:",new Date());
-			this.binanceReset(base);
+			this.log("Sub-Optimal Trade:",message);
 			return false;
 		}
 	}
@@ -213,54 +189,28 @@ CryptoBot.prototype.binanceArbitrage = function(base,pairs,e1,b1,u1,index,messag
 		message += this.binanceArbitrageMessageFormat(Transactions,e1[base],u1[base],this.binanceStrategy[base].one.c,b1[base],this.binanceStrategy[base].one.b,Transform_E1,this.binanceStrategy[base].one.a,this.binancePrec[base][3],percentage);	
 		if((Transactions[b1[base]] >= (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) * this.binanceStrategy[base].one.a)) && (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) >= Transactions[e1[base]])){
 			this.log(message);
-		}
-		if(((Transactions[u1[base]] - (Transactions[b1[base]] * this.binanceStrategy[base].one.b)) < 0) && this.binanceOptimalTrades[base]){
-			this.log("Optimal Trade Not Found:",new Date());
-			return false;
-		}	
-		if((Transactions[e1[base]] * this.binanceStrategy[base].two.c) < this.binanceU1Min[base]){
-			this.log("Minimum "+u1[base]+ " order not satisfied",new Date());
-			return false;
-		}	
-		if (Transactions[b1[base]] < this.binanceB1Min[base]){
-			this.log("Minimum "+b1[base]+ " order not satisfied",new Date());
-			return false;
-		}
-		this.binanceInProcess[base] = true;
-		this.binanceProcessTime[base] = new Date().getTime();
-		this.binanceTradesMade[base] = 0;
-		this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
-		if(this.binanceBalance[e1[base]] > Transactions[e1[base]] && this.binanceBalance[b1[base]] > Transactions[b1[base]] && this.binanceBalance[u1[base]] > Transactions[u1[base]]){
-			if(this.liquidTradesBinance[base] && (Transactions[e1[base]] < this.binanceStrategy[base].one.a_amount || Transactions[b1[base]] < this.binanceStrategy[base].one.b_amount)){
-				this.binanceReset(base);
-				this.log("Illiquid trade:",message);
+			if(!this.binanceCheckConditions(Transactions,percentage,base,e1[base],b1[base],u1[base],this.binanceStrategy[base].one.b,this.binanceStrategy[base].one.c,this.binanceStrategy[base].one.a_amount,this.binanceStrategy[base].one.b_amount)){
 				return false;
 			}
-			this.notify(message);
-			Promise.all([
-				this.binanceTrade(pairs[2].toUpperCase(),"SELL",Transactions[e1[base]],this.binanceStrategy[base].one.c,"GTC"),
-				this.binanceTrade(pairs[1].toUpperCase(),"BUY",Transactions[b1[base]],this.binanceStrategy[base].one.b,"GTC"),
-				this.binanceTrade(pairs[0].toUpperCase(),"BUY",(Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3]),this.binanceStrategy[base].one.a,"GTC")]).then((values)=>{
-				return this.binanceSaveOrders(values,base,percentage,Transactions,e1,b1,u1);
-			}).catch((e)=>{
-				this.binanceReset();
-				this.log("Error:",e,new Date());
-				return this.notify(e.toString());
-			});
-			return true;
+			this.binanceBeginArbitrage(base,percentage,message,Transactions,e1,b1,u1,[
+					this.binanceTrade(pairs[2].toUpperCase(),"SELL",Transactions[e1[base]],this.binanceStrategy[base].one.c,"GTC"),
+					this.binanceTrade(pairs[1].toUpperCase(),"BUY",Transactions[b1[base]],this.binanceStrategy[base].one.b,"GTC"),
+					this.binanceTrade(pairs[0].toUpperCase(),"BUY",(Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3]),this.binanceStrategy[base].one.a,"GTC")
+			])
 		}
 		else{
-			this.log("Wallet Balance Low:",new Date());
-			this.binanceReset(base);
+			this.log("Sub-Optimal Trade:",message);
 			return false;
 		}
 	}
+	return true;
 }
+
 
 /**
    * Format message sent to the user
    * @method binanceArbitrageMessageFormat
-   * @param {Transactions} Transactions object
+   * @param {Object} Transactions object
    * @param {String} a currency ie 'ltc'
    * @param {String} b currency ie 'usdt'
    * @param {Number} a/b currency rate 
@@ -276,6 +226,36 @@ CryptoBot.prototype.binanceArbitrageMessageFormat = function(Transactions,a,b,c,
 	var message = percentage.toFixed(3)+"% "+new Date().toString().split('GMT')[0]+"\n"+ Transactions[a] + a+" => "+Transactions[b]+" "+b+" @" + c + '\n' + (Transactions[d] * e) + b+" => " + Transactions[d] + " "+d+" @"+e +'\n'
 	message += percentage < 100 ? (f * g).toFixed(8) + d+" => " + (Transactions[d]/g).toFixed(h) + " "+a+" @"+g +'\n' : Transactions[d].toFixed(f) + d+" => " + (Number(Transactions[d].toFixed(f))*g).toFixed(h) + " "+a+" @"+g +'\n';	
 	return message;
+}
+
+/**
+   * Start Binance arbitrage trades.
+   * @method binanceBeginArbitrage
+   * @param {String} Base pair ie 'ltcbtc'
+   * @param {Number} Binance percentage
+   * @param {Object} Transactions object
+   * @param {String} Message to send to user
+   * @param {Object} E1 object
+   * @param {Object} B1 object
+   * @param {Object} U1 object
+   * @param {Array} An array with 3 Binance trade promises 
+   * @return {Boolean} Return a boolean
+   */
+CryptoBot.prototype.binanceBeginArbitrage = function(base,percentage,message,Transactions,e1,b1,u1,promiseArray){
+	this.binanceInProcess[base] = true;
+	this.binanceProcessTime[base] = new Date().getTime();
+	this.binanceTradesMade[base] = 0;
+	this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
+	this.notify(message);
+	Promise.all(promiseArray).then((values)=>{
+			return this.binanceSaveOrders(values,base,percentage,Transactions,e1,b1,u1);
+	}).catch((e)=>{
+		this.binanceReset(base);
+		this.log("Error:",e,new Date());
+		this.notify(e.toString());
+		return false;
+	});
+	return true;
 }
 
 /**
@@ -323,6 +303,51 @@ CryptoBot.prototype.binanceCancelOrder = function(pair,id){
 	    req.write("");
 	    req.end();
 	});			
+}
+
+
+/**
+   * Check Binance arbirage conditions
+   * @method binanceCheckConditions
+   * @param {Object} Transactions object
+   * @param {Number} Percentage 
+   * @param {String} Base currency ie 'ltc'
+   * @param {String} Currency ie 'ltc'
+   * @param {String} Currency ie 'btc'
+   * @param {String} Currency ie 'usdt'
+   * @param {Number} (b1/u1 || e1/ul) currency rate
+   * @param {Number} e1/u1 currency Rate 
+   * @param {Number} Amount of currency e1 the order book
+   * @param {Number} Amount of currency b1 the order book
+   * @return {Boolean} Return boolean
+   */
+CryptoBot.prototype.binanceCheckConditions = function(Transactions,percentage,base,e1,b1,u1,b,c,amount1,amount2){	
+	if(this.binanceBalance[e1] < Transactions[e1] || this.binanceBalance[b1] < Transactions[b1] || this.binanceBalance[u1] < Transactions[u1]){
+		this.log("Wallet Balance Low:",new Date());
+		return false
+	}
+	if(this.liquidTradesBinance[base] && (Transactions[e1] < amount1 || Transactions[b1] < amount2)){
+		this.log("Illiquid trade:",message);
+		return false;
+	}
+	if((Transactions[e1] * c) < this.binanceU1Min[base]){
+		this.log("Minimum "+u1+ " order not satisfied",new Date());
+		return false;
+	}		
+	if (percentage < 100 && Transactions[b1] < this.binanceB1Min[base]){
+		this.log("Minimum "+b1+ " order not satisfied",new Date());
+		return false;
+	}	
+	if(percentage < 100 && ((Transactions[u1] - (Transactions[b1] * b)) < 0) && this.binanceOptimalTrades[base]){
+		this.log("Optimal Trade Not Found:",new Date());
+		return false
+	}	
+	if(percentage > 100 && (Transactions[u1] - (Transactions[e1] * c)) < 0 && this.binanceOptimalTrades[base]){
+		this.log("Optimal Trade Not Found:",new Date());
+		return false;
+	}		
+	return true;
+
 }
 
 
@@ -739,9 +764,12 @@ CryptoBot.prototype.binanceReset = function(base){
    * Save Binance Orders.
    * @method binanceSaveOrders
    * @param {Array} An array of Binance Orders
-   * @param {String} An array of Binance Orders
-   * @param {Number} Binance percentage
+   * @param {String} Base pair ie 'ltcbtc'
+   * @param {Number} Percentage
    * @param {Object} Transactions object
+   * @param {Object} E1 object
+   * @param {Object} B1 object
+   * @param {Object} U1 object
    * @return {Object} Return setTimeout object
    */
 CryptoBot.prototype.binanceSaveOrders = function(values,base,percentage,Transactions,e1,b1,u1){

@@ -58,7 +58,7 @@ describe('#Arbitrage', function() {
 		     a_amount: 66.05 } 
 		}
 		var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
-		assert(val)
+		assert.equal(val,true)
 	});		
 	describe('#Format Message < 100%', function() {
 		it('Should return a correctly formated string',function() {
