@@ -14,7 +14,7 @@ describe('General Functions', function() {
 	});	
 	describe('#Connect To Database', function() {
 		this.timeout(2100);
-		return it('Should return a db connection with trade and balance collections', function(done) {
+		it('Should return a db connection with trade and balance collections', function(done) {
 			return setTimeout(async function(){
 				try{
 					var x = await bot.DB.balance;
@@ -27,11 +27,17 @@ describe('General Functions', function() {
 				}
 			},150)
 		});
+		it('Should return empty DB', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var _mockSettings = mock.mockSettings1;
+			var empty = bot.database();
+			assert(JSON.stringify(empty),"{}");
+		});		
 	});
 	
 	describe('#Save to Database', function() {
 		this.timeout(2000);
-		return it('Should save and delete record from the database', function(done) {
+		it('Should save and delete record from the database', function(done) {
 			var date = new Date().getTime();
 			return setTimeout( async function(){
 				var x = await bot.saveDB("trade",{"UUID":date});
