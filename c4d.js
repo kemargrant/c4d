@@ -2181,12 +2181,7 @@ CryptoBot.prototype.serverCommand = function(message,ws){
 			this.broadcastMessage({"type":"poll_rate","polling":this.rate});
 		}											
 		if(message.command === "bittrex_balance"){
-			return new Promise((resolve,reject)=>{
-				return this.bittrexAccount(resolve(true)).catch(e=>{
-					this.log(e);
-					reject(false);
-				});
-			})
+			return new Promise((resolve,reject)=>{return this.bittrexAccount(resolve(true)).catch(e=>{this.log(e);reject(false);});})
 		}	
 		if(message.command === "bittrex_book"){
 			this.viewBittrexBook = message.bool;
