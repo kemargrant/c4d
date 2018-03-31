@@ -310,6 +310,22 @@ CryptoBot.prototype.binanceCancelOrder = function(pair,id){
 	});			
 }
 
+
+/**
+   * Check if Binance arbitrage was completed in time.
+   * @method binanceCheckTrade
+   * @return {Boolean} Return a boolean
+   */
+CryptoBot.prototype.binanceCheckTrade = function(base,orders){
+	this.log("Checking:",Object.keys(orders),new Date());
+	if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
+			this.log("Binance Arbitrage timeout.....",new Date());
+			this.binanceReset(base);
+			return false;
+		}
+	return true
+}		
+
 /**
    * Get Binance Exchange information.
    * @method binanceExchangeInfo
@@ -666,13 +682,7 @@ CryptoBot.prototype.binanceSaveOrders = function(values,base,percentage,Transact
 		profit3 = Transactions[u1[base]] - (Transactions[b1[base]] * this.binanceStrategy[base].one.b);
 	}
 	this.saveDB("trade",{},{extra:{"w":1,"upsert":true},method:"update",query:{"Time":this.binanceProcessTime[base]},modifier:{"$set":{"Time":this.binanceProcessTime[base],"Percent":percentage,"Exchange":"Binance","Profit":profit1,"Profit2":profit2,"Profit3":profit3,"Pair":base}}});
-	return setTimeout(()=>{
-		this.log("Checking:",Object.keys(_orders),new Date());
-		if((new Date().getTime() - this.binanceProcessTime[base]) > 480000 && this.binanceInProcess[base] === true) {
-			this.log("Binance Arbitrage timeout.....",new Date());
-			return this.binanceReset(base);
-		}
-	},480005)
+	return setTimeout(()=>{this.binanceCheckTrade(base,_orders)},480005)
 }
 
 /**

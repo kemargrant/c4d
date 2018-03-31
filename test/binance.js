@@ -123,7 +123,19 @@ describe('Binance', function() {
 			assert.equal(JSON.stringify(val2),"{}");
 		});
 	});
-	
+
+	describe('#CheckTrade (true)', function() {
+		return it('Should return true',function() {
+			assert(binanceBot.binanceCheckTrade('ltcbtc',{}));
+		});
+	});	
+	describe('#CheckTrade (false)', function() {
+		return it('Should return false',function() {
+			binanceBot.binanceInProcess['ltcbtc'] = true;
+			binanceBot.binanceProcessTime['ltcbtc'] = new Date().getTime() - 490000;
+			assert(!binanceBot.binanceCheckTrade('ltcbtc',{}));
+		});
+	});			
 	describe('#Reset', function() {
 		return it('Should return true',function() {
 			var bool = binanceBot.binanceReset('ltcbtc');
