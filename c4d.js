@@ -326,7 +326,7 @@ CryptoBot.prototype.binanceCheckConditions = function(Transactions,percentage,ba
 		return false
 	}
 	if(this.liquidTradesBinance[base] && (Transactions[e1] < amount1 || Transactions[b1] < amount2)){
-		this.log("Illiquid trade:",message);
+		this.log("Illiquid trade");
 		return false;
 	}
 	if((Transactions[e1] * c) < this.binanceU1Min[base]){
