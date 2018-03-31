@@ -2129,8 +2129,8 @@ CryptoBot.prototype.serverCommand = function(message,ws){
 				this.bittrexGetOrders().then((orders)=>{
 					orders.forEach((order)=>{
 						ws.send(crypto.AES.encrypt(JSON.stringify({"type":'order',"exchange":"Bittrex","otype":order.OrderType,"timestamp_created":order.Opened,"rate":order.Limit,"status":order.Closed,"pair":order.Exchange,"filled":order.QuantityRemaining,"amount":order.Quantity,"order_id":order.OrderUuid}),this.Settings.Config.key).toString());
-						return resolve(true);
 					});
+					return resolve(true);
 				}).catch((e)=>{
 					this.log(e);
 					return resolve(false)

@@ -312,8 +312,17 @@ var _MongoClient = {
 				func(true);
 			},
 			collection:(_name)=>{
+				var simpleDB = [{id:1,text:"hello world"}]
 				return {
-					insert:function(x,y,func){func(false,true);},
+					find:function(){
+						return {
+							toArray:function(func){return func(false,simpleDB)}
+						}
+					},
+					insert:function(x,y,func){
+						simpleDB.push[x];
+						func(false,true);
+					},
 					remove:function(x,func){func(false,true);},
 					update:function(x,y,z,func){func(false,true);}
 				};
