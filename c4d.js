@@ -149,7 +149,7 @@ CryptoBot.prototype.binanceArbitrage = function(base,pairs,e1,b1,u1,index,messag
 	var percentage = (this.binanceStrategy[base].one.a * this.binanceStrategy[base].one.b/this.binanceStrategy[base].one.c)*100;	
 	if(!Number(percentage)){return false;}
 	var _orders = {}
-	var message = "Binance Bot: "
+	var message = "Binance Bot: ";
 	var percentage;
 	var Transform_B1;
 	var Transform_E1;
@@ -325,7 +325,7 @@ CryptoBot.prototype.binanceCheckConditions = function(Transactions,percentage,ba
 		this.log("Wallet Balance Low:",new Date());
 		return false
 	}
-	if(this.liquidTradesBinance[base] && (Transactions[e1] < amount1 || Transactions[b1] < amount2)){
+	if(this.liquidTradesBinance[base] && (Transactions[e1] > amount1 || Transactions[b1] > amount2)){
 		this.log("Illiquid trade");
 		return false;
 	}
