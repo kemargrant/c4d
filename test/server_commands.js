@@ -139,7 +139,7 @@ describe('Bittrex Server Commands (Offline)', function() {
 	describe('#SwingTrade', function() {
 		it('Should return true', function() {
 			bot.vibrate = true;
-			bot.serverCommand(encrypt({'command':'swingTrade','bool':false}));
+			bot.serverCommand(encrypt({'command':'swingTrade','bool':true}));
 			assert.equal(bot.vibrate,false);
 		});
 	});	
@@ -213,7 +213,6 @@ describe('Binance Server Commands (Network)', function() {
 			this.timeout(6000)
 			bot.serverCommand(encrypt({'command':'binance_control','bool':false}));
 			setTimeout(()=>{
-				//console.log(bot.binanceSocketConnections,bot.binanceSocketConnections.length)
 				assert(bot.binanceSocketConnections.length === 0);
 				done();
 			},4500);
@@ -254,7 +253,6 @@ describe('Bittrex Server Commands (Network)', function() {
 		it('Should stop Bittrex arbitrage process', function(done) {
 			this.timeout(13000)
 			setTimeout(()=>{
-				console.log(bot.bittrexSocketConnection,'===>')
 				assert(bot.serverCommand(encrypt({'command':'bittrex_control','bool':false})))
 				done();
 			},10000);
