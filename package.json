@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "test": "nyc mocha --exit"
+    "test": "nyc mocha test/tests.js --exit"
   },
   "dependencies": {
     "cloudscraper": "^1.4.1",

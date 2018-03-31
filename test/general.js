@@ -61,7 +61,7 @@ describe('General Functions', function() {
 	});	
 	
 	describe('#NiceOrderChain', function() {
-		this.timeout(8001)
+		this.timeout(9901)
 		it('Should slow chain a series of functions', function(done) {
 			function sum(obj){
 				var count = 0;
