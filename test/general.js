@@ -13,9 +13,9 @@ describe('General Functions', function() {
 		bot.wss.close();
 	});	
 	describe('#Connect To Database', function() {
-		this.timeout(2100);
 		it('Should return a db connection with trade and balance collections', function(done) {
-			return setTimeout(async function(){
+			this.timeout(2100);
+			return setTimeout(async()=>{
 				try{
 					var x = await bot.DB.balance;
 					var y = await bot.DB.trade;
@@ -25,7 +25,7 @@ describe('General Functions', function() {
 				catch(e){
 					done(e);
 				}
-			},150)
+			},400)
 		});
 		it('Should return empty DB', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
