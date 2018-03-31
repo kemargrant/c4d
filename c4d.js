@@ -76,9 +76,7 @@ function CryptoBot(Settings){
 			this.liquidTradesBinance[this.Settings.Binance.pairs[i].pair1] = this.Settings.Binance.pairs[i].liquidTrades;		
 			this.binanceTradesMade[this.Settings.Binance.pairs[i].pair1] = false;
 		}	
-	}).catch((e)=>{
-		this.log(e);
-	})
+	}).catch((e)=>{this.log(e);})
 	//transactions
 	this.Transactions = {};
 }
@@ -490,16 +488,9 @@ CryptoBot.prototype.binanceListenUser = function(){
 	return new Promise((resolve,reject) => {	
 		this.binanceListenKey()
 		.then((key)=>{
-			setInterval(()=>{
-				return this.binanceListenBeat(key).catch((e)=>{
-					this.log(e);
-				});
-			},120000);
+			setInterval(()=>{return this.binanceListenBeat(key).catch((e)=>{this.log(e);});},120000);
 			return resolve(this.binanceUserStream(key));
-		}).catch((e)=>{
-			this.log(e);
-			return reject(e);
-		});
+		}).catch((e)=>{this.log(e);return reject(e);});
 	})
 }
 
