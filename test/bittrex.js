@@ -2,7 +2,6 @@ var CryptoBot = require('../c4d.js');
 var Settings = require('../config.json');
 var mock = require('./mock.js');
 var assert = require('assert');
-var WebSocket = require('ws');
 
 describe('Bittrex', function() {
     var bot = new CryptoBot.bot(mock.mockSettings1);
@@ -91,19 +90,23 @@ describe('Bittrex', function() {
 		})
 
 	});
-	describe('#Stream', function() {
-		it('Should return signalr client', function(done) {
-			var bot = new CryptoBot.bot(mock.mockSettings1);
-			return bot.bittrexPrepareStream().then( (val) => {
-				return bot.bittrexStream(val[0],val[1])}).then( (result) => {
-					return assert(result);
-			  }).then(done()).catch((e)=>{done(e)});
-		});
-	});
 	describe('#UpdateBittrexSocketStatus', function() {
 		it('Should update Bittrex socket status to false', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			assert.equal(bot.updateBittrexSocketStatus(false),false);
+		});
+	});	
+	describe('#Stream', function() {
+		it('Should return signalr client', function(done) {
+			this.timeout(20000);
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexPrepareStream().then( (val) => {
+				var result = bot.bittrexStream(val[0],val[1])
+				assert(result.end);
+				bot.bittrexKill = true;
+				result.end()
+				done();
+			})
 		});
 	});	
 });

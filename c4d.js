@@ -1288,7 +1288,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 			return this.updateBittrexSocketStatus(false);
 		},
 		onerror:(error)=> { 
-			this.log("Bittrex Websocket onerror: ", error); 
+			this.log("Bittrex Websocket onerror: ", error,new Date()); 
 			clearTimeout(timeout);
 			this.updateBittrexSocketStatus(false);
 			if(!this.bittrexKill){
