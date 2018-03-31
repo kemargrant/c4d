@@ -4,6 +4,79 @@ var mock = require('./mock.js');
 var assert = require('assert');
 var WebSocket = require('ws');
 
+describe('#Arbitrage', function() {
+	var testBot = new CryptoBot.bot(mock.mockSettings1);
+	var base = 'ltcbtc';
+	testBot.MongoClient = mock.MongoClient;
+	testBot.DB = testBot.database();
+	testBot.https = mock.https;
+	testBot.email = mock.email;
+	testBot.binancePrec = {}
+	testBot.binancePrec[base] = [6,2,2,2,6,5];
+	var pairs = ['ltcbtc','btcusdt','ltcusdt'];
+	var e1 = {'ltcbtc':'ltc'} 
+	var b1 = {'ltcbtc':'btc'} 
+	var u1 = {'ltcbtc':'usdt'} 
+	it('Should return true)',function() {
+		testBot.binanceStrategy[base] = {
+		  one:{
+			 b: 8836,
+		     b_amount: 0,
+		     c: 18.38,
+		     c_amount: 0,
+		     a: 0.002077,
+		     a_amount: 416.84 },
+		  two: 
+		   { b: 8841,
+		     b_amount: 0.500171,
+		     c: 18.379,
+		     c_amount: 20.146,
+		     a: 0.002073,
+		     a_amount: 282 } 
+		}
+		testBot.binanceLimits = {}
+		testBot.binanceLimits[base] = {over:{lowerLimit:100,upperLimit:104},under:{lowerLimit:99,upperLimit:99.9}}
+		testBot.binanceBalance = {'bnb':1,'ltc':50,'btc':0.5,'usdt':4000}
+		var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
+		assert.equal(true,val)
+	});
+	it('Should perform a trade and return true',function() {
+		testBot.binanceStrategy[base] = { 
+		one:{ 
+		     b: 8854,
+		     b_amount: 0.02048,
+		     c: 18.311,
+		     c_amount: 25,
+		     a: 0.00208,
+		     a_amount: 277.84 },
+		two: 
+		   { b: 8843.99,
+		     b_amount: 0.09,
+		     c: 18.321,
+		     c_amount: 4.102,
+		     a: 0.002072,
+		     a_amount: 66.05 } 
+		}
+		var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
+		assert(val)
+	});		
+	describe('#Format Message < 100%', function() {
+		it('Should return a correctly formated string',function() {
+			var format = "99.850% "+new Date().toString().split('GMT')[0]+"\n34.1ltc => 626.758 usdt @18.38\n626.755152usdt => 0.070932 btc @8836\n0.07082570btc => 34.15 ltc @0.002077\n"
+			var message = testBot.binanceArbitrageMessageFormat({ ltc: 34.1, usdt: 626.758, btc: 0.070932 },'ltc','usdt',18.38,'btc',8836,34.1,0.002077,2,99.84968443960827)
+			assert.equal(format,message)
+		});		
+	})
+	describe('#Format Message > 100%', function() {
+		it('Should return a correctly formated string',function() {
+			var format = "100.020% "+new Date().toString().split('GMT')[0]+"\n0.004889btc => 43.23826711 usdt @8843.99\n43.23829284000001usdt => 2.36004 ltc @18.321\n2.36ltc => 0.004890 btc @0.002072\n"
+			var message = testBot.binanceArbitrageMessageFormat({ btc: 0.004889, usdt: 43.23826711, ltc: 2.36004 },'btc','usdt',8843.99,'ltc',18.321,2,0.002072,6,100.02045346869713)
+			assert.equal(format,message);
+		});		
+	})
+});	
+	
+
 describe('Binance', function() {
 	var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 	var yBot = new CryptoBot.bot(mock.mockSettings1);
@@ -35,63 +108,6 @@ describe('Binance', function() {
 			assert.equal(typeof val,"object")
 		});
 	});
-	
-	describe('#Arbitrage', function() {
-		var testBot = new CryptoBot.bot(mock.mockSettings1);
-		var base = 'ltcbtc';
-		testBot.MongoClient = mock.MongoClient;
-		testBot.DB = testBot.database();
-		testBot.https = mock.https;
-		testBot.binancePrec = {}
-		testBot.binancePrec[base] = [6,2,2,2,6,5];
-		var pairs = ['ltcbtc','btcusdt','ltcusdt'];
-		var e1 = {'ltcbtc':'ltc'} 
-		var b1 = {'ltcbtc':'btc'} 
-		var u1 = {'ltcbtc':'usdt'} 
-		it('Should return true)',function() {
-			testBot.binanceStrategy[base] = {
-			  one:{
-				 b: 8836,
-			     b_amount: 0,
-			     c: 18.38,
-			     c_amount: 0,
-			     a: 0.002077,
-			     a_amount: 416.84 },
-			  two: 
-			   { b: 8841,
-			     b_amount: 0.500171,
-			     c: 18.379,
-			     c_amount: 20.146,
-			     a: 0.002073,
-			     a_amount: 282 } 
-			}
-			testBot.binanceLimits = {}
-			testBot.binanceLimits[base] = {over:{lowerLimit:100,upperLimit:104},under:{lowerLimit:99,upperLimit:99.9}}
-			testBot.binanceBalance = {'bnb':1,'ltc':50,'btc':0.5,'usdt':4000}
-			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
-			assert.equal(true,val)
-		});
-		it('Should return true',function() {
-			testBot.binanceStrategy[base] = { 
-			one:{ 
-			     b: 8854,
-			     b_amount: 0.02048,
-			     c: 18.311,
-			     c_amount: 25,
-			     a: 0.00208,
-			     a_amount: 277.84 },
-			two: 
-			   { b: 8843.99,
-			     b_amount: 0.09,
-			     c: 18.321,
-			     c_amount: 4.102,
-			     a: 0.002072,
-			     a_amount: 66.05 } 
-			}
-			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
-			assert(val)
-		});		
-	});	
 	
 	describe('#Precision', function() {			
 		return it('Should format precision data for ltc/btc/usdt pairs', function() {

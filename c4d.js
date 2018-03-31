@@ -149,7 +149,7 @@ CryptoBot.prototype.binanceArbitrage = function(base,pairs,e1,b1,u1,index,messag
 	var percentage = (this.binanceStrategy[base].one.a * this.binanceStrategy[base].one.b/this.binanceStrategy[base].one.c)*100;	
 	if(!Number(percentage)){return false;}
 	var _orders = {}
-	var message = "Binance Bot:"
+	var message = "Binance Bot: "
 	var percentage;
 	var Transform_B1;
 	var Transform_E1;
@@ -162,10 +162,7 @@ CryptoBot.prototype.binanceArbitrage = function(base,pairs,e1,b1,u1,index,messag
 		Transactions[b1[base]] = Transform_B1;
 		Transactions[u1[base]] = (Transactions[b1[base]] * this.binanceStrategy[base].two.b)
 		Transactions[e1[base]] = Number((Transactions[u1[base]]/this.binanceStrategy[base].two.c).toFixed(this.binancePrec[base][5]));
-		message += percentage.toFixed(3)+"% "+new Date().toString().split('GMT')[0]+"\n";
-		message = message + Transactions[b1[base]] + " "+b1[base]+" => "+Transactions[u1[base]]+" "+u1[base]+" @" + this.binanceStrategy[base].two.b + '\n';
-		message = message + (Transactions[e1[base]] * this.binanceStrategy[base].two.c) + u1[base]+" => " + Transactions[e1[base]] + " "+e1[base]+" @"+this.binanceStrategy[base].two.c +'\n'
-		message = message + Transactions[e1[base]].toFixed(this.binancePrec[base][3]) + e1[base]+" => " + (Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][0]) + " "+b1[base]+" @"+this.binanceStrategy[base].two.a +'\n';							
+		message += this.binanceArbitrageMessageFormat(Transactions,b1[base],u1[base],this.binanceStrategy[base].two.b,e1[base],this.binanceStrategy[base].two.c,this.binancePrec[base][3],this.binanceStrategy[base].two.a,this.binancePrec[base][0],percentage);
 		if( Number((Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3]))*this.binanceStrategy[base].two.a).toFixed(this.binancePrec[base][0])) >= Transform_B1 && (Number(Transactions[e1[base]].toFixed(this.binancePrec[base][3])) <= Transactions[e1[base]])){
 			this.log(message);
 		}
@@ -213,10 +210,7 @@ CryptoBot.prototype.binanceArbitrage = function(base,pairs,e1,b1,u1,index,messag
 		Transactions[e1[base]] = Transform_E1;					
 		Transactions[u1[base]] = this.binanceStrategy[base].one.c * Transactions[e1[base]];
 		Transactions[b1[base]] = Number((Transactions[u1[base]]/this.binanceStrategy[base].one.b).toFixed(this.binancePrec[base][4]))			
-		message += percentage.toFixed(3)+"% "+new Date().toString().split('GMT')[0]+"\n";
-		message = message + Transactions[e1[base]] + e1[base]+" => "+Transactions[u1[base]]+" "+u1[base]+" @" + this.binanceStrategy[base].one.c + '\n';
-		message = message + (Transactions[b1[base]] * this.binanceStrategy[base].one.b) + u1[base]+" => " + Transactions[b1[base]] + " "+b1[base]+" @"+this.binanceStrategy[base].one.b +'\n'
-		message = message + (Transform_E1 * this.binanceStrategy[base].one.a).toFixed(8) + b1[base]+" => " + (Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3]) + " "+e1[base]+" @"+this.binanceStrategy[base].one.a +'\n';		
+		message += this.binanceArbitrageMessageFormat(Transactions,e1[base],u1[base],this.binanceStrategy[base].one.c,b1[base],this.binanceStrategy[base].one.b,Transform_E1,this.binanceStrategy[base].one.a,this.binancePrec[base][3],percentage);	
 		if((Transactions[b1[base]] >= (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) * this.binanceStrategy[base].one.a)) && (Number((Transactions[b1[base]]/this.binanceStrategy[base].one.a).toFixed(this.binancePrec[base][3])) >= Transactions[e1[base]])){
 			this.log(message);
 		}
@@ -261,6 +255,27 @@ CryptoBot.prototype.binanceArbitrage = function(base,pairs,e1,b1,u1,index,messag
 			return false;
 		}
 	}
+}
+
+/**
+   * Format message sent to the user
+   * @method binanceArbitrageMessageFormat
+   * @param {Transactions} Transactions object
+   * @param {String} a currency ie 'ltc'
+   * @param {String} b currency ie 'usdt'
+   * @param {Number} a/b currency rate 
+   * @param {String} d currency ie 'btc'
+   * @param {Number} e d/b currency rate
+   * @param {Number} f Transactions[a] / Price precision of 'a' currency
+   * @param {Number} g a/d currency rate
+   * @param {Number} h Price precision of 'a' currency / Price precision of 'd' currency
+   * @param {Number} Percentage
+   * @return {String} Return formatted message
+   */
+CryptoBot.prototype.binanceArbitrageMessageFormat = function(Transactions,a,b,c,d,e,f,g,h,percentage){	
+	var message = percentage.toFixed(3)+"% "+new Date().toString().split('GMT')[0]+"\n"+ Transactions[a] + a+" => "+Transactions[b]+" "+b+" @" + c + '\n' + (Transactions[d] * e) + b+" => " + Transactions[d] + " "+d+" @"+e +'\n'
+	message += percentage < 100 ? (f * g).toFixed(8) + d+" => " + (Transactions[d]/g).toFixed(h) + " "+a+" @"+g +'\n' : Transactions[d].toFixed(f) + d+" => " + (Number(Transactions[d].toFixed(f))*g).toFixed(h) + " "+a+" @"+g +'\n';	
+	return message;
 }
 
 /**
