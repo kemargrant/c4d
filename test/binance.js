@@ -136,14 +136,14 @@ describe('Binance', function() {
 		it('Should update new order in database and return true',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			var base = 'ltcbtc';
-			this.binanceInProcess = {}
-			this.binanceInProcess[base] = true;
-			this.binanceOrders = {}
-			this.binanceOrders[base] = [];
-			this.binanceProcessTime = {}
-			this.binanceProcessTime[base] = 1;
-			this.binanceTradesMade = {}
-			this.binanceTradesMade[base] = 0;
+			bot.binanceInProcess = {}
+			bot.binanceInProcess[base] = true;
+			bot.binanceOrders = {}
+			bot.binanceOrders[base] = [];
+			bot.binanceProcessTime = {}
+			bot.binanceProcessTime[base] = 1;
+			bot.binanceTradesMade = {}
+			bot.binanceTradesMade[base] = 0;
 			var addOrder = mock.binanceUserEvents[1];
 			assert(bot.binanceParseUserEvent(addOrder,{'ltcbtc':['ltcbtc','btcusdt','ltcusdt']}));
 		});
@@ -152,16 +152,16 @@ describe('Binance', function() {
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
 			var base = 'ltcbtc';
-			this.binanceInProcess = {}
-			this.binanceInProcess[base] = true;
-			this.binanceProcessTime = {}
-			this.binanceProcessTime[base] = 0;
-			this.binanceOrders = {}
-			this.binanceOrders[base] = ["mUvoqJxFIILMdfAW5iGSOW"];
-			this.binanceProcessTime = {}
-			this.binanceProcessTime[base] = 1;
-			this.binanceTradesMade = {}
-			this.binanceTradesMade[base] = 3;
+			bot.binanceInProcess = {}
+			bot.binanceInProcess[base] = true;
+			bot.binanceProcessTime = {}
+			bot.binanceProcessTime[base] = 0;
+			bot.binanceOrders = {}
+			bot.binanceOrders[base] = ["mUvoqJxFIILMdfAW5iGSOW"];
+			bot.binanceProcessTime = {}
+			bot.binanceProcessTime[base] = 1;
+			bot.binanceTradesMade = {}
+			bot.binanceTradesMade[base] = 3;
 			var removeOrder = mock.binanceUserEvents[2];
 			assert(bot.binanceParseUserEvent(removeOrder,{'ltcbtc':['ltcbtc','btcusdt','ltcusdt']}));
 		});		
