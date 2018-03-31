@@ -124,13 +124,32 @@ describe('Binance', function() {
 		});
 	});
 
-	describe('#ParseUserEvent - outbound', function() {
+	describe('#ParseUserEvent - outboundAction', function() {
 		it('Should return true',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
 			var outbound = mock.binanceUserEvents[0];
-			assert(binanceBot.binanceParseUserEvent(outbound,{'ltcbtc':['ltcbtc','btcusdt','ltcusdt']}));
+			assert(bot.binanceParseUserEvent(outbound,{'ltcbtc':['ltcbtc','btcusdt','ltcusdt']}));
 		});
 	});	
-	
+
+	describe('#ParseUserEvent - newOrder', function() {
+		it('Should return true',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var base = 'ltcbtc';
+			this.binanceInProcess = {}
+			this.binanceInProcess[base] = true;
+			this.binanceOrders = {}
+			this.binanceOrders[base] = [];
+			this.binanceProcessTime = {}
+			this.binanceProcessTime[base] = 1;
+			this.binanceTradesMade = {}
+			this.binanceTradesMade[base] = 0;
+			var addOrder = mock.binanceUserEvents[1];
+			
+			assert(binanceBot.binanceParseUserEvent(addOrder,{'ltcbtc':['ltcbtc','btcusdt','ltcusdt']}));
+		});
+	});		
+		
 	describe('#CheckTrade (true)', function() {
 		return it('Should return true',function() {
 			assert(binanceBot.binanceCheckTrade('ltcbtc',{}));

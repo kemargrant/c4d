@@ -91,7 +91,8 @@ var _binanceMessages = [
   ]
 }
 ]
-var _binanceUserAccount = {type:'message',data:JSON.stringify({
+var userevent1 = {type:'message',
+	data:JSON.stringify({
   "e": "outboundAccountInfo",   
   "E": 1499405658849,           
   "m": 0,                       
@@ -131,6 +132,44 @@ var _binanceUserAccount = {type:'message',data:JSON.stringify({
   ]
 })
 }
+var userevent2 = {
+	type:'message',
+	data:JSON.stringify({
+  "e": "executionReport",        
+  "E": 1499405658658,            
+  "s": "LTCBTC",                 
+  "c": "mUvoqJxFIILMdfAW5iGSOW", 
+  "S": "BUY",                    
+  "o": "LIMIT",                  
+  "f": "GTC",                    
+  "q": "1.00000000",             
+  "p": "0.10264410",            
+  "P": "0.00000000",            
+  "F": "0.00000000",            
+  "g": -1,                       
+  "C": "null",                   
+  "x": "NEW",                    
+  "X": "NEW",                   
+  "r": "NONE",                   
+  "i": 4293153,                  
+  "l": "0.00000000",             
+  "z": "0.00000000",            
+  "L": "0.00000000",             
+  "n": "0",                      
+  "N": null,                     
+  "T": 1499405658657,            
+  "t": -1,                       
+  "I": 8641984,             
+  "w": true,                     
+  "m": false,                   
+  "M": false                    
+})
+}
+var userevent3 = {
+	type:'message',
+	data: JSON.stringify()
+}
+
 
 var _email ={
 	server:{
@@ -527,5 +566,5 @@ module.exports = {
 	https:_https,
 	MongoClient:_MongoClient,
 	binanceMessages:_binanceMessages,
-	binanceUserEvents: [_binanceUserAccount]
+	binanceUserEvents: [userevent1,userevent2,userevent3]
 }
