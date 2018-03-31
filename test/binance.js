@@ -17,7 +17,7 @@ describe('#Arbitrage', function() {
 	var e1 = {'ltcbtc':'ltc'} 
 	var b1 = {'ltcbtc':'btc'} 
 	var u1 = {'ltcbtc':'usdt'} 
-	it('Should return true)',function() {
+	it('Should return true',function() {
 		testBot.binanceStrategy[base] = {
 		  one:{
 			 b: 8836,
@@ -174,6 +174,8 @@ describe('Binance', function() {
 		it('Should update new order in database and return true',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			var base = 'ltcbtc';
+			bot.MongoClient = mock.MongoClient;
+			bot.DB = bot.database();
 			bot.binanceInProcess = {}
 			bot.binanceInProcess[base] = true;
 			bot.binanceOrders = {}
