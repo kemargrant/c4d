@@ -60,6 +60,28 @@ describe('#Arbitrage', function() {
 		var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
 		assert.equal(val,true)
 	});		
+	it('Should thow a promise reject Binance Arbitrage',async function() {
+		testBot.binanceStrategy[base] = { 
+		one:{ 
+		     b: 8854,
+		     b_amount: 0.02048,
+		     c: 18.311,
+		     c_amount: 25,
+		     a: 0.00208,
+		     a_amount: 277.84 },
+		two: 
+		   { b: 8843.99,
+		     b_amount: 0.09,
+		     c: 18.321,
+		     c_amount: 4.102,
+		     a: 0.002072,
+		     a_amount: 66.05 } 
+		}
+		var generic = function(){return new Promise((resolve,reject)=>reject(false))}
+		var val = await testBot.binanceBeginArbitrage('ltcbtc',99,"generic message", { btc: 0.004889, usdt: 43.23826711, ltc: 2.36004 }, { ltcbtc: 'ltc' }, { ltcbtc: 'btc' }, { ltcbtc: 'usdt' }, [generic()]);
+		assert.equal(val,false)
+	});			
+	
 	describe('#Format Message < 100%', function() {
 		it('Should return a correctly formated string',function() {
 			var format = "99.850% "+new Date().toString().split('GMT')[0]+"\n34.1ltc => 626.758 usdt @18.38\n626.755152usdt => 0.070932 btc @8836\n0.07082570btc => 34.15 ltc @0.002077\n"

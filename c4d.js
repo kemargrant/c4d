@@ -239,7 +239,7 @@ CryptoBot.prototype.binanceArbitrageMessageFormat = function(Transactions,a,b,c,
    * @param {Object} B1 object
    * @param {Object} U1 object
    * @param {Array} An array with 3 Binance trade promises 
-   * @return {Boolean} Return a boolean
+   * @return {Promise} Should resolve to a boolean
    */
 CryptoBot.prototype.binanceBeginArbitrage = function(base,percentage,message,Transactions,e1,b1,u1,promiseArray){
 	this.binanceInProcess[base] = true;
@@ -247,7 +247,7 @@ CryptoBot.prototype.binanceBeginArbitrage = function(base,percentage,message,Tra
 	this.binanceTradesMade[base] = 0;
 	this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
 	this.notify(message);
-	Promise.all(promiseArray).then((values)=>{
+	return Promise.all(promiseArray).then((values)=>{
 			return this.binanceSaveOrders(values,base,percentage,Transactions,e1,b1,u1);
 	}).catch((e)=>{
 		this.binanceReset(base);
@@ -255,7 +255,6 @@ CryptoBot.prototype.binanceBeginArbitrage = function(base,percentage,message,Tra
 		this.notify(e.toString());
 		return false;
 	});
-	return true;
 }
 
 /**
