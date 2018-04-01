@@ -79,7 +79,7 @@ describe('#Arbitrage', function() {
 			assert.equal(false,val)
 		});
 	})
-	describe('##Optimal Trade ? (<100)', function() {	
+	describe('##Best Trade ? (<100)', function() {	
 	var testBot = new CryptoBot.bot(mock.mockSettings1);
 	var base = 'ltcbtc';
 	testBot.MongoClient = mock.MongoClient;
@@ -190,6 +190,77 @@ describe('#Arbitrage', function() {
 			assert.equal(val,false)
 	});		
 	})
+	describe('##Optimal Trade (>100)', function() {	
+		var testBot = new CryptoBot.bot(mock.mockSettings1);
+		var base = 'ltcbtc';
+		testBot.MongoClient = mock.MongoClient;
+		testBot.DB = testBot.database();
+		testBot.https = mock.https;
+		testBot.email = mock.email;
+		testBot.binancePrec[base] = [6,2,2,2,6,5];
+		var pairs = ['ltcbtc','btcusdt','ltcusdt'];
+		var e1 = {'ltcbtc':'ltc'} 
+		var b1 = {'ltcbtc':'btc'} 
+		var u1 = {'ltcbtc':'usdt'} 		
+		testBot.liquidTradesBinance[base] = false;
+		testBot.binanceLimits[base] = {over:{lowerLimit:100,upperLimit:104},under:{lowerLimit:99,upperLimit:99.9}}	
+		it('Should return false (sub optimal trade)',function() {
+			testBot.binanceStrategy[base] = { 
+			one:{ 
+			     b: 8854,
+			     b_amount: 0.02048,
+			     c: 18.311,
+			     c_amount: 25,
+			     a: 0.00208,
+			     a_amount: 277.84 },
+			two: 
+			   { b: 8843.99,
+			     b_amount: 0.09,
+			     c: 18.321,
+			     c_amount: 4.102,
+			     a: 0.002072,
+			     a_amount: 66.05 } 
+			}
+			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
+			assert.equal(val,true)
+	});		
+	})
+	describe('## Best Trade ? (>100)', function() {	
+		var testBot = new CryptoBot.bot(mock.mockSettings1);
+		var base = 'ltcbtc';
+		testBot.MongoClient = mock.MongoClient;
+		testBot.DB = testBot.database();
+		testBot.https = mock.https;
+		testBot.email = mock.email;
+		testBot.binancePrec[base] = [6,2,2,2,6,5];
+		var pairs = ['ltcbtc','btcusdt','ltcusdt'];
+		var e1 = {'ltcbtc':'ltc'} 
+		var b1 = {'ltcbtc':'btc'} 
+		var u1 = {'ltcbtc':'usdt'} 		
+		testBot.liquidTradesBinance[base] = false;
+		testBot.binanceLimits[base] = {over:{lowerLimit:100,upperLimit:104},under:{lowerLimit:99,upperLimit:99.9}}	
+		it('Should return false (sub optimal trade)',function() {
+			testBot.binanceStrategy[base] = { 
+			one:{ 
+			     b: 8854,
+			     b_amount: 0.02048,
+			     c: 18.311,
+			     c_amount: 25,
+			     a: 0.00208,
+			     a_amount: 277.84 },
+			two: 
+			   { b: 8843.99,
+			     b_amount: 0.09,
+			     c: 18.321,
+			     c_amount: 4.102,
+			     a: 0.002072,
+			     a_amount: 66.05 } 
+			}
+			testBot.binanceOptimalTrades[base] = true;
+			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
+			assert.equal(val,false)
+	});		
+	})		
 	describe('##Arbitrage Error', function() {	
 		var testBot = new CryptoBot.bot(mock.mockSettings1);
 		var base = 'ltcbtc';
@@ -255,11 +326,8 @@ describe('Binance', function() {
 	describe('#Listen User Account', function() {
 		it('Should return a connected websocket client',function() {
 			var val = binanceBot.binanceUserStream('randomekey');
-			setTimeout(()=>{
-				assert(binanceBot.binanceUserStreamString.search(val.url.host) > -1);
-				userStream.close();
-			},800);
-			
+			assert(binanceBot.binanceUserStreamString.search(val.url.host) > -1);
+			userStream.close();			
 		});
 	});	
 	
@@ -410,14 +478,14 @@ describe('Binance', function() {
 	describe('#Stream', function() {
 		it('Should return a connected websocket',function(done) {
 			try{
-			var _mockMarket = new mock.marketStream(8080);
-			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
-			binanceBot.binanceUserStream = function(){}
-			binanceBot.binanceMarket = "ws://localhost:8080/pair?=xxx";
-			binanceBot.binanceMonitor([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
-			assert.equal(binanceBot.binanceSocketConnections[0].readyState,0);
-			_mockMarket.close();
-			done();
+				var _mockMarket = new mock.marketStream(8080);
+				var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+				binanceBot.binanceUserStream = function(){}
+				binanceBot.binanceMarket = "ws://localhost:8080/pair?=xxx";
+				binanceBot.binanceMonitor([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
+				assert.equal(binanceBot.binanceSocketConnections[0].readyState,0);
+				_mockMarket.close();
+				done();
 			}
 			catch(e){
 				done(e);
