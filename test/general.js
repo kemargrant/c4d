@@ -62,7 +62,7 @@ describe('General Functions', function() {
 	
 	describe('#NiceOrderChain', function() {
 		it('Should slow chain a series of functions', function(done) {
-			this.timeout(6010)
+			this.timeout(9010)
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.https;
 			bot.MongoClient = mock.MongoClient;
