@@ -257,6 +257,7 @@ describe('Binance', function() {
 			var val = binanceBot.binanceUserStream('randomekey');
 			setTimeout(()=>{
 				assert(binanceBot.binanceUserStreamString.search(val.url.host) > -1);
+				userStream.close();
 			},800);
 			
 		});
@@ -410,11 +411,12 @@ describe('Binance', function() {
 		it('Should return a connected websocket',function(done) {
 			var _mockMarket = new mock.marketStream(18080);
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.binanceUserStream = function(){}
 			binanceBot.binanceMarket = mock.market;
 			binanceBot.binanceMonitor([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
 			assert.equal(binanceBot.binanceSocketConnections[0].readyState,0);
+			_mockMarket.close();
 			done();
-			binanceBot.binanceSocketConnections[0].close();
 		});
 	});		
 	
