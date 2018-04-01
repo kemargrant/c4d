@@ -190,7 +190,7 @@ describe('#Arbitrage', function() {
 			assert.equal(val,false)
 	});		
 	})
-	describe('##Optimal Trade (>100)', function() {	
+	describe('##Trade (>100)', function() {	
 		var testBot = new CryptoBot.bot(mock.mockSettings1);
 		var base = 'ltcbtc';
 		testBot.MongoClient = mock.MongoClient;
@@ -224,6 +224,41 @@ describe('#Arbitrage', function() {
 			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
 			assert.equal(val,true)
 	});		
+	})
+	describe('##Trade (<100)', function() {	
+		var testBot = new CryptoBot.bot(mock.mockSettings1);
+		var base = 'ltcbtc';
+		testBot.MongoClient = mock.MongoClient;
+		testBot.DB = testBot.database();
+		testBot.https = mock.https;
+		testBot.email = mock.email;
+		testBot.binancePrec[base] = [6,2,2,3,6,5];
+		var pairs = ['ltcbtc','btcusdt','ltcusdt'];
+		var e1 = {'ltcbtc':'ltc'} 
+		var b1 = {'ltcbtc':'btc'} 
+		var u1 = {'ltcbtc':'usdt'} 
+		it('Should return false',function() {
+			testBot.binanceStrategy[base] = {
+			  one:{
+				 b: 10741.05,
+			     b_amount: 10,
+			     c: 886.23,
+			     c_amount: 0,
+			     a: 0.082314,
+			     a_amount: 416.84 },
+			  two: 
+			   { b: 8841,
+			     b_amount: 0.500171,
+			     c: 18.379,
+			     c_amount: 20.146,
+			     a: 0.002073,
+			     a_amount: 282 } 
+			}
+			testBot.binanceLimits[base] = {over:{lowerLimit:100,upperLimit:104},under:{lowerLimit:80,upperLimit:99.9}}
+			testBot.binanceBalance = {'bnb':1,'ltc':50,'btc':0.5,'usdt':4000}
+			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
+			assert.equal(val,true)
+		});
 	})
 	describe('## Best Trade ? (>100)', function() {	
 		var testBot = new CryptoBot.bot(mock.mockSettings1);
