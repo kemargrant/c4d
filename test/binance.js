@@ -324,10 +324,11 @@ describe('Binance', function() {
 	var userStream = new mock.userStream();
 	
 	describe('#Listen User Account', function() {
-		it('Should return a connected websocket client',function() {
+		it('Should return a connected websocket client',function(done) {
 			var val = binanceBot.binanceUserStream('randomekey');
 			assert(binanceBot.binanceUserStreamString.search(val.url.host) > -1);
 			userStream.close();			
+			done()
 		});
 	});	
 	
@@ -476,22 +477,16 @@ describe('Binance', function() {
 	});		
 	
 	describe('#Stream', function() {
-		it('Should return a connected websocket',function(done) {
-			try{
-				var _mockMarket = new mock.marketStream(8080);
-				var binanceBot = new CryptoBot.bot(mock.mockSettings1);
-				binanceBot.binanceUserStream = function(){}
-				binanceBot.binanceMarket = "ws://localhost:8080/pair?=xxx";
-				binanceBot.binanceMonitor([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
+		it('Should return a connected websocket',function() {
+			var list = binanceBot.binanceMonitor([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
+			setTimeout(()=>{
 				assert.equal(binanceBot.binanceSocketConnections[0].readyState,0);
-				_mockMarket.close();
-				done();
-			}
-			catch(e){
-				done(e);
-			}
+				for(var i=0;i< list.length;i++){
+					list[i].close();
+				}
+			},2500)
 		});
-	});		
+	});
 	
 	describe('#Place and Remove Order', function() {
 		return it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
