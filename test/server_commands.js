@@ -9,7 +9,7 @@ function encrypt(message){
 }
 var ws = {
 		send:console.log
-	}
+}
 
 
 describe('Binance Server Commands (Offline)', function() {
@@ -66,6 +66,8 @@ describe('Binance Server Commands (Offline)', function() {
 
 describe('Bittrex Server Commands (Offline)', function() {
 	var bot = new CryptoBot.bot(mock.mockSettings1);
+	bot.MongoClient = mock.MongoClient;
+	bot.DB = bot.database();
 	/*
 	 * Bittrex Commands That Do Not Require a Network Request
 	 * 
@@ -189,18 +191,19 @@ describe('Binance Server Commands (Network)', function() {
 	 * 
 	 */
 	describe('#binance_balance', function() {
-		it('Should get Binance balance', function(done) {
+		it('Should get Binance balance',function(done) {
 			bot.binanceBalance = {};
 			bot.serverCommand(encrypt({'command':'binance_balance'}))
 			setTimeout(function(){
 				assert(bot.binanceBalance.btc > 0);
 				done();
-			},10);
+			},100);
 		});
 	});	 
 	describe('#binance_control boolean(true)', function() {
 		it('Should activate Binance', function(done) {
-			this.timeout(6000)
+			this.timeout(6000);
+			bot.binanceKill = true;
 			bot.serverCommand(encrypt({'command':'binance_control','bool':true}));
 			setTimeout(()=>{
 				assert(bot.binanceSocketConnections.length > 0);

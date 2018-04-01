@@ -439,7 +439,7 @@ var _MongoClient = {
 				func(true);
 			},
 			collection:(_name)=>{
-				var simpleDB = [{id:1,text:"hello world"}]
+				var simpleDB = [{OrderUuid:123456789,text:"hello world"}]
 				return {
 					find:function(){
 						return {
