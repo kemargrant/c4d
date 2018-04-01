@@ -102,16 +102,21 @@ describe('Bittrex', function() {
 		});
 	});	
 	describe('#Stream', function() {
-		it('Should return signalr client', function(done) {
-			this.timeout(20000);
+		it('Should return cookies and header',function(done) {
+			this.timeout(10000)
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			bot.bittrexPrepareStream().then( (val) => {
-				var result = bot.bittrexStream(val[0],val[1])
-				assert(result.end);
-				bot.bittrexKill = true;
-				result.end()
+			Promise.resolve(bot.bittrexPrepareStream().then((val) =>{
+				assert(val[0] && val[1]);
 				done();
-			})
+			}))
+		});		
+		it('Should return signalr client', function(done) {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var result = bot.bittrexStream('dummy','dummy')
+			assert(result.end);
+			bot.bittrexKill = true;
+			result.end();
+			done();
 		});
 	});	
 });
