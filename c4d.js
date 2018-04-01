@@ -1211,6 +1211,23 @@ CryptoBot.prototype.bittrexPrepareStream = function(){
 }
 
 /**
+   * Reset Bittrex status.
+   * @method bittrexReset
+   * @param {e} Exception
+   * @param {Number} Time in milliseconds to wait
+   * @return {Object} Return SetTimeout object
+   */
+CryptoBot.prototype.bittrexReset = function(e,time){
+	this.log(e,new Date());
+	this.notify("Error completing arbitrage:"+e);
+	return setTimeout(()=>{
+		this.bittrexInProcess = false;	
+		this.bittrexProcessTime = 0;
+		this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
+	},time);
+}
+
+/**
    * Monitor Bittrex pairs for arbitrage opportunities.
    * @method bittrexStream
    * @param {String} Bittrex cookie
@@ -1255,12 +1272,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 	strategy[this.Settings.Config.pair1] = {}
 	strategy[this.Settings.Config.pair2] = {}
 	strategy[this.Settings.Config.pair3] = {}
-	var reset = () => {
-		this.bittrexInProcess = false;	
-		this.bittrexProcessTime = 0;
-		this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
-		return;
-	}
+
 	
 	var sortBook = (obj) =>{
 		var keys1 = Object.keys(obj["Asks"]);
@@ -1464,7 +1476,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 								.catch((e)=>{
 									this.log(e,new Date());
 									this.notify("Error completing arbitrage:"+e);
-									return setTimeout(()=>{return reset();},216000000);
+									return setTimeout(()=>{return this.bittrexReset(e);},216000000);
 								});
 							}
 							else{
@@ -1534,7 +1546,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 									.catch((e)=>{
 										this.log(e,new Date());
 										this.notify("Error completing arbitrage:"+e);
-										return setTimeout(()=>{return reset();},216000000);
+										return setTimeout(()=>{return bittrexReset(e,216000000);},216000000);
 									});							
 								}
 								else{

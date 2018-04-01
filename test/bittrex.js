@@ -85,7 +85,7 @@ describe('Bittrex', function() {
 			});
 		})
 		
-		describe('#Prepare Swing Order',function() {
+	describe('#Prepare Swing Order',function() {
 			it('Should return a setTimeout Object > 0', async function() {
 				var val = await bot.bittrexSwingOrder();
 				assert.equal(typeof val._idleStart,"number");
@@ -109,5 +109,25 @@ describe('Bittrex', function() {
 			bot.bittrexKill = true;
 			result.end();
 		});
-	});	
+	});
+	/*
+	 * 
+	 * Arbitrage Helpers
+	 * 
+	 * */
+	describe('#BittrexReset', function() {
+		it('Should reset Bittrex Settings',function(done) {
+			this.timeout(3000)
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexInProcess = true;
+			bot.email = mock.email;
+			var reset = bot.bittrexReset("Testing bittrexReset Function",0);
+			setTimeout(()=>{
+				assert(!bot.bittrexInProcess);
+				clearTimeout(reset);
+				done();
+			},100)
+		});
+	}); 
+		
 });
