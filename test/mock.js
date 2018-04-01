@@ -450,7 +450,9 @@ var _MongoClient = {
 						simpleDB.push[x];
 						func(false,true);
 					},
-					remove:function(x,func){func(false,true);},
+					remove:function(x,func){
+						func(false,true);
+					},
 					update:function(x,y,z,func){func(false,true);}
 				};
 			}
@@ -539,19 +541,16 @@ var settings1 ={
 //mock Binance Market
 function _marketStream(_port){
 	var wss = new WebSocket.Server({port:_port});
-		setTimeout(()=>{
-		wss.close();
-	},2500);
 	wss.on('connection',(ws,req)=>{
-		//console.log("Websocket connection created:",req.rawHeaders,req.url);
+		console.log("Mock Websocket connection created:",req.url);
 		ws.on('error',(e)=>{
 			console.log("Mock socket error:",e);
 		})
 		ws.on('close',(e)=>{
-			return console.log("Mock WebSocket Closed:",e,new Date());
+			return console.log("Mock Market WebSocket Closed:",e,new Date());
 		})			
 		ws.on('message',(message)=>{
-			ws.send("");
+			ws.send("hello world");
 		});				
 	})	
 	return wss;
@@ -580,7 +579,7 @@ function _userStream(){
 			console.log("Mock socket error:",e);
 		})
 		ws.on('close',(e)=>{
-			return console.log("Mock WebSocket Closed:",e,new Date());
+			return console.log("Mock UserStream WebSocket Closed:",e,new Date());
 		})					
 	})
 	return wss;	
@@ -588,7 +587,7 @@ function _userStream(){
 
 
 module.exports = {
-	market:"ws://localhost:8080/pair?=xxx",
+	market:"ws://localhost:18080/pair?=xxx",
 	marketStream:_marketStream,
 	userStream:_userStream,
 	mockSettings1:settings1,
