@@ -1,10 +1,9 @@
-var CryptoBot = require('../c4d.js');
-var Settings = require('../config.json');
-var mock = require('./mock.js');
-var assert = require('assert');
-https = require('https')
-
 describe('Bittrex', function() {
+	var CryptoBot = require('../c4d.js');
+	var Settings = require('../config.json');
+	var mock = require('./mock.js');
+	var assert = require('assert');
+
     var bot = new CryptoBot.bot(mock.mockSettings1);
     bot.https = mock.https;
     bot.email = mock.email;
@@ -103,15 +102,15 @@ describe('Bittrex', function() {
 	});	
 	describe('#Stream', function() {
 		it('Should Start the bittrex Stream then close it',function(done) {
-			this.timeout(10000)
+			this.timeout(15000)
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			Promise.resolve(bot.bittrexPrepareStream().then((val) =>{
+			bot.bittrexPrepareStream().then((val)=>{
 				var result = bot.bittrexStream(val[0] && val[1])
 				assert(result.end);
 				bot.bittrexKill = true;
 				result.end();
 				done();
-			}))
+			})
 		});
 	});	
 });
