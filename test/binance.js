@@ -409,14 +409,19 @@ describe('Binance', function() {
 	
 	describe('#Stream', function() {
 		it('Should return a connected websocket',function(done) {
-			var _mockMarket = new mock.marketStream(18080);
+			try{
+			var _mockMarket = new mock.marketStream(8080);
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			binanceBot.binanceUserStream = function(){}
-			binanceBot.binanceMarket = mock.market;
+			binanceBot.binanceMarket = "ws://localhost:8080/pair?=xxx";
 			binanceBot.binanceMonitor([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
 			assert.equal(binanceBot.binanceSocketConnections[0].readyState,0);
 			_mockMarket.close();
 			done();
+			}
+			catch(e){
+				done(e);
+			}
 		});
 	});		
 	
