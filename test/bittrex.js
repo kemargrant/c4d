@@ -2,6 +2,7 @@ var CryptoBot = require('../c4d.js');
 var Settings = require('../config.json');
 var mock = require('./mock.js');
 var assert = require('assert');
+https = require('https')
 
 describe('Bittrex', function() {
     var bot = new CryptoBot.bot(mock.mockSettings1);
@@ -45,7 +46,6 @@ describe('Bittrex', function() {
 				assert(val.buy && val.sell);
 				done()
 			})
-			
 		});
 	});		
 

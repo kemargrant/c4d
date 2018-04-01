@@ -1134,30 +1134,37 @@ CryptoBot.prototype.bittrexCompleteArbitrage = function(tracking){
    */	
 CryptoBot.prototype.bittrexDepthPure = function(pair){
 	return new Promise((resolve,reject) =>{	
-	    https.get({host: "bittrex.com",path: "/api/v1.1/public/getorderbook?market="+pair+"&type=both"},(response)=>{
-		        var body = '';
-		        response.on('data',(d)=> {
-					body += d;
-				});
-		        response.on('end',()=> {	
-						try{
-							if(!body){
-								return reject(body);
-							}
-				            var parsed = JSON.parse(body);
-				            if(!parsed || !parsed.success){
-								return reject("Error:"+body);
-							}
-							return resolve({"sell":Number(parsed['result'].sell[0].Rate),"buy":Number(parsed['result'].buy[0].Rate)});
-						}
-						catch(e){
-							return reject(false);
-						}
-			    });
-		}).on('error',(e)=>{
-			this.log(e);
-			return reject(e);
+	    var req = this.https.request({
+			host: "bittrex.com",
+			path: "/api/v1.1/public/getorderbook?market="+pair+"&type=both",
+			method: "GET"
+		},(response)=>{
+	        var body = '';
+	        response.on('data',(d)=> {
+				body += d;
+			});
+	        response.on('end',()=> {	
+				try{
+					if(!body){
+						return reject(body);
+					}
+		            var parsed = JSON.parse(body);
+		            if(!parsed || !parsed.success){
+						return reject("Error:"+body);
+					}
+					return resolve({"sell":Number(parsed['result'].sell[0].Rate),"buy":Number(parsed['result'].buy[0].Rate)});
+				}
+				catch(e){
+					return reject(false);
+				}
+		    });
+		    response.on('error',(e)=>{
+				this.log(e);
+				return reject(e);
+			});
 		});
+		req.write("");
+		req.end();
 	});
 }
 

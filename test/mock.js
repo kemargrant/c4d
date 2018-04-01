@@ -405,7 +405,36 @@ var _https = {
 				    "message" : "",
 				    "result" : null
 				}
-		}				
+		}
+		else if(options.path.search("public/getorderbook") > -1){
+			console.log("using prox")
+			console.log(options)
+			data =  {
+				"success" : true,
+				"message" : "",
+				"result" : {
+					"buy" : [{
+							"Quantity" : 12.37000000,
+							"Rate" : 0.02525000
+						}
+					],
+					"sell" : [{
+							"Quantity" : 32.55412402,
+							"Rate" : 0.02540000
+						}, {
+							"Quantity" : 60.00000000,
+							"Rate" : 0.02550000
+						}, {
+							"Quantity" : 60.00000000,
+							"Rate" : 0.02575000
+						}, {
+							"Quantity" : 84.00000000,
+							"Rate" : 0.02600000
+						}
+					]
+				}
+			}
+		}						
 		else{
 			return rhttps.request(options,func);		
 		}
@@ -544,16 +573,16 @@ function _marketStream(_port){
 	try{
 		wss = new WebSocket.Server({port:_port});
 		wss.on('connection',(ws,req)=>{
+			setTimeout(()=>{
+				wss.close();
+			},1000);
 			console.log("Mock Websocket connection created:",req.url);
 			ws.on('error',(e)=>{
-				console.log("Mock socket error:",e);
+				return console.log("Mock socket error:",e);
 			})
 			ws.on('close',(e)=>{
 				return console.log("Mock Market WebSocket Closed:",e,new Date());
-			})			
-			ws.on('message',(message)=>{
-				ws.send("hello world");
-			});				
+			})					
 		})	
 	}
 	catch(e){
