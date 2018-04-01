@@ -186,6 +186,8 @@ describe('General Server Commands (Offline)', function() {
 describe('Binance Server Commands (Network)', function() {
 	var bot = new CryptoBot.bot(mock.mockSettings1);
 	bot.https = mock.https;
+	var old = setInterval;
+	setInterval = function(x,y){console.log("Setting Interval",x,y);return}
 	/*
 	 * Binance Commands That Require a Network Request
 	 * 
@@ -200,12 +202,13 @@ describe('Binance Server Commands (Network)', function() {
 			},100);
 		});
 	});	 
-	
+
 	describe('#Should activate Binance', function() {
 		var bot = new CryptoBot.bot(mock.mockSettings1);
-		var _mockMarket = new mock.marketStream(18080);
 		bot.binanceMarket = mock.market;
 		bot.https = mock.https;
+		bot.listenUser = function(){return true}
+		bot.binanceUserStream = function(){return true}
 		it('Should activate Binance', function() {
 			bot.binanceKill = true;
 			bot.serverCommand(encrypt({'command':'binance_control','bool':true}));
