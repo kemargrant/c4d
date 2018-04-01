@@ -200,25 +200,20 @@ describe('Binance Server Commands (Network)', function() {
 			},100);
 		});
 	});	 
-	describe('#binance_control boolean(true)', function() {
-		it('Should activate Binance', function(done) {
-			this.timeout(6000);
+	
+	describe('#Should activate Binance', function() {
+		var bot = new CryptoBot.bot(mock.mockSettings1);
+		var _mockMarket = new mock.marketStream(18080);
+		bot.binanceMarket = mock.market;
+		bot.https = mock.https;
+		it('Should activate Binance', function() {
 			bot.binanceKill = true;
 			bot.serverCommand(encrypt({'command':'binance_control','bool':true}));
-			setTimeout(()=>{
-				assert(bot.binanceSocketConnections.length > 0);
-				done();
-			},4000);
+			assert(bot.binanceSocketConnections.length > 0);
 		});
-	});	
-	describe('#binance_control boolean(false)', function() {
-		it('Should deactivate Binance', function(done) {
-			this.timeout(6000)
+		it('Should deactivate Binance', function() {
 			bot.serverCommand(encrypt({'command':'binance_control','bool':false}));
-			setTimeout(()=>{
-				assert(bot.binanceSocketConnections.length === 0);
-				done();
-			},4500);
+			assert(bot.binanceSocketConnections.length === 0);
 		});
 	});	 		 	
 	describe('#binance_orders', function() {
@@ -254,11 +249,11 @@ describe('Bittrex Server Commands (Network)', function() {
 	});		
 	describe('#bittrex_control boolean(false)', function() {
 		it('Should stop Bittrex arbitrage process', function(done) {
-			this.timeout(15000)
+			this.timeout(11000)
 			setTimeout(()=>{
 				assert(bot.serverCommand(encrypt({'command':'bittrex_control','bool':false})))
 				done();
-			},14000);
+			},9000);
 		});
 	});	
 	bot.MongoClient = mock.MongoClient;
