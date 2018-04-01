@@ -13,25 +13,19 @@ describe('General Functions', function() {
 		bot.wss.close();
 	});	
 	describe('#Connect To Database', function() {
-		it('Should return a db connection with trade and balance collections', function(done) {
-			this.timeout(2100);
-			return setTimeout(async()=>{
-				try{
-					var x = await bot.DB.balance;
-					var y = await bot.DB.trade;
-					assert((x && y) !== undefined);
-					done();
-				}
-				catch(e){
-					done(e);
-				}
-			},400)
+		it('Should return a db connection with trade and balance collections', function() {
+			var x = bot.DB.balance;
+			var y = bot.DB.trade;
+			assert((x && y) !== undefined);
 		});
 		it('Should return empty DB', function() {
+			let old = console.log
+			console.log = function(){return}
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			var _mockSettings = mock.mockSettings1;
 			var empty = bot.database();
 			assert(JSON.stringify(empty),"{}");
+			console.log = old;
 		});		
 	});
 	
@@ -39,10 +33,11 @@ describe('General Functions', function() {
 		it('Should save and delete record from the database', function(done) {
 			this.timeout(2000);
 			var date = new Date().getTime();
-			return setTimeout( async function(){
+			setTimeout( async function(){
 				var x = await bot.saveDB("trade",{"UUID":date});
 				var y = await bot.saveDB("trade",{},{method:"remove",query:{'UUID':date}});	
 				try{
+					console.log(x,y)
 					assert(x && y,true);
 					done();
 				}
@@ -118,5 +113,4 @@ describe('General Functions', function() {
 			}	
 		});
 	});	
-	return
 })
