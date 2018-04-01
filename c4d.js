@@ -858,6 +858,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
    * @return {Object} Websocket client
    */
 CryptoBot.prototype.binanceUserStream = function(key){
+	if(this.binanceUserStreamStatus)return
 	var client = new WebSocket(this.binanceUserStreamString+key);		
 	var pairs ={}
 	for(var i=0;i< this.Settings.Binance.pairs.length;i++){
@@ -2259,9 +2260,7 @@ CryptoBot.prototype.serverCommand = function(message,ws){
 				} 
 				this.binanceSocketConnections = [];
 				this.binanceMonitor(this.Settings.Binance.pairs);
-				if(!this.binanceUserStreamStatus){
-					this.binanceListenUser();
-				}
+				this.binanceListenUser();
 				this.log("Starting Binance Socket Connections");
 			}
 		}
