@@ -1,11 +1,12 @@
-var CryptoBot = require('../c4d.js');
-var mock = require('./mock.js');
-var assert = require('assert');	
-var AES = require("crypto-js").AES;
-var base ='ltcbtc';
-
-function encrypt(message){return AES.encrypt(JSON.stringify(message),mock.mockSettings1.Config.key).toString()}
-var ws = {send:console.log}
+describe('#Server Commands', function() {
+	var CryptoBot = require('../c4d.js');
+	var mock = require('./mock.js');
+	var assert = require('assert');	
+	var AES = require("crypto-js").AES;
+	var base ='ltcbtc';
+	
+	function encrypt(message){return AES.encrypt(JSON.stringify(message),mock.mockSettings1.Config.key).toString()}
+	var ws = {send:console.log}
 
 describe('Binance Server Commands (Offline)', function() {
 	var bot = new CryptoBot.bot(mock.mockSettings1);
@@ -181,8 +182,6 @@ describe('General Server Commands (Offline)', function() {
 describe('Binance Server Commands (Network)', function() {
 	var bot = new CryptoBot.bot(mock.mockSettings1);
 	bot.https = mock.https;
-	var old = setInterval;
-	setInterval = function(x,y){console.log("Setting Interval",x,y);return}
 	/*
 	 * Binance Commands That Require a Network Request
 	 * 
@@ -200,10 +199,10 @@ describe('Binance Server Commands (Network)', function() {
 
 	describe('#Should activate Binance', function() {
 		var bot = new CryptoBot.bot(mock.mockSettings1);
-		bot.listenUser = function(){return true}
-		bot.binanceUserStream = function(){return true}
+		bot.binanceUserStreamStatus = true;
+		bot.https = mock.https;
+		function dummy(){}
 		it('Should activate Binance', function() {
-			bot.binanceKill = true;
 			bot.serverCommand(encrypt({'command':'binance_control','bool':true}));
 			setTimeout(()=>{
 				assert(bot.binanceSocketConnections.length > 0);
@@ -214,6 +213,7 @@ describe('Binance Server Commands (Network)', function() {
 			setTimeout(()=>{
 				assert(bot.binanceSocketConnections.length === 0);
 				for(var i=0;i< bot.binanceSocketConnections.length;i++){
+					bot.binanceSocketConnections[i].onclose = dummy;
 					bot.binanceSocketConnections[i].close();
 				}
 			},3000);
@@ -240,25 +240,15 @@ describe('Bittrex Server Commands (Network)', function() {
 			assert(bot.balance.btc > 0);
 		});
 	});		
-	describe('#bittrex_control boolean(true)', function() {
-		it('Should start Bittrex arbitrage process', async (done)=> {
-			this.timeout(15000)
+	describe('#bittrex_control', function() {
+		it('Should start and stop arbitrage process', function(done) {
+			this.timeout(25000)
 			bot.bittrexSocketConnection = false;
-			bot.bittrexKill=true
 			var streamStarted = Promise.resolve(bot.serverCommand(encrypt({'command':'bittrex_control','bool':true})));
-			assert(streamStarted);
+			assert(bot.serverCommand(encrypt({'command':'bittrex_control','bool':false})))
 			done();
 		});
 	});		
-	describe('#bittrex_control boolean(false)', function() {
-		it('Should stop Bittrex arbitrage process', function(done) {
-			this.timeout(11000)
-			setTimeout(()=>{
-				assert(bot.serverCommand(encrypt({'command':'bittrex_control','bool':false})))
-				done();
-			},9000);
-		});
-	});	
 	bot.MongoClient = mock.MongoClient;
 	bot.DB = bot.database();		 
 	describe('#bittrex_db', function() {
@@ -283,4 +273,6 @@ describe('Server Commands (Network)', function() {
 			assert(bot.serverCommand(encrypt({'command':'connect'}),ws))
 		});
 	});		
+})
+
 })
