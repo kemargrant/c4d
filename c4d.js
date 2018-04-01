@@ -535,6 +535,7 @@ CryptoBot.prototype.binanceListenUser = function(){
    * Stream all configured Binance currency pairs market depth.
    * @method binanceMonitor
    * @param {Array} Array of pair data information
+   * @return {Array} An array of websocket clients
    */
 CryptoBot.prototype.binanceMonitor = function(pairData){
 	var _list = [];
@@ -544,6 +545,7 @@ CryptoBot.prototype.binanceMonitor = function(pairData){
 		_list.push(this.binanceStream(pairData[i].pair1,pairData[i].pair3));
 	}	
 	this.binanceSocketConnections = _list;
+	return _list;
 }
 
 
@@ -801,7 +803,14 @@ CryptoBot.prototype.binanceSaveOrders = function(values,base,percentage,Transact
    * @return {Object} Websocket client
    */
 CryptoBot.prototype.binanceStream = function(base,pair){
-	var client = new WebSocket(this.binanceMarket.replace("xxx",pair));
+	var client;
+	try{
+		client = new WebSocket(this.binanceMarket.replace("xxx",pair));
+	}
+	catch(e){
+		this.log(e,new Date());
+		return client;
+	}
 	var e1 = {}
 	var b1 = {}
 	var u1 = {}
