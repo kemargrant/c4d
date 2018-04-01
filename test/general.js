@@ -55,33 +55,33 @@ describe('General Functions', function() {
 		});
 	});	
 	
-	describe('#NiceOrderChain', function() {
-		it('Should slow chain a series of functions', function(done) {
-			this.timeout(9010)
-			var bot = new CryptoBot.bot(mock.mockSettings1);
-			bot.https = mock.https;
-			bot.MongoClient = mock.MongoClient;
-			bot.DB = bot.database();
-			bot.DB = bot.database();
-			function sum(obj){
-				var count = 0;
-				for(var key in obj){
-					count += obj[key];
-				}
-				return count;
-			}
-			function cb(){console.log("nice order chain cb")}
-			bot.add = function(x,y){return new Promise((resolve,reject)=>resolve(x+y))}
-			var answer = {}
-			bot.niceOrderChain([bot.add,bot.add,bot.add,cb],answer).chain([[1,1],[1,1],[1,1]]).then(()=>{
-				assert.equal(sum(answer),6);
-				done();
-			}).catch((e)=>{
-				done(e)
-			});
+	//~ describe('#NiceOrderChain', function() {
+		//~ it('Should slow chain a series of functions', function(done) {
+			//~ this.timeout(9010)
+			//~ var bot = new CryptoBot.bot(mock.mockSettings1);
+			//~ bot.https = mock.https;
+			//~ bot.MongoClient = mock.MongoClient;
+			//~ bot.DB = bot.database();
+			//~ bot.DB = bot.database();
+			//~ function sum(obj){
+				//~ var count = 0;
+				//~ for(var key in obj){
+					//~ count += obj[key];
+				//~ }
+				//~ return count;
+			//~ }
+			//~ function cb(){console.log("nice order chain cb")}
+			//~ bot.add = function(x,y){return new Promise((resolve,reject)=>resolve(x+y))}
+			//~ var answer = {}
+			//~ bot.niceOrderChain([bot.add,bot.add,bot.add,cb],answer).chain([[1,1],[1,1],[1,1]]).then(()=>{
+				//~ assert.equal(sum(answer),6);
+				//~ done();
+			//~ }).catch((e)=>{
+				//~ done(e)
+			//~ });
 			
-		});
-	});		
+		//~ });
+	//~ });		
 	
 	describe('#Send Email', function() {
 		return it('Should send an email message', async function() {

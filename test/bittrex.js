@@ -100,17 +100,17 @@ describe('Bittrex', function() {
 			assert.equal(bot.updateBittrexSocketStatus(false),false);
 		});
 	});	
-	describe('#Stream', function() {
-		it('Should Start the bittrex Stream then close it',function(done) {
-			this.timeout(15000)
-			var bot = new CryptoBot.bot(mock.mockSettings1);
-			bot.bittrexPrepareStream().then((val)=>{
-				var result = bot.bittrexStream(val[0] && val[1])
-				assert(result.end);
-				bot.bittrexKill = true;
-				result.end();
-				done();
-			})
-		});
-	});	
+	//~ describe('#Stream', function() {
+		//~ it('Should Start the bittrex Stream then close it',function(done) {
+			//~ this.timeout(15000)
+			//~ var bot = new CryptoBot.bot(mock.mockSettings1);
+			//~ bot.bittrexPrepareStream().then((val)=>{
+				//~ var result = bot.bittrexStream(val[0] && val[1])
+				//~ assert(result.end);
+				//~ bot.bittrexKill = true;
+				//~ result.end();
+				//~ done();
+			//~ },e=>{done(e)})
+		//~ });
+	//~ });	
 });
