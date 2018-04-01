@@ -1228,6 +1228,34 @@ CryptoBot.prototype.bittrexReset = function(e,time){
 }
 
 /**
+   * Sort Bittrex order boo
+   * @method bittrexSortBook
+   * @param {Object} {Bids:[],Ask:[]}
+   * @return {Object} Return sorted order book
+   */
+CryptoBot.prototype.bittrexSortBook = function(obj){
+	var keys1 = Object.keys(obj["Asks"]);
+	var keys2 = Object.keys(obj["Bids"]);
+	keys2 = this.utilities.BubbleSort(keys2);
+	keys1 = this.utilities.BubbleSort(keys1,Number(keys2[0]));
+	if(keys1.length > 25){
+		for(var i = 0;i < 5;i++){
+			delete obj["Asks"][keys1[i]];
+		}
+		keys1 = keys1.slice(5);
+	}
+	if(keys2.length > 25){
+		for(var i = 20;i < 25;i++){
+			delete obj["Bids"][keys2[i]];
+		}
+		keys2 = keys2.slice(0,20);
+	}	
+	obj["Sorted"] = [keys1,keys2];
+	return obj;
+}
+
+
+/**
    * Monitor Bittrex pairs for arbitrage opportunities.
    * @method bittrexStream
    * @param {String} Bittrex cookie
@@ -1274,25 +1302,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 	strategy[this.Settings.Config.pair3] = {}
 
 	
-	var sortBook = (obj) =>{
-		var keys1 = Object.keys(obj["Asks"]);
-		var keys2 = Object.keys(obj["Bids"]);
-		keys2 = this.utilities.BubbleSort(keys2);
-		keys1 = this.utilities.BubbleSort(keys1,Number(keys2[0]));
-		if(keys1.length > 25){
-			for(var i = 0;i < 5;i++){
-				delete obj["Asks"][keys1[i]];
-			}
-			keys1 = keys1.slice(5);
-		}
-		if(keys2.length > 25){
-			for(var i = 20;i < 25;i++){
-				delete obj["Bids"][keys2[i]];
-			}
-			keys2 = keys2.slice(0,20);
-		}	
-		obj["Sorted"] = [keys1,keys2];
-	}
+	
 	var subscribeToMarkets = () => {
 		[this.Settings.Config.pair1,this.Settings.Config.pair2,this.Settings.Config.pair3].forEach((market)=> {	
 		client.call('CoreHub', 'SubscribeToExchangeDeltas', market).done((err, result)=> {
@@ -1322,7 +1332,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 				delete localMarket[pair]["Asks"][rate];
 			}
 		}	
-		return sortBook(localMarket[pair]);
+		return this.bittrexSortBook(localMarket[pair]);
 	}
 	client = new signalR.client("wss://socket.bittrex.com/signalr",['CoreHub']);	
 	client.headers['User-Agent'] = agent;
