@@ -540,19 +540,25 @@ var settings1 ={
 
 //mock Binance Market
 function _marketStream(_port){
-	var wss = new WebSocket.Server({port:_port});
-	wss.on('connection',(ws,req)=>{
-		console.log("Mock Websocket connection created:",req.url);
-		ws.on('error',(e)=>{
-			console.log("Mock socket error:",e);
-		})
-		ws.on('close',(e)=>{
-			return console.log("Mock Market WebSocket Closed:",e,new Date());
-		})			
-		ws.on('message',(message)=>{
-			ws.send("hello world");
-		});				
-	})	
+	var wss;
+	try{
+		wss = new WebSocket.Server({port:_port});
+		wss.on('connection',(ws,req)=>{
+			console.log("Mock Websocket connection created:",req.url);
+			ws.on('error',(e)=>{
+				console.log("Mock socket error:",e);
+			})
+			ws.on('close',(e)=>{
+				return console.log("Mock Market WebSocket Closed:",e,new Date());
+			})			
+			ws.on('message',(message)=>{
+				ws.send("hello world");
+			});				
+		})	
+	}
+	catch(e){
+		console.log(e)
+	}
 	return wss;
 }
 
