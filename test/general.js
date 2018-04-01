@@ -67,16 +67,14 @@ describe('General Functions', function() {
 				return count;
 			}
 			bot.cb = function (red){
-				console.log("nice order chain cb:",sum)
 				assert.equal(sum(red),2)
 				done();
 			}
 			bot.add = function(x,y){return new Promise((resolve,reject)=>resolve(x+y))}
 			var answer = {}
-			bot.niceOrderChain([bot.add,bot.cb],answer).chain([[1,1],[1,1]])			
+			bot.niceOrderChain([bot.add,bot.cb],answer).chain([[1,1]])			
 		});
-	});		
-	
+	});			
 	describe('#Send Email', function() {
 		return it('Should send an email message', async function() {
 			bot.email = mock.email;
