@@ -1312,28 +1312,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 		});
 		});
 	};
-	var updateMarket = (pair,data)=>{
-		var rate;
-		for(var i = 0; i< data.Buys.length;i++){
-			rate = data.Buys[i].Rate.toString();
-			if(data.Buys[i].Type === 0 || data.Buys[i].Type === 2){
-				localMarket[pair]["Bids"][rate] = data.Buys[i].Quantity;
-			}
-			else{
-				delete localMarket[pair]["Bids"][rate];
-			}
-		}
-		for(var i = 0; i< data.Sells.length;i++){
-			rate = data.Sells[i].Rate.toString();
-			if(data.Sells[i].Type === 0 || data.Sells[i].Type === 2){
-				localMarket[pair]["Asks"][rate] = data.Sells[i].Quantity;
-			}
-			else{
-				delete localMarket[pair]["Asks"][rate];
-			}
-		}	
-		return this.bittrexSortBook(localMarket[pair]);
-	}
+	
 	client = new signalR.client("wss://socket.bittrex.com/signalr",['CoreHub']);	
 	client.headers['User-Agent'] = agent;
 	client.headers['cookie'] = cookie;
@@ -1393,7 +1372,8 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 				data = JSON.parse(message.utf8Data);
 				if(data.M && data.M[0] && data.M[0].M === "updateExchangeState"){
 					pair = data.M[0].A[0].MarketName;
-					updateMarket(pair,data.M[0].A[0]);
+					this.bittrexUpdateMarket(pair,data.M[0].A[0],localMarket)
+					this.bittrexSortBook(localMarket);
 					if(pair === this.Settings.Config.pair3){
 						strategy[this.Settings.Config.pair3]["strat1"] = Number(localMarket[pair]["Sorted"][1][0]);
 						strategy[this.Settings.Config.pair3]["strat2"] = Number(localMarket[pair]["Sorted"][0][localMarket[pair]["Sorted"][0].length - 1]);
@@ -1779,6 +1759,34 @@ CryptoBot.prototype.bittrexTrade = function(type,pair,quantity,rate,options){
 			
 		});
 	})
+}
+
+/**
+   * Send message to all connected websocket clients.
+   * @method broadcastMessage
+   * @param {String} Message to send to clients 
+   */
+CryptoBot.prototype.bittrexUpdateMarket = function(pair,data,localMarket){
+	var rate;
+	for(var i = 0; i< data.Buys.length;i++){
+		rate = data.Buys[i].Rate.toString();
+		if(data.Buys[i].Type === 0 || data.Buys[i].Type === 2){
+			localMarket[pair]["Bids"][rate] = data.Buys[i].Quantity;
+		}
+		else{
+			delete localMarket[pair]["Bids"][rate];
+		}
+	}
+	for(var i = 0; i< data.Sells.length;i++){
+		rate = data.Sells[i].Rate.toString();
+		if(data.Sells[i].Type === 0 || data.Sells[i].Type === 2){
+			localMarket[pair]["Asks"][rate] = data.Sells[i].Quantity;
+		}
+		else{
+			delete localMarket[pair]["Asks"][rate];
+		}
+	}	
+	return localMarket
 }
 
 /**

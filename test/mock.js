@@ -813,7 +813,25 @@ var _sorted = { Bids:
        '6268.81382555',
        '6268.2256',
        '6268' ] ] }
-
+var _bittrexData ={
+	Buys:[
+		{Type:0,Quantity:1,Rate:3.33},
+		{Type:3,Quantity:1,Rate:4.44},
+	],
+	Sells:[
+		{Type:0,Quantity:1,Rate:7.77},
+		{Type:3,Quantity:1,Rate:55.5},
+	]
+}
+var _bittrexMarketData = {
+	
+	'BTC-LTC':{
+		
+		Bids:{'4.44':5},
+		Asks:{'55.5':10}
+	}
+	
+}
 module.exports = {
 	market:"ws://localhost:18080/pair?=xxx",
 	marketStream:_marketStream,
@@ -825,5 +843,6 @@ module.exports = {
 	binanceMessages:_binanceMessages,
 	binanceUserEvents: [userevent1,userevent2,userevent3],
 	bittrexBook:_book,
-	bittrexBookSorted:_sorted
+	bittrexBookSorted:_sorted,
+	bittrexData:[_bittrexData,_bittrexMarketData]
 }

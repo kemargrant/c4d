@@ -117,7 +117,7 @@ describe('Bittrex', function() {
 	 * */
 	describe('#BittrexReset', function() {
 		it('Should reset Bittrex Settings',function(done) {
-			this.timeout(3000)
+			this.timeout(2000)
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.bittrexInProcess = true;
 			bot.email = mock.email;
@@ -129,6 +129,16 @@ describe('Bittrex', function() {
 			},100)
 		});
 	});
+	describe('#Update Market', function() {
+		it('Should update local order book',function(done) {
+			this.timeout(300000)
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var update = bot.bittrexUpdateMarket('BTC-LTC',mock.bittrexData[0],mock.bittrexData[1]);
+			var updated = JSON.stringify({ 'BTC-LTC': { Bids: { '3.33': 1 }, Asks: { '7.77': 1 } } })
+			assert.equal(JSON.stringify(update),updated);
+			done();		
+		});
+	});		
 	describe('#SortBook', function() {
 		it('Should sort Bittrex order book',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
