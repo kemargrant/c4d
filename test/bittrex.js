@@ -131,11 +131,10 @@ describe('Bittrex', function() {
 	});
 	describe('#SortBook', function() {
 		it('Should sort Bittrex order book',function() {
-		this.timeout(300000)
-		var bot = new CryptoBot.bot(mock.mockSettings1);
-		var book = mock.bittrexBook;
-		var sorted = JSON.stringify(mock.bittrexBookSorted);
-		assert.equal(JSON.stringify(bot.bittrexSortBook(book)),sorted);
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var book = JSON.stringify(bot.bittrexSortBook(mock.bittrexBook));
+			var sorted = JSON.stringify(mock.bittrexBookSorted);
+			assert.equal(book,sorted);
 		});
 	});	 
 		
