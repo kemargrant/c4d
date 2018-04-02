@@ -1228,7 +1228,7 @@ CryptoBot.prototype.bittrexReset = function(e,time){
 }
 
 /**
-   * Sort Bittrex order boo
+   * Sort Bittrex order book
    * @method bittrexSortBook
    * @param {Object} {Bids:[],Ask:[]}
    * @return {Object} Return sorted order book
@@ -1300,9 +1300,6 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 	strategy[this.Settings.Config.pair1] = {}
 	strategy[this.Settings.Config.pair2] = {}
 	strategy[this.Settings.Config.pair3] = {}
-
-	
-	
 	var subscribeToMarkets = () => {
 		[this.Settings.Config.pair1,this.Settings.Config.pair2,this.Settings.Config.pair3].forEach((market)=> {	
 		client.call('CoreHub', 'SubscribeToExchangeDeltas', market).done((err, result)=> {
@@ -1758,9 +1755,12 @@ CryptoBot.prototype.bittrexTrade = function(type,pair,quantity,rate,options){
 }
 
 /**
-   * Send message to all connected websocket clients.
-   * @method broadcastMessage
-   * @param {String} Message to send to clients 
+   * Update Local order book.
+   * @method bittrexUpdateMarket
+   * @param {String} Currency pair ie 'BTC-LTC'
+   * @param {Object} Bittrex update data
+   * @param {Object} Local order book 
+   * @return {Object} Updated local order book
    */
 CryptoBot.prototype.bittrexUpdateMarket = function(pair,data,localMarket){
 	var rate;
@@ -1782,7 +1782,7 @@ CryptoBot.prototype.bittrexUpdateMarket = function(pair,data,localMarket){
 			delete localMarket[pair]["Asks"][rate];
 		}
 	}	
-	return localMarket
+	return localMarket;
 }
 
 /**
