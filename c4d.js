@@ -1464,9 +1464,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 										localMarket[this.Settings.Config.pair3] = {Bids:{},Asks:{}}
 								})
 								.catch((e)=>{
-									this.log(e,new Date());
-									this.notify("Error completing arbitrage:"+e);
-									return setTimeout(()=>{return this.bittrexReset(e);},216000000);
+									return bittrexReset(e,216000000);
 								});
 							}
 							else{
@@ -1534,9 +1532,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 										localMarket[this.Settings.Config.pair3] = {Bids:{},Asks:{}}
 									})
 									.catch((e)=>{
-										this.log(e,new Date());
-										this.notify("Error completing arbitrage:"+e);
-										return setTimeout(()=>{return bittrexReset(e,216000000);},216000000);
+										return bittrexReset(e,216000000);
 									});							
 								}
 								else{
