@@ -147,5 +147,52 @@ describe('Bittrex', function() {
 			assert.equal(book,sorted);
 		});
 	});	 
+	describe('#Bittrex Conditions', function() {
+		var bot = new CryptoBot.bot(mock.mockSettings1);
+		it('Should return false Insane Trade(<100)',function() {
+			var trade = bot.bittrexCheckConditions({},50,'ltc','btc','usdt','Should return false Insane Trade(<100)')
+			assert.equal(trade,false);
+		});
+		it('Should return false Insane Trade(<100)',function() {
+			var trade = bot.bittrexCheckConditions({},150,'ltc','btc','usdt','Should return false Insane Trade(>100)')
+			assert.equal(trade,false);
+		});
+		it('Should return false illiquid book (<100)',function() {
+			var trade = bot.bittrexCheckConditions({btc_amount1:100,ltc_amount1:100,usdt_amount1:1,btc:5,ltc:5,usdt:5},98.9,'ltc','btc','usdt','Should return false illiquid book (<100)')
+			assert.equal(trade,false);
+		});
+		it('Should return false illiquid book (>100)',function() {
+			var trade = bot.bittrexCheckConditions({btc_amount2:100,ltc_amount2:100,usdt_amount2:1,btc:5,ltc:5,usdt:5},101,'ltc','btc','usdt','Should return false illiquid book (>100)')
+			assert.equal(trade,false);
+		});
+		it('Should return false low wallet balance',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.balance.btc = 0;
+			bot.balance.ltc = 200;
+			bot.balance.usdt = 200;
+			var trade = bot.bittrexCheckConditions({btc_amount2:100,ltc_amount2:100,usdt_amount2:100,btc:5,ltc:5,usdt:5},101,'ltc','btc','usdt','Should return false low wallet balance')
+			assert.equal(trade,false);
+		});
+		it('Should return false minimum btc amount not met',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.balance.btc = 100;
+			bot.balance.ltc = 200;
+			bot.balance.usdt = 200;
+			bot.Settings.Bittrex.minimum = 30
+			var trade = bot.bittrexCheckConditions({btc_amount2:100,ltc_amount2:100,usdt_amount2:100,btc:5,ltc:5,usdt:5},101,'ltc','btc','usdt','Should return false minimum btc amount not met')
+			assert.equal(trade,false);
+		});
+		it('Should return true, all conditions met',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.balance.btc = 100;
+			bot.balance.ltc = 200;
+			bot.balance.usdt = 200;
+			bot.Settings.Bittrex.minimum = 1
+			var trade = bot.bittrexCheckConditions({btc_amount2:100,ltc_amount2:100,usdt_amount2:100,btc:5,ltc:5,usdt:5},101,'ltc','btc','usdt','Should return true')
+			assert.equal(trade,true);
+		});
+	});	 
+
+	
 		
 });

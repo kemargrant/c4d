@@ -1043,6 +1043,44 @@ CryptoBot.prototype.bittrexCancelOrder = function(orderid){
 }	
 	
 /**
+   * Check Bittrex conditions.
+   * @method bittrexCheckConditions
+   * @param {Object} Transactions
+   * @param {Number} Percentage
+   * @param {String} Currency ie 'ltc'
+   * @param {String} Currency ie 'btc'
+   * @param {String} Currency ie 'usdt'
+   * @return {Boolean} Returns a boolean
+   */	
+CryptoBot.prototype.bittrexCheckConditions = function(Transactions,percentage,e1,b3,u2,message){
+	if(this.saneTrades && percentage < 100 && (percentage < this.lowerLimit || percentage > 99.25)){
+		this.log("Insane Trade:",message);
+		return false
+	}
+	if(this.saneTrades && percentage > 100 && (percentage < 100.7524 || percentage > this.upperLimit)){
+		this.log("Insane Trade:",message);
+		return false
+	}	
+	if(this.liquidTrades && percentage > 100 && (Transactions[u2+'_amount2'] < Transactions[u2] || Transactions[b3+'_amount2'] < Transactions[b3] || Transactions[e1+'_amount2'] < Transactions[e1])){
+		this.log("Illiquid Trade:",new Date());
+		return false;
+	}	
+	if(this.liquidTrades && percentage < 100 && (Transactions[u2+'_amount1'] < Transactions[u2] || Transactions[b3+'_amount1'] < Transactions[b3] || Transactions[e1+'_amount1'] < Transactions[e1])){
+		this.log("Illiquid Trade:",new Date());
+		return false;
+	}
+	if(this.balance[e1] < Transactions[e1]  ||  this.balance[b3] < Transactions[b3] || this.balance[u2] < Transactions[u2]){
+		this.log("Wallet balance not enough to place order:",new Date());
+		return false;
+	}
+	if(Transactions.btc < this.Settings.Bittrex.minimum){
+		this.log("Minimum btc order not met");
+		return false;
+	}
+	return true
+}		
+	
+/**
    * Monitor Bittrex trades for completion.
    * @method bittrexCompleteArbitrage
    * @param {Object} Object with 3 Bittrex ids as keys
@@ -1425,56 +1463,46 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 					message += Transactions[e1] + e1+ " => "+ Transactions[u2].toFixed(8) + pair3.split('-')[0] + " @"+c+"\n";
 					message += Transactions[u2].toFixed(8)+ pair3.split('-')[0] + " => " +Transactions[b3].toFixed(8)+pair2.split('-')[1]  +" @"+b+"\n";
 					message += Transactions[b3].toFixed(8)+pair2.split('-')[1] +" => "+Transactions[_e1].toFixed(8) + pair1.split('-')[1] +" @"+a;							
-					Transactions[e1+'_status'] = this.balance[e1] >= Transactions[e1];
-					Transactions[b3+'_status'] = this.balance[b3] > Transactions[b3];
-					Transactions[u2+'_status'] = this.balance[u2] > Transactions[u2];
-					liquidBook = Transactions[u2+'_amount1'] > Transactions[u2] && Transactions[b3+'_amount1'] > Transactions[b3] && Transactions[e1+'_amount1'] > Transactions[e1];
-					sanity = percentage > this.lowerLimit && percentage < 99.25;
-					myWallet = Transactions[e1+'_status'] && Transactions[b3+'_status'] && Transactions[u2+'_status'];
-					if(this.saneTrades === true && sanity || this.saneTrades === false){
-						if(this.liquidTrades && liquidBook || this.liquidTrades === false){
-							if(myWallet){
-								if(Transactions.btc < this.Settings.Bittrex.minimum){
-										return this.log("Minimum btc order not met");
-								}
-								Transactions.percentage = percentage;
-								Transactions.before = Transactions[e1];
-								Transactions.after = Number(Transactions[_e1].toFixed(8));
-								Transactions.profit = Number(Transactions[_e1].toFixed(8))/Transactions[e1];
-								this.log("Starting Trades:",message,new Date());	
-								try{
-									for(var key in localMarket){
-									for(var key2 in localMarket[key]){
-										if(key2 !== "Sorted")delete localMarket[key][key2]
-									}
-								}	
-								}catch(e){console.log(e)}	
-								this.notify(message +"\r\n"+JSON.stringify(localMarket).replace(new RegExp('"', 'g'),""));
-								this.bittrexInProcess = true;
-								this.bittrexProcessTime = new Date().getTime();
-								this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
-								return this.niceOrderChain([this.bittrexTrade,this.bittrexTrade,this.bittrexTrade,this.completedTrades],orders)
-								.chain([["sell",pair3,Transactions[e1],c],["buy",pair2,Number(Transactions[b3].toFixed(8)),b],["buy",pair1,Transactions[_e1].toFixed(8),a]])
-								.then(()=>{
-										localMarket[this.Settings.Config.pair1] = {Bids:{},Asks:{}}
-										localMarket[this.Settings.Config.pair2] = {Bids:{},Asks:{}}
-										localMarket[this.Settings.Config.pair3] = {Bids:{},Asks:{}}
-								})
-								.catch((e)=>{
-									return bittrexReset(e,216000000);
-								});
-							}
-							else{
-								this.log("Current Bittrex balance not enough to place order:",new Date());
-							}
+					//bittrexCheck Conditions
+					if(!this.bittrexCheckConditions(Transactions,percentage,e1,b3,u2,message)){
+						return;
+					}
+					//bittrexStartArbitrage(Transactions,localMarket,a,b,c,pair1,pair2,pair3,trade array)
+					Transactions.percentage = percentage;
+					Transactions.before = Transactions[e1];
+					Transactions.after = Number(Transactions[_e1].toFixed(8));
+					Transactions.profit = Number(Transactions[_e1].toFixed(8))/Transactions[e1];
+					this.log("Starting Trades:",message,new Date());	
+					//deleting the local book but keeping the sorted array for sending in message
+					try{
+						for(var key in localMarket){
+						for(var key2 in localMarket[key]){
+							if(key2 !== "Sorted")delete localMarket[key][key2]
 						}
-						else{
-							this.log("Illiquid Trade:",new Date());
-						}	
-					}
-					else{
-						this.log("Insane Trade:",message);
-					}
+					}	
+					}catch(e){
+						console.log(e)
+					}	
+					this.notify(message +"\r\n"+JSON.stringify(localMarket).replace(new RegExp('"', 'g'),""));
+					this.bittrexInProcess = true;
+					this.bittrexProcessTime = new Date().getTime();
+					this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
+					
+					return this.niceOrderChain([this.bittrexTrade,this.bittrexTrade,this.bittrexTrade,this.completedTrades],orders)
+					.chain([["sell",pair3,Transactions[e1],c],["buy",pair2,Number(Transactions[b3].toFixed(8)),b],["buy",pair1,Transactions[_e1].toFixed(8),a]])
+					.then(()=>{
+							localMarket[this.Settings.Config.pair1] = {Bids:{},Asks:{}}
+							localMarket[this.Settings.Config.pair2] = {Bids:{},Asks:{}}
+							localMarket[this.Settings.Config.pair3] = {Bids:{},Asks:{}}
+					})
+					.catch((e)=>{
+						return bittrexReset(e,216000000);
+					});
+					///End bittrex Start Arbitrage
+								
+							
+							
+					
 				}
 					else{
 						a =  strategy[this.Settings.Config.pair1].strat2,b = strategy[this.Settings.Config.pair2].strat2,c = strategy[this.Settings.Config.pair3].strat2;
@@ -1491,58 +1519,40 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 						message = message + Transactions[b3] + b3 +" => "+Transactions[u2].toFixed(8)+" "+u2+" @" + b + '\n';
 						message = message + Transactions[u2].toFixed(8) + u2+" => " + Transactions[e1].toFixed(8) + e1+" @"+c +'\n';
 						message = message + Transactions[e1].toFixed(8) + e1+" => " + Transactions[_b3] +" "+b3+" @"+a;
-						Transactions[e1+'_status'] = this.balance[e1] > Transactions[e1];
-						Transactions[b3+'_status'] = this.balance[b3] > Transactions[b3];
-						Transactions[u2+'_status'] = this.balance[u2] > Transactions[u2];
-						liquidBook =  Transactions[u2+'_amount2'] > Transactions[u2] && Transactions[b3+'_amount2'] > Transactions[b3] && Transactions[e1+'_amount2'] > Transactions[e1];
-						sanity = percentage > 100.7524 && percentage < this.upperLimit;
-						myWallet = Transactions[e1+'_status'] && Transactions[b3+'_status'] && Transactions[u2+'_status'];
-						if(this.saneTrades === true && sanity || this.saneTrades === false){
-							if(this.liquidTrades && liquidBook || this.liquidTrades === false){
-								if(myWallet){	
-									if(Transactions.btc < this.Settings.Bittrex.minimum){
-										//this.notify("Server error  ("+Transactions.btc+") BTC  is less than "+this.Settings.Bittrex.minimum+"\n"+message);
-										//this.bittrexAccount().catch((e)=>{});
-										return;
-									}		
-									Transactions.percentage = percentage;
-									Transactions.before = Transactions[b3];
-									Transactions.after = Transactions[_b3];
-									Transactions.profit = Transactions[_b3]/Transactions[b3];	
-									this.log("Starting Trades:",message,new Date());			
-									try{
-										for(var key in localMarket){
-										for(var key2 in localMarket[key]){
-											if(key2 !== "Sorted")delete localMarket[key][key2]
-										}
-									}	
-									}catch(e){console.log(e)}		
-									this.notify(message +"\r\n"+JSON.stringify(localMarket).replace(new RegExp('"', 'g'),""));
-									this.bittrexInProcess = true;
-									this.bittrexProcessTime = new Date().getTime();
-									this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
-									return this.niceOrderChain([this.bittrexTrade,this.bittrexTrade,this.bittrexTrade,this.completedTrades],orders)
-									.chain([["sell",pair2,Transactions[b3],b],["buy",pair3,Transactions[e1].toFixed(8),c],["sell",pair1,Transactions[e1].toFixed(8),a]])
-									.then(()=>{
-										localMarket[this.Settings.Config.pair1] = {Bids:{},Asks:{}}
-										localMarket[this.Settings.Config.pair2] = {Bids:{},Asks:{}}
-										localMarket[this.Settings.Config.pair3] = {Bids:{},Asks:{}}
-									})
-									.catch((e)=>{
-										return bittrexReset(e,216000000);
-									});							
-								}
-								else{
-									this.log("Current Bittrex balance not enough to place order");
-								}
-							}
-							else{
-								this.log("Illiquid Trade",new Date());
-							}	
+						//check conditions
+						if(!this.bittrexCheckConditions(Transactions,percentage,e1,b3,u2,message)){
+							return;
 						}
-						else{
-							this.log("Insane Trade:",message);
-						}									
+						//start bittrex trade	
+						Transactions.percentage = percentage;
+						Transactions.before = Transactions[b3];
+						Transactions.after = Transactions[_b3];
+						Transactions.profit = Transactions[_b3]/Transactions[b3];	
+						this.log("Starting Trades:",message,new Date());			
+						try{
+							for(var key in localMarket){
+							for(var key2 in localMarket[key]){
+								if(key2 !== "Sorted")delete localMarket[key][key2]
+							}
+						}	
+						}catch(e){console.log(e)}		
+						this.notify(message +"\r\n"+JSON.stringify(localMarket).replace(new RegExp('"', 'g'),""));
+						this.bittrexInProcess = true;
+						this.bittrexProcessTime = new Date().getTime();
+						this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
+						return this.niceOrderChain([this.bittrexTrade,this.bittrexTrade,this.bittrexTrade,this.completedTrades],orders)
+						.chain([["sell",pair2,Transactions[b3],b],["buy",pair3,Transactions[e1].toFixed(8),c],["sell",pair1,Transactions[e1].toFixed(8),a]])
+						.then(()=>{
+							localMarket[this.Settings.Config.pair1] = {Bids:{},Asks:{}}
+							localMarket[this.Settings.Config.pair2] = {Bids:{},Asks:{}}
+							localMarket[this.Settings.Config.pair3] = {Bids:{},Asks:{}}
+						})
+						.catch((e)=>{
+							return bittrexReset(e,216000000);
+						});							
+								
+							
+														
 					}
 					
 				}
