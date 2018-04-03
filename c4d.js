@@ -1206,6 +1206,35 @@ CryptoBot.prototype.bittrexDepthPure = function(pair){
 		req.end();
 	});
 }
+/**
+   * Format Bittrex Message and Transaction object.
+   * @method bittrexFormatMessage
+   * @param {String} A currency ie 'ltc'
+   * @param {String} A currency ie 'btc'
+   * @param {String} A currency ie 'usdt'
+   * @param {String} A currency ie '_ltc'
+   * @param {Number} Currency rate  
+   * @param {Number} Currency rate 
+   * @param {Number} Currency rate 
+   * @param {Number} Percentage
+   * @param {Object} Transactions object
+   * @return {String} Returns a string message
+   */
+CryptoBot.prototype.bittrexFormatMessage = function(e1,u2,b3,_e1,a,b,c,percentage,Transactions){
+	Transactions[e1] = percentage < 100 ? Number((this.balance[e1] * this.p1).toFixed(8)) : Number((this.balance[e1] * this.p2).toFixed(8))
+	Transactions[u2] = 0.9975*Transactions[e1] * b;
+	Transactions[b3] = 0.9975*(Transactions[u2]/c);	
+	Transactions[_e1] =  percentage < 100 ? Number(((Transactions[b3]/a) * 0.9975).toFixed(8)) : Number(((Transactions[b3]*a) * 0.9975).toFixed(8));
+	Transactions.percentage = percentage;
+	Transactions.before = Transactions[e1];
+	Transactions.after = Transactions[_e1];
+	Transactions.profit = Transactions[_e1]/Transactions[e1];
+	var message = "Bittrex Bot:"+percentage.toFixed(3) +"%\n";
+	message += Transactions[e1] + e1 +" => "+Transactions[u2].toFixed(8)+u2+" @" + b + '\n';
+	message += Transactions[u2].toFixed(8) + u2+" => " + Transactions[b3].toFixed(8) + b3+" @"+c +'\n';
+	message += Transactions[b3].toFixed(8) + b3+" => " + Transactions[_e1].toFixed(8) +e1+" @"+a;						
+	return message;
+}
 
 
 /**
@@ -1455,21 +1484,11 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 					trading_pairs = {"type":"percentage","exchange":"bittrex","percentage":percentage,"strategy":1}
 					trading_pairs[pair1] = a,trading_pairs[pair2] = b,trading_pairs[pair3] = c;
 					this.broadcastMessage(trading_pairs);
-					Transactions[e1] = Number((this.balance[e1] * this.p1).toFixed(8));
-					Transactions[u2] = 0.9975*Transactions[e1] * c;
-					Transactions[b3] = 0.9975*Transactions[u2]/b;	
-					Transactions[_e1] = Transactions[b3]/a * 0.9975;
-					message = "Bittrex Bot:"+percentage.toFixed(3) +"%\n";
-					message += Transactions[e1] + e1+ " => "+ Transactions[u2].toFixed(8) + pair3.split('-')[0] + " @"+c+"\n";
-					message += Transactions[u2].toFixed(8)+ pair3.split('-')[0] + " => " +Transactions[b3].toFixed(8)+pair2.split('-')[1]  +" @"+b+"\n";
-					message += Transactions[b3].toFixed(8)+pair2.split('-')[1] +" => "+Transactions[_e1].toFixed(8) + pair1.split('-')[1] +" @"+a;							
+					message = this.bittrexFormatMessage(e1,u2,b3,_e1,a,c,b,percentage,Transactions);					
 					if(!this.bittrexCheckConditions(Transactions,percentage,e1,b3,u2,message)){
 						return;
 					}
-					Transactions.percentage = percentage;
-					Transactions.before = Transactions[e1];
-					Transactions.after = Number(Transactions[_e1].toFixed(8));
-					Transactions.profit = Number(Transactions[_e1].toFixed(8))/Transactions[e1];
+					
 					this.log("Starting Trades:",message,new Date());	
 					try{
 						for(var key in localMarket){
@@ -1494,11 +1513,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 					})
 					.catch((e)=>{
 						return bittrexReset(e,216000000);
-					});
-					///End bittrex Start Arbitrage
-								
-							
-							
+					});	
 					
 				}
 					else{
@@ -1507,22 +1522,11 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 						trading_pairs = {"type":"percentage","exchange":"bittrex","percentage":percentage,"strategy":2}
 						trading_pairs[pair1] = a,trading_pairs[pair2] = b,trading_pairs[pair3] = c;
 						this.broadcastMessage(trading_pairs);
-						Transactions.percentage = percentage;
-						Transactions[b3] =  Number((this.balance[b3] * this.p2).toFixed(8));
-						Transactions[u2] = 0.9975 * Transactions[b3] * b;
-						Transactions[e1] = 0.9975*(Transactions[u2]/c);
-						Transactions[_b3] = Number((0.9975 * Transactions[e1]*a).toFixed(8));
-						message = "Bittrex Bot:" + percentage.toFixed(3)+"%\n";
-						message = message + Transactions[b3] + b3 +" => "+Transactions[u2].toFixed(8)+" "+u2+" @" + b + '\n';
-						message = message + Transactions[u2].toFixed(8) + u2+" => " + Transactions[e1].toFixed(8) + e1+" @"+c +'\n';
-						message = message + Transactions[e1].toFixed(8) + e1+" => " + Transactions[_b3] +" "+b3+" @"+a;
+						message = this.bittrexFormatMessage(b3,u2,e1,_b3,a,b,c,percentage,bot.Transactions);
 						if(!this.bittrexCheckConditions(Transactions,percentage,e1,b3,u2,message)){
 							return;
 						}
-						Transactions.percentage = percentage;
-						Transactions.before = Transactions[b3];
-						Transactions.after = Transactions[_b3];
-						Transactions.profit = Transactions[_b3]/Transactions[b3];	
+						
 						this.log("Starting Trades:",message,new Date());			
 						try{
 							for(var key in localMarket){
@@ -1544,12 +1548,8 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 						})
 						.catch((e)=>{
 							return bittrexReset(e,216000000);
-						});							
-								
-							
-														
+						});													
 					}
-					
 				}
 			}
 			catch(e){

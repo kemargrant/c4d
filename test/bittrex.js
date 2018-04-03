@@ -192,7 +192,23 @@ describe('Bittrex', function() {
 			assert.equal(trade,true);
 		});
 	});	 
-
-	
+	describe('#Format Message', function() {
+		it('Should format Transactions object and return a message (>100)',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.balance.btc = 0.00202041
+			bot.p2 = 1
+			var f_message = bot.bittrexFormatMessage('btc','usdt','xxx','_btc',0.10062088,8109.9999999,807.4,101.070,bot.Transactions);
+			var message = "Bittrex Bot:101.070%\n0.00202041btc => 16.34456129usdt @8109.9999999\n16.34456129usdt => 0.02019284xxx @807.4\n0.02019284xxx => 0.00202674btc @0.10062088"
+			assert.equal(f_message,message);
+		});
+		it('Should format Transactions object and return a message (<100)',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.balance.xxx = 0.02087774
+			bot.p1 = 1
+			var f_message = bot.bittrexFormatMessage('xxx','usdt','btc','_xxx',0.09649,889.1,9135,99.138,bot.Transactions);
+			var message = "Bittrex Bot:99.138%\n0.02087774xxx => 18.51599264usdt @889.1\n18.51599264usdt => 0.00202186btc @9135\n0.00202186btc => 0.02090172xxx @0.09649";
+			assert.equal(f_message,message);
+		});		
+	});	
 		
 });
