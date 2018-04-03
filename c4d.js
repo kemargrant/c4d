@@ -1463,17 +1463,14 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 					message += Transactions[e1] + e1+ " => "+ Transactions[u2].toFixed(8) + pair3.split('-')[0] + " @"+c+"\n";
 					message += Transactions[u2].toFixed(8)+ pair3.split('-')[0] + " => " +Transactions[b3].toFixed(8)+pair2.split('-')[1]  +" @"+b+"\n";
 					message += Transactions[b3].toFixed(8)+pair2.split('-')[1] +" => "+Transactions[_e1].toFixed(8) + pair1.split('-')[1] +" @"+a;							
-					//bittrexCheck Conditions
 					if(!this.bittrexCheckConditions(Transactions,percentage,e1,b3,u2,message)){
 						return;
 					}
-					//bittrexStartArbitrage(Transactions,localMarket,a,b,c,pair1,pair2,pair3,trade array)
 					Transactions.percentage = percentage;
 					Transactions.before = Transactions[e1];
 					Transactions.after = Number(Transactions[_e1].toFixed(8));
 					Transactions.profit = Number(Transactions[_e1].toFixed(8))/Transactions[e1];
 					this.log("Starting Trades:",message,new Date());	
-					//deleting the local book but keeping the sorted array for sending in message
 					try{
 						for(var key in localMarket){
 						for(var key2 in localMarket[key]){
@@ -1519,11 +1516,9 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 						message = message + Transactions[b3] + b3 +" => "+Transactions[u2].toFixed(8)+" "+u2+" @" + b + '\n';
 						message = message + Transactions[u2].toFixed(8) + u2+" => " + Transactions[e1].toFixed(8) + e1+" @"+c +'\n';
 						message = message + Transactions[e1].toFixed(8) + e1+" => " + Transactions[_b3] +" "+b3+" @"+a;
-						//check conditions
 						if(!this.bittrexCheckConditions(Transactions,percentage,e1,b3,u2,message)){
 							return;
 						}
-						//start bittrex trade	
 						Transactions.percentage = percentage;
 						Transactions.before = Transactions[b3];
 						Transactions.after = Transactions[_b3];
