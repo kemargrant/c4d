@@ -74,7 +74,17 @@ describe('General Functions', function() {
 			var answer = {}
 			bot.niceOrderChain([bot.add,bot.cb],answer).chain([[1,1]])			
 		});
-	});			
+	});
+	(function (){describe('#NiceOrderChain - 2', function() {
+		it('Should return a promise', function(done) {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.cb = function(){}
+			bot.add = function(x,y){return new Promise(function(resolve,reject){resolve(x+y)})}
+			var y = Promise.resolve(bot.niceOrderChain([bot.add,bot.add,bot.cb],{}).chain([[1,1],[1,1]]))
+			assert(y instanceof Promise);
+			done();;
+		});
+	});})()			
 	describe('#Send Email', function() {
 		return it('Should send an email message', async function() {
 			bot.email = mock.email;
