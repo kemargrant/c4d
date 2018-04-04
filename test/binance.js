@@ -381,11 +381,13 @@ describe('Binance', function() {
 	});
 	
 	describe('#Precision', function() {			
-		return it('Should format precision data for ltc/btc/usdt pairs', function() {
+		it('Should format precision data for ltc/btc/usdt pairs', function(done) {
+			this.timeout(4000);
 			var zBot = new CryptoBot.bot(mock.mockSettings1);
-			return setTimeout((done)=>{
+			setTimeout(()=>{
 				assert.deepEqual(zBot.Settings.Binance.pairs[0].prec,[6,2,2,2,6,5]);
-			},1000);			
+				done();
+			},3000);			
 		});			
 	});		
 		
