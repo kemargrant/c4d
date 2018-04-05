@@ -1228,14 +1228,16 @@ CryptoBot.prototype.bittrexFormatMessage = function(e1,u2,b3,_e1,a,b,c,percentag
 	Transactions[u2] = 0.9975*Transactions[e1] * b;
 	Transactions[b3] = 0.9975*(Transactions[u2]/c);	
 	Transactions[_e1] =  percentage < 100 ? Number(((Transactions[b3]/a) * 0.9975).toFixed(8)) : Number(((Transactions[b3]*a) * 0.9975).toFixed(8));
+	Transactions[u2] = Number((Transactions[u2]).toFixed(8));
+	Transactions[b3] = Number((Transactions[b3]).toFixed(8));
 	Transactions.percentage = percentage;
 	Transactions.before = Transactions[e1];
 	Transactions.after = Transactions[_e1];
 	Transactions.profit = Transactions[_e1]/Transactions[e1];
 	var message = "Bittrex Bot:"+percentage.toFixed(3) +"%\n";
-	message += Transactions[e1] + e1 +" => "+Transactions[u2].toFixed(8)+u2+" @" + b + '\n';
-	message += Transactions[u2].toFixed(8) + u2+" => " + Transactions[b3].toFixed(8) + b3+" @"+c +'\n';
-	message += Transactions[b3].toFixed(8) + b3+" => " + Transactions[_e1].toFixed(8) +e1+" @"+a;						
+	message += Transactions[e1] + e1 +" => "+Transactions[u2] +u2+" @" + b + '\n';
+	message += Transactions[u2] + u2+" => " + Transactions[b3] + b3+" @"+c +'\n';
+	message += Transactions[b3] + b3+" => " + Transactions[_e1] +e1+" @"+a;						
 	return message;
 }
 
