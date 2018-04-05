@@ -210,5 +210,66 @@ describe('Bittrex', function() {
 			assert.equal(f_message,message);
 		});		
 	});	
-		
+	describe('#Generate Strategy pair 1', function() {
+		it('Generate a valid strategy for pair 1',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var computed = bot.bittrexGenerateStrategy('BTC-LTC',mock.bittrexGenerateMarket1,mock.bittrexGenerateStrategy1,mock.bittrexGenerateTransaction1,'ltc','usdt','btc');
+			var valid = bot.bittrexGenerateStrategyValid1;
+			assert(computed,valid);
+		});
+		it('Should output correct Transaction Amount for pair 1',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexGenerateStrategy('BTC-LTC',mock.bittrexGenerateMarket1,mock.bittrexGenerateStrategy1,mock.bittrexGenerateTransaction1,'ltc','usdt','btc');
+			var computed = bot.Transactions;
+			var valid = mock.bittrexGenerateTransactionValid1;
+			assert(computed,valid);
+		});
+	});		
+	describe('#Generate Strategy pair 2', function() {
+		it('Generate a valid strategy for pair 2',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var computed = bot.bittrexGenerateStrategy('USDT-LTC',mock.bittrexGenerateMarket2,mock.bittrexGenerateStrategy2,mock.bittrexGenerateTransaction2,'ltc','usdt','btc');
+			var valid = bot.bittrexGenerateStrategyValid2;
+			assert(computed,valid);
+		});
+		it('Should output correct Transaction Amount for pair 2',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexGenerateStrategy('USDT-LTC',mock.bittrexGenerateMarket2,mock.bittrexGenerateStrategy2,mock.bittrexGenerateTransaction2,'ltc','usdt','btc');
+			var computed = bot.Transactions;
+			var valid = mock.bittrexGenerateTransactionValid2;
+			assert(computed,valid);
+		});
+	});	
+	describe('#Generate Strategy pair 3', function() {
+		it('Generate a valid strategy for pair 3',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var computed = bot.bittrexGenerateStrategy('USDT-BTC',mock.bittrexGenerateMarket3,mock.bittrexGenerateStrategy3,mock.bittrexGenerateTransaction3,'ltc','usdt','btc');
+			var valid = bot.bittrexGenerateStrategyValid3;
+			assert(computed,valid);
+		});
+		it('Should output correct Transaction Amount for pair 3',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexGenerateStrategy('USDT-BTC',mock.bittrexGenerateMarket3,mock.bittrexGenerateStrategy3,mock.bittrexGenerateTransaction3,'ltc','usdt','btc');
+			var computed = bot.Transactions;
+			var valid = mock.bittrexGenerateTransactionValid3;
+			assert(computed,valid);
+		});
+	});	
+	describe('#Generate Strategy - Ordered Book', function() {
+		it('Validate book for pair 3',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var valid = bot.bittrexGenerateStrategy('USDT-LTC',mock.bittrexSmallMarket,mock.bittrexGenerateStrategy3,mock.bittrexGenerateTransaction3,'ltc','usdt','btc');
+			assert(!valid);
+		});
+		it('Validate book for pair 2',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var valid = bot.bittrexGenerateStrategy('USDT-BTC',mock.bittrexSmallMarket,mock.bittrexGenerateStrategy3,mock.bittrexGenerateTransaction3,'ltc','usdt','btc');
+			assert(!valid);
+		});
+		it('Validate book for pair 1',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var valid = bot.bittrexGenerateStrategy('BTC-LTC',mock.bittrexSmallMarket,mock.bittrexGenerateStrategy3,mock.bittrexGenerateTransaction3,'ltc','usdt','btc');
+			assert(!valid);
+		});				
+	});				
 });
