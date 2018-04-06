@@ -100,6 +100,19 @@ describe('Bittrex', function() {
 			assert.equal(bot.updateBittrexSocketStatus(false),false);
 		});
 	});	
+	describe('#PrepareStream', function() {
+		it('Should return cookie and header', function() {
+			this.timeout(15000);
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			return Promise.resolve(bot.bittrexPrepareStream().then((val)=>{
+				assert(val[0].length > 50)
+			}).catch((e)=>{
+				console.log("Error:",e);
+				assert(false);
+			}))
+			
+		});
+	});	
 	describe('#BittrexStream', function() {
 		it('Should return a signal-r client',function() {
 			this.timeout(15000)
@@ -273,3 +286,5 @@ describe('Bittrex', function() {
 		});				
 	});				
 });
+
+

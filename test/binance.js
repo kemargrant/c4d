@@ -515,13 +515,9 @@ describe('Binance', function() {
 	
 	describe('#Stream', function() {
 		it('Should return a connected websocket',function() {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			var list = binanceBot.binanceMonitor([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
-			setTimeout(()=>{
-				assert.equal(binanceBot.binanceSocketConnections[0].readyState,0);
-				for(var i=0;i< list.length;i++){
-					list[i].close();
-				}
-			},2500)
+			assert(list.length > 2);
 		});
 	});
 	
