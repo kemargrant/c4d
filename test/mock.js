@@ -198,9 +198,6 @@ var userevent3 = {
   "M": false                    
 })
 }
-
-
-
 var _email ={
 	server:{
 		connect:function(){
@@ -470,6 +467,9 @@ var _MongoClient = {
 			collection:(_name)=>{
 				var simpleDB = [{OrderUuid:123456789,text:"hello world"}]
 				return {
+					createIndex:function(x,y){
+						console.log(_name," collection created");
+					},
 					find:function(){
 						return {
 							toArray:function(func){return func(false,simpleDB)}
@@ -494,6 +494,44 @@ var _MongoClient = {
 		return func(undefined,dbConnection);
 	}
 }
+
+var _MongoClient2 = {
+	connect:function(string,func){
+		var database = {
+			createCollection:function(coll,opts,func){
+				func(false);
+			},
+			collection:(_name)=>{
+				var simpleDB = [{OrderUuid:123456789,text:"hello world"}]
+				return {
+					createIndex:function(x,y){
+						console.log(_name," collection created");
+					},
+					find:function(){
+						return {
+							toArray:function(func){return func(false,simpleDB)}
+						}
+					},
+					insert:function(x,y,func){
+						simpleDB.push[x];
+						func(false,true);
+					},
+					remove:function(x,func){
+						func(false,true);
+					},
+					update:function(x,y,z,func){func(false,true);}
+				};
+			}
+		}
+		var dbConnection = {
+			db:function(){
+				return database;
+			}
+		}
+		return func(undefined,dbConnection);
+	}
+}
+
 
 var settings1 ={
 	"Binance":
@@ -931,6 +969,7 @@ module.exports = {
 	email:_email,
 	https:_https,
 	MongoClient:_MongoClient,
+	MongoClient2:_MongoClient2,
 	binanceMessages:_binanceMessages,
 	binanceUserEvents: [userevent1,userevent2,userevent3],
 	bittrexBook:_book,

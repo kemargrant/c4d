@@ -28,6 +28,17 @@ describe('General Functions', function() {
 			console.log = old;
 		});		
 	});
+	describe('#Connect To Empty Database', function() {
+		var bot = new CryptoBot.bot(mock.mockSettings1);
+		bot.MongoClient = mock.MongoClient2;
+		bot.DB = bot.database();
+		it('Should return a db connection with trade and balance collections', function() {
+			var x = bot.DB.balance;
+			var y = bot.DB.trade;
+			assert((x && y) !== undefined);
+		});	
+	});
+	
 	
 	describe('#Save to Database', function() {
 		it('Should save and delete record from the database', function(done) {
