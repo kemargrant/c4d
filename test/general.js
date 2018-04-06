@@ -60,9 +60,20 @@ describe('General Functions', function() {
 	});		
 	
 	describe('#Log', function() {
-		return it('Should log a message', function() {
+		var bot = new CryptoBot.bot(mock.mockSettings1);
+		it('Should log a message', function() {
 			var val = bot.log("Hello World");
 			assert.equal(val,true);
+		});
+		it('Should return undefined', function() {
+			bot.logLevel = 0;
+			var val = bot.log("Hello World");
+			assert(!val);
+		});
+		it('Should return true', function() {
+			bot.logLevel = 2;
+			var val = bot.log("Hello World");
+			assert(val);
 		});
 	});	
 	
