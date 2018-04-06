@@ -1055,7 +1055,7 @@ CryptoBot.prototype.bittrexCancelOrder = function(orderid){
 CryptoBot.prototype.bittrexCheckConditions = function(Transactions,percentage,e1,b3,u2,message){
 	if(!Number(Transactions[e1]) || !Number(Transactions[u2]) || !Number(Transactions[b3]) ){
 		return false;
-	}
+	}	
 	if(this.saneTrades && percentage < 100 && (percentage < this.lowerLimit || percentage > 99.25)){
 		this.log("Insane Trade:",message);
 		return false
@@ -1441,7 +1441,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 			this.updateBittrexSocketStatus(false);
 		},
 		connected: (connection)=> {
-			subscribeToMarkets();
+			this.bittrexSubscribe(client,[this.Settings.Config.pair1,this.Settings.Config.pair2,this.Settings.Config.pair3]);
 			this.bittrexSocketConnection = connection;
 			this.log("Bittrex Websocket connected:",new Date()); 
 			this.updateBittrexSocketStatus(true);
@@ -1495,9 +1495,6 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 					}
 					a =  strategy[this.Settings.Config.pair1].strat1,b = strategy[this.Settings.Config.pair2].strat1,c = strategy[this.Settings.Config.pair3].strat1;
 					percentage = a * b/c * 100;
-					if(!Number(percentage)){
-						return;
-					}
 					if(this.viewBittrexBook){
 						var rand = Math.floor(100 * Math.random(0,1));
 						if(rand % 3 === 0){
@@ -1509,9 +1506,6 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 						trading_pairs[pair1] = a,trading_pairs[pair2] = b,trading_pairs[pair3] = c;
 						this.broadcastMessage(trading_pairs);
 						message = this.bittrexFormatMessage(e1,u2,b3,_e1,a,c,b,percentage,Transactions);					
-						if(!this.bittrexCheckConditions(Transactions,percentage,e1,b3,u2,message)){
-							return;
-						}
 						trades = [["sell",pair3,Transactions[e1],c],["buy",pair2,Number(Transactions[b3].toFixed(8)),b],["buy",pair1,Transactions[_e1].toFixed(8),a]]
 					}
 					else{
@@ -1521,10 +1515,10 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 						trading_pairs[pair1] = a,trading_pairs[pair2] = b,trading_pairs[pair3] = c;
 						this.broadcastMessage(trading_pairs);
 						message = this.bittrexFormatMessage(b3,u2,e1,_b3,a,b,c,percentage,Transactions);
-						if(!this.bittrexCheckConditions(Transactions,percentage,e1,b3,u2,message)){
-							return;
-						}
 						trades = [["sell",pair2,Transactions[b3],b],["buy",pair3,Transactions[e1].toFixed(8),c],["sell",pair1,Transactions[e1].toFixed(8),a]]
+					}
+					if(!this.bittrexCheckConditions(Transactions,percentage,e1,b3,u2,message)){
+							return;
 					}
 					this.log("Starting Trades:",message,new Date());	
 					try{
@@ -1585,6 +1579,30 @@ CryptoBot.prototype.bittrexResetSwingOrder = function(){
 	return this.saveDB("swing",{},{extra:{"w":1},method:"remove",query:{"swing":1},modifier:{}});
 }
 
+/**
+   * Subscribe to Bittrex websocket data.
+   * @method bittrexSubscribe
+   * @param {Object} Signal-r Client
+   * @param {Array} Array of Bittrex pairs
+   * @return {Promise} Returns a  promise that resolves to a boolean
+   */
+CryptoBot.prototype.bittrexSubscribe= function(client,pairs){
+	return new Promise((resolve,reject)=>{
+		var count = 0;
+		pairs.forEach((market)=> {	
+			client.call('CoreHub', 'SubscribeToExchangeDeltas', market).done((err, result)=> {
+				count++;
+				if (result === true) {
+					this.log('Subscribed to Bittrex market:' + market);
+				}
+				if(count > 2){
+					return resolve(true)
+				}
+		
+			});
+		});
+	})
+}
 
 /**
    * Buy/Sell Bittrex swing pair.
