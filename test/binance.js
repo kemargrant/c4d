@@ -528,4 +528,20 @@ describe('Binance', function() {
 			assert.equal(val2.symbol,"BTCUSDT");
 		});
 	});	
+	describe('#Reject Binance Precision', function() {
+		var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+		binanceBot.binanceExchangeInfo = function(){
+			return new Promise((resolve,reject)=>{
+				reject(false);
+			});
+		}
+		it('Should reject and resolve false', function(done) {
+			binanceBot.binancePrecision([{pair1:'ltcbtc',pair2:'btcusdt',pair3:'ltcusdt'}]).catch((val)=>{
+				assert.equal(val,false);
+				done();
+			})
+		});
+	});
+	
+		
 });
