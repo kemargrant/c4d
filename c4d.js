@@ -1419,16 +1419,6 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 	strategy[this.Settings.Config.pair1] = {}
 	strategy[this.Settings.Config.pair2] = {}
 	strategy[this.Settings.Config.pair3] = {}
-	var subscribeToMarkets = () => {
-		[this.Settings.Config.pair1,this.Settings.Config.pair2,this.Settings.Config.pair3].forEach((market)=> {	
-		client.call('CoreHub', 'SubscribeToExchangeDeltas', market).done((err, result)=> {
-			if (result === true) {
-				this.log('Subscribed to Bittrex market:' + market);
-			}
-		});
-		});
-	};
-	
 	client = new signalR.client("wss://socket.bittrex.com/signalr",['CoreHub']);	
 	client.headers['User-Agent'] = agent;
 	client.headers['cookie'] = cookie;
