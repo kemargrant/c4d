@@ -1422,10 +1422,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 			bound: ()=> { 
 			this.log("Bittrex Websocket bound"); 
 		},
-		connectFailed: (error)=> { 
-			this.log("Bittrex Websocket connectFailed: ", error); 
-			this.updateBittrexSocketStatus(false);
-		},
+		connectFailed: (error)=> {this.updateBittrexSocketStatus(error,false);},
 		connected: (connection)=> {
 			this.bittrexSubscribe(client,[this.Settings.Config.pair1,this.Settings.Config.pair2,this.Settings.Config.pair3]);
 			this.bittrexSocketConnection = connection;
@@ -1442,18 +1439,16 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 			}
 		},
 		disconnected: ()=> { 
-			this.log("Bittrex Websocket disconnected:",new Date()); 
 			clearTimeout(timeout);
 			if(this.bittrexKill){
 				client.end()
 				this.log("Connection closed by user");
 			}
-			return this.updateBittrexSocketStatus(false);
+			return this.updateBittrexSocketStatus("Bittrex Websocket disconnected",false);
 		},
 		onerror:(error)=> { 
-			this.log("Bittrex Websocket onerror: ", error,new Date()); 
 			clearTimeout(timeout);
-			this.updateBittrexSocketStatus(false);
+			this.updateBittrexSocketStatus(error,false);
 			if(!this.bittrexKill){
 				return this.bittrexPrepareStream().then((info2)=>{
 					this.bittrexStream(info2[0],info2[1])
@@ -1536,21 +1531,14 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 				console.log("Error:",e)
 			}
 		},
-		bindingError: (error)=> { 
-			this.log("Bittrex Websocket bindingError: ", error); 
-			this.updateBittrexSocketStatus(false);
-		},
+		bindingError: (error)=> { this.updateBittrexSocketStatus(error,false);},
 		connectionLost: (error)=> { 
-			this.log("Bittrex Connection Lost: ", error); 
-			this.updateBittrexSocketStatus(false);
+			this.updateBittrexSocketStatus(error,false);
 			if(!this.bittrexKill){
 				return this.bittrexStream(cookie,agent);
 			}
 		},
-		reconnecting: (retry)=> {
-			this.log("Bittrex Websocket Retrying: ",retry,new Date());
-			return false;
-		}
+		reconnecting: (retry)=> {return this.updateBittrexSocketStatus("Bittrex Websocket Retrying",false)}
 	};
 	client.start();
 	return client;
@@ -2531,7 +2519,8 @@ CryptoBot.prototype.utilities = {
    * @param {Boolean} New Bittrex Socket Status
    *  @return {Boolean} Return new Bittrex socket status
    */
-CryptoBot.prototype.updateBittrexSocketStatus = function(bool){
+CryptoBot.prototype.updateBittrexSocketStatus = function(message,bool){
+	this.log(message,new Date());
 	this.bittrexSocketStatus = bool;
 	this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
 	return this.bittrexSocketStatus;

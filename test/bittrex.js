@@ -125,7 +125,7 @@ describe('Bittrex', function() {
 	describe('#UpdateBittrexSocketStatus', function() {
 		it('Should update Bittrex socket status to false', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			assert.equal(bot.updateBittrexSocketStatus(false),false);
+			assert.equal(bot.updateBittrexSocketStatus("",false),false);
 		});
 	});	
 	describe('#PrepareStream', function() {
