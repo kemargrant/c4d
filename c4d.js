@@ -1386,18 +1386,14 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 	var c;
 	var client;
 	var data;
-	var liquidBook;
 	var localMarket = {}
 	var message = "Bittrex Bot:";
-	var myWallet;
-	var n;
 	var orders = {}
 	var pair;
 	var pair1 = this.Settings.Config.pair1;
 	var pair2 = this.Settings.Config.pair2;
 	var pair3 = this.Settings.Config.pair3;
 	var percentage;
-	var sanity;
 	var strategy = {};	
 	var trading_pairs;
 	var Transactions = this.Transactions;
