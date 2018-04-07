@@ -172,21 +172,21 @@ describe('Bittrex', function() {
 	});
 
 	describe('#Subscribe to market', function() {
-			return it('Should return return true', function() {
-				var bot = new CryptoBot.bot(mock.mockSettings1);
-				client = {
-					call:function(){
-						return {
-							done:function(){
-								return (null,true)
-							}
+		return it('Should return return true', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			client = {
+				call:function(){
+					return {
+						done:function(func){
+							return func(null,true)
 						}
 					}
 				}
-				var solution = Promise.resolve(bot.bittrexSubscribe(client,[bot.Settings.Config.pair1,bot.Settings.Config.pair2,bot.Settings.Config.pair3]));
-				assert(solution);
-			});
-		});	
+			}
+			var solution = Promise.resolve(bot.bittrexSubscribe(client,[bot.Settings.Config.pair1,bot.Settings.Config.pair2,bot.Settings.Config.pair3]));
+			assert(solution);
+		});
+	});	
 	
 	describe('#Update Market', function() {
 		it('Should update local order book',function(done) {
