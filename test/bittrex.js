@@ -86,12 +86,40 @@ describe('Bittrex', function() {
 		})
 		
 	describe('#Prepare Swing Order',function() {
-			it('Should return a setTimeout Object > 0', async function() {
-				var val = await bot.bittrexSwingOrder();
-				assert.equal(typeof val._idleStart,"number");
-				clearTimeout(val);
-			});
-		})
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.email = mock.email;
+			bot.MongoClient = mock.MongoClient;
+			bot.DB = bot.database();
+		it('Should return a setTimeout Object > 0 (Unable to find Order)', async function() {
+			var val = await bot.bittrexSwingOrder();
+			assert.equal(typeof val._idleStart,"number");
+			clearTimeout(val);
+		});
+		it('Should return a setTimeout Object > 0 (Order is filled)', async function() {
+			bot.bittrexAPI = function(){return new Promise((resolve,reject)=>{
+				return resolve({isOpen:false});
+			})}
+			var val = await bot.bittrexSwingOrder(1234);
+			assert.equal(typeof val._idleStart,"number");
+			clearTimeout(val);
+		});
+		it('Should return a setTimeout Object > 0 (Order is not filled)', async function() {
+			bot.bittrexAPI = function(){return new Promise((resolve,reject)=>{
+				return resolve({isOpen:true});
+			})}
+			var val = await bot.bittrexSwingOrder(1234);
+			assert.equal(typeof val._idleStart,"number");
+			clearTimeout(val);
+		});
+		it('Should return a setTimeout Object > 0 (Api Error)', async function() {
+			bot.bittrexAPI = function(){return new Promise((resolve,reject)=>{
+				return reject({isOpen:true});
+			})}
+			var val = await bot.bittrexSwingOrder(1234);
+			assert.equal(typeof val._idleStart,"number");
+			clearTimeout(val);
+		});		
+	})
 
 	});
 	describe('#UpdateBittrexSocketStatus', function() {
