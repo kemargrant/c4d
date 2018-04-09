@@ -97,15 +97,15 @@ describe('Bittrex', function() {
 		});
 		it('Should return a setTimeout Object > 0 (Order is filled)', async function() {
 			bot.bittrexAPI = function(){return new Promise((resolve,reject)=>{
-				return resolve({isOpen:false});
+				return resolve({IsOpen:false});
 			})}
 			var val = await bot.bittrexSwingOrder(1234);
 			assert.equal(typeof val._idleStart,"number");
 			clearTimeout(val);
 		});
 		it('Should return a setTimeout Object > 0 (Order is not filled)', async function() {
-			bot.bittrexAPI = function(){return new Promise((resolve,reject)=>{
-				return resolve({isOpen:true});
+			bot.bittrexAPI = ()=>{return new Promise((resolve,reject)=>{
+				resolve({IsOpen:true});
 			})}
 			var val = await bot.bittrexSwingOrder(1234);
 			assert.equal(typeof val._idleStart,"number");
@@ -113,10 +113,38 @@ describe('Bittrex', function() {
 		});
 		it('Should return a setTimeout Object > 0 (Api Error)', async function() {
 			bot.bittrexAPI = function(){return new Promise((resolve,reject)=>{
-				return reject({isOpen:true});
+				return reject({IsOpen:true});
 			})}
 			var val = await bot.bittrexSwingOrder(1234);
 			assert.equal(typeof val._idleStart,"number");
+			clearTimeout(val);
+		});		
+	})
+	describe('#Create Bittrex swing order',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.https;
+			bot.email = mock.email;
+			bot.MongoClient = mock.MongoClient;
+			bot.DB = bot.database();
+		it('Should return a setTimeout Object > 0 (API Error)', async function() {
+			var val = await bot.bittrexCreateSwingOrder("BUY","BTC-LTC",500,10);
+			assert.equal(typeof val.Timeout._idleStart,"number");
+			clearTimeout(val);
+		});	
+		it('Should return a setTimeout Object > 0 (Error placing order)', async function() {
+			bot.bittrexTrade = function(){return new Promise((resolve,reject)=>{
+				return resolve(false);
+			})}
+			var val = await bot.bittrexCreateSwingOrder("BUY","BTC-LTC",500,10);
+			assert.equal(typeof val.Timeout._idleStart,"number");
+			clearTimeout(val);
+		});	
+		it('Should return a setTimeout Object > 0 (Order Complete)', async function() {
+			bot.bittrexTrade = function(){return new Promise((resolve,reject)=>{
+				return resolve({uuid:1234});
+			})}
+			var val = await bot.bittrexCreateSwingOrder("BUY","BTC-LTC",500,10);
+			assert(val.Timeout instanceof Promise);
 			clearTimeout(val);
 		});		
 	})
@@ -158,7 +186,7 @@ describe('Bittrex', function() {
 	 * */
 	describe('#BittrexReset', function() {
 		it('Should reset Bittrex Settings',function(done) {
-			this.timeout(2000)
+			this.timeout(1000)
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.bittrexInProcess = true;
 			bot.email = mock.email;
@@ -168,6 +196,99 @@ describe('Bittrex', function() {
 				clearTimeout(reset);
 				done();
 			},100)
+		});
+	});
+
+	describe('#BittrexArbitrage', function() {
+		var bot = new CryptoBot.bot(mock.mockSettings2);
+		bot.email = mock.email;
+		bot.https = mock.https;
+		[bot.balance.btc ,bot.balance.xvg,bot.balance.usdt] = [1,5000,3000]
+		bot.p1 = 0.01;
+		bot.p2 = 1;
+		it('Should return valid trades (< 100%)',function() {
+			var message = mock.bittrexArbitrage1[0]
+			var localMarket = mock.bittrexArbitrage1[1]
+			var Transactions = mock.bittrexArbitrage1[2]
+			var strategy =mock.bittrexArbitrage1[3]
+			var trades = bot.bittrexArbitrage(message,localMarket,Transactions,strategy,"BTC-XVG","USDT-BTC","USDT-XVG","xvg","_xvg","usdt","btc","_btc")
+			var validTrades = [["sell","USDT-BTC",0.01,7002],["buy","USDT-XVG","1042.96912612",0.0668],["sell","BTC-XVG","1042.96912612",0.00000946]]
+			assert.equal(JSON.stringify(validTrades),JSON.stringify(trades));
+			
+		});
+		it('Should return valid trades (> 100%)',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings2);
+			[bot.balance.btc ,bot.balance.xvg,bot.balance.usdt] = [1,5000,3000]
+			var message = mock.bittrexArbitrage4[0]
+			var localMarket = mock.bittrexArbitrage4[1]
+			bot.Transactions = mock.bittrexArbitrage4[2]
+			var strategy =mock.bittrexArbitrage4[3]
+			bot.p1 = 1
+			bot.p2 = 0.0046
+			var trades = bot.bittrexArbitrage(message,localMarket,bot.Transactions,strategy,"BTC-XVG","USDT-BTC","USDT-XVG","xvg","_xvg","usdt","btc","_btc")
+			var validTrades = [["sell","USDT-BTC",0.0046,6958],["buy","USDT-XVG","486.88981303",0.06540898],["sell","BTC-XVG","486.88981303",0.00000948]]
+			assert.equal(JSON.stringify(validTrades),JSON.stringify(trades));
+			
+		});		
+		it('Should return an array with length < 3 (Illiquid Trade)',function() {
+			var message = mock.bittrexArbitrage1[0]
+			var localMarket = mock.bittrexArbitrage1[1]
+			var Transactions = mock.bittrexArbitrage1[2]
+			var strategy =mock.bittrexArbitrage1[3]
+			bot.p1 =1
+			var trades = bot.bittrexArbitrage(message,localMarket,Transactions,strategy,"BTC-XVG","USDT-BTC","USDT-XVG","xvg","_xvg","usdt","btc","_btc")
+			assert(trades.length < 3);
+			
+		});
+		it('Should return an array with length < 3 (In processs)',function() {
+			var message = mock.bittrexArbitrage1[0]
+			var localMarket = mock.bittrexArbitrage1[1]
+			var Transactions = mock.bittrexArbitrage1[2]
+			var strategy =mock.bittrexArbitrage1[3]
+			var trades = bot.bittrexArbitrage(message,localMarket,Transactions,strategy,"BTC-XVG","USDT-BTC","USDT-XVG","xvg","_xvg","usdt","btc","_btc");
+			assert(trades.length < 3);
+			
+		});			
+		it('Should return an array with length < 3 (try/catch)',function() {
+			var message = mock.bittrexArbitrage1[0]
+			var localMarket = mock.bittrexArbitrage1[1]
+			var Transactions = mock.bittrexArbitrage1[2]
+			var strategy =mock.bittrexArbitrage1[3]
+			bot.bittrexInProcess = false;
+			var trades = bot.bittrexArbitrage(message,localMarket,Transactions,strategy,"BTC-XVG","USDT-BTC","USDT-XVG","xvg","_xvg","usdt","btc","_btc");
+			assert(trades.length < 3);
+		});		
+		it('Should return an array with length < 3 (Percentage != Number)',function() {
+			var message = mock.bittrexArbitrage2[0]
+			var localMarket = mock.bittrexArbitrage2[1]
+			var Transactions = mock.bittrexArbitrage2[2]
+			var strategy =mock.bittrexArbitrage2[3]
+			bot.bittrexInProcess = false;
+			var trades = bot.bittrexArbitrage(message,localMarket,Transactions,strategy,"BTC-XVG","USDT-BTC","USDT-XVG","xvg","_xvg","usdt","btc","_btc");
+			assert(trades.length < 3);
+		});				
+		it('Should return an array with length < 3 (Failed to generate a strategy)',function() {
+			var message = mock.bittrexArbitrage3[0]
+			var localMarket = mock.bittrexArbitrage3[1]
+			var Transactions = mock.bittrexArbitrage3[2]
+			var strategy =mock.bittrexArbitrage3[3]
+			bot.bittrexInProcess = false;
+			var trades = bot.bittrexArbitrage(message,localMarket,Transactions,strategy,"BTC-XVG","USDT-BTC","USDT-XVG","xvg","_xvg","usdt","btc","_btc");
+			assert(trades.length < 3);
+		});				
+	});
+
+	describe('#BittrexStartArbitrage', function() {
+		var bot = new CryptoBot.bot(mock.mockSettings1);
+		bot.email = mock.email;
+		bot.https = mock.https;
+		it('Should return false',function() {
+			var x = bot.bittrexStartArbitrage([],{});
+			assert(!x);
+		});
+		it('Should return a promise',function() {
+			var x = bot.bittrexStartArbitrage([1,2,3],{});
+			assert(x instanceof Promise);;
 		});
 	});
 

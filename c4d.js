@@ -1018,7 +1018,92 @@ CryptoBot.prototype.bittrexAccount = function(){
 		});
 	});
 }
-	
+
+/**
+   * Conduct Bittrex arbitrage.
+   * @method bittrexArbitrage
+   * @param {Object} Bittrex socket message
+   * @param {Object} Local order book
+   * @param {Object} Transactions object
+   * @param {Object} Arbitrage strategy
+   * @param {String} Bittrex currency pair ie 'BTC-LTC'
+   * @param {String} Bittrex currency pair
+   * @param {String} Bittrex currency pair
+   * @param {String} Bittrex currency ie ltc
+   * @param {String} Bittrex currency underscore ie _ltc
+   * @param {String} Bittrex currency
+   * @param {String} Bittrex currency
+   * @param {String} Bittrex currency underscore ie _btc
+   * @return {Array} Returns a array of trades to make
+   */	
+CryptoBot.prototype.bittrexArbitrage = function(bmessage,localMarket,Transactions,strategy,pair1,pair2,pair3,e1,_e1,u2,b3,_b3){
+	if(this.bittrexInProcess === true){return [0];}
+	var a,b,c;
+	var data;
+	var message;
+	var orders = {}
+	var pair;
+	var percentage;
+	var trading_pairs;
+	var trades = [];
+	try{
+		var before = JSON.stringify({"bmessage:":bmessage,"localMarket":localMarket,"Transactions:":Transactions,"strategy":strategy})
+		data = JSON.parse(bmessage.utf8Data);
+		if(data.M && data.M[0] && data.M[0].M === "updateExchangeState"){
+			pair = data.M[0].A[0].MarketName;
+			this.bittrexUpdateMarket(pair,data.M[0].A[0],localMarket)
+			this.bittrexSortBook(localMarket[pair]);
+			if(!this.bittrexGenerateStrategy(pair,localMarket,strategy,Transactions,e1,u2,b3)){return [];}
+			a =  strategy[pair1].strat1,b = strategy[pair2].strat1,c = strategy[pair3].strat1;
+			percentage = a * b/c * 100;
+			if(this.viewBittrexBook){
+				var rand = Math.floor(100 * Math.random(0,1));
+				if(rand % 3 === 0){
+					this.broadcastMessage({type:"bittrexBook",book:localMarket});
+				}	
+			}
+			if(percentage < 100){
+				trading_pairs = {"type":"percentage","exchange":"bittrex","percentage":percentage,"strategy":1}
+				message = this.bittrexFormatMessage(e1,u2,b3,_e1,a,c,b,percentage,Transactions);					
+				trades = [["sell",pair3,Transactions[e1],c],["buy",pair2,Number(Transactions[b3].toFixed(8)),b],["buy",pair1,Transactions[_e1].toFixed(8),a]]
+			}
+			else {
+				a =  strategy[pair1].strat2,b = strategy[pair2].strat2,c = strategy[pair3].strat2;
+				percentage = a * b/c * 100;
+				trading_pairs = {"type":"percentage","exchange":"bittrex","percentage":percentage,"strategy":2}
+				message = this.bittrexFormatMessage(b3,u2,e1,_b3,a,b,c,percentage,Transactions);
+				trades = [["sell",pair2,Transactions[b3],b],["buy",pair3,Transactions[e1].toFixed(8),c],["sell",pair1,Transactions[e1].toFixed(8),a]]
+			}
+			if(!Number(percentage)){
+				return []
+			}
+			trading_pairs[pair1] = a,trading_pairs[pair2] = b,trading_pairs[pair3] = c;
+			this.broadcastMessage(trading_pairs)
+			if(!this.bittrexCheckConditions(Transactions,percentage,e1,b3,u2,message)){
+				return [];
+			}
+			this.log("Starting Trades:",message,new Date());	
+			try{
+				for(var key in localMarket){
+					for(var key2 in localMarket[key]){
+						if(key2 !== "Sorted")delete localMarket[key][key2]
+					}
+				}	
+			}catch(e){
+				this.log(e)
+			}	
+			this.notify(message +"\r\n"+JSON.stringify(localMarket).replace(new RegExp('"', 'g'),""));
+			this.bittrexInProcess = true;
+			this.bittrexProcessTime = new Date().getTime();
+			this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
+			return trades;				
+		}
+	}
+	catch(e){
+		this.log("Bittrex Arbitrage Error:",e);
+		return [];
+	}
+}
 /**
    * Cancel Bittrex order.
    * @method bittrexCancelOrder
@@ -1069,11 +1154,11 @@ CryptoBot.prototype.bittrexCheckConditions = function(Transactions,percentage,e1
 		return false;
 	}	
 	if(this.liquidTrades && percentage < 100 && (Transactions[u2+'_amount1'] < Transactions[u2] || Transactions[b3+'_amount1'] < Transactions[b3] || Transactions[e1+'_amount1'] < Transactions[e1])){
-		this.log("Illiquid Trade:",new Date());
+		this.log("Illiquid Trade:",message,new Date());
 		return false;
 	}
 	if(Number(this.balance[e1]) < Transactions[e1]  ||  Number(this.balance[b3]) < Transactions[b3] || Number(this.balance[u2]) < Transactions[u2]){
-		this.log("Wallet balance not enough to place order:",new Date());
+		this.log("Wallet balance not enough to place order:",message,new Date());
 		return false;
 	}
 	if(Transactions.btc < this.Settings.Bittrex.minimum){
@@ -1372,6 +1457,28 @@ CryptoBot.prototype.bittrexSortBook = function(obj){
 	return obj;
 }
 
+/**
+   * Start Bittrex Arbitrage.
+   * @method bittrexStartArbitrage
+   * @param {Array} Array of Bittrex trades
+   * @param {Object} Local order book
+   * @return {Promise} Returns false or niceOrderChain promise which resolves an object with Bittrex orders 
+   */
+CryptoBot.prototype.bittrexStartArbitrage = function(trades,localMarket){
+	if(!trades || trades.length < 3){
+		return false;	
+	}
+	return this.niceOrderChain([this.bittrexTrade,this.bittrexTrade,this.bittrexTrade,this.completedTrades],{})
+		.chain(trades)
+		.then(()=>{
+			localMarket[this.Settings.Config.pair1] = {Bids:{},Asks:{}}
+			localMarket[this.Settings.Config.pair2] = {Bids:{},Asks:{}}
+			localMarket[this.Settings.Config.pair3] = {Bids:{},Asks:{}}
+		})
+		.catch((e)=>{
+			return this.bittrexReset(e,216000000);
+		});		
+}
 
 /**
    * Monitor Bittrex pairs for arbitrage opportunities.
@@ -1385,17 +1492,11 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 	var b;
 	var c;
 	var client;
-	var data;
 	var localMarket = {}
-	var message = "Bittrex Bot:";
-	var orders = {}
-	var pair;
 	var pair1 = this.Settings.Config.pair1;
 	var pair2 = this.Settings.Config.pair2;
 	var pair3 = this.Settings.Config.pair3;
-	var percentage;
 	var strategy = {};	
-	var trading_pairs;
 	var Transactions = this.Transactions;
 	var e1;
 	var _e1;
@@ -1403,7 +1504,6 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 	var b3;
 	var _b3;
 	var timeout;
-	var trades;
 	e1 = pair1.split('-')[1].toLowerCase();
 	_e1 = "_" + pair1.split('-')[1].toLowerCase();
 	b3 = pair1.split('-')[0].toLowerCase();
@@ -1412,9 +1512,9 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 	localMarket[this.Settings.Config.pair1] = {Bids:{},Asks:{}}
 	localMarket[this.Settings.Config.pair2] = {Bids:{},Asks:{}}
 	localMarket[this.Settings.Config.pair3] = {Bids:{},Asks:{}}
-	strategy[this.Settings.Config.pair1] = {}
-	strategy[this.Settings.Config.pair2] = {}
-	strategy[this.Settings.Config.pair3] = {}
+	strategy[pair1] = {}
+	strategy[pair2] = {}
+	strategy[pair3] = {}
 	client = new signalR.client("wss://socket.bittrex.com/signalr",['CoreHub']);	
 	client.headers['User-Agent'] = agent;
 	client.headers['cookie'] = cookie;
@@ -1462,74 +1562,8 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 			}
 		},
 		messageReceived: (message)=> {
-			if(this.bittrexInProcess === true){
-				return;
-			}
-			try{
-				data = JSON.parse(message.utf8Data);
-				if(data.M && data.M[0] && data.M[0].M === "updateExchangeState"){
-					pair = data.M[0].A[0].MarketName;
-					this.bittrexUpdateMarket(pair,data.M[0].A[0],localMarket)
-					this.bittrexSortBook(localMarket[pair]);
-					if(!this.bittrexGenerateStrategy(pair,localMarket,strategy,Transactions,e1,u2,b3)){
-						return;
-					}
-					a =  strategy[this.Settings.Config.pair1].strat1,b = strategy[this.Settings.Config.pair2].strat1,c = strategy[this.Settings.Config.pair3].strat1;
-					percentage = a * b/c * 100;
-					if(this.viewBittrexBook){
-						var rand = Math.floor(100 * Math.random(0,1));
-						if(rand % 3 === 0){
-							this.broadcastMessage({type:"bittrexBook",book:localMarket});
-						}	
-					}
-					if(percentage < 100){
-						trading_pairs = {"type":"percentage","exchange":"bittrex","percentage":percentage,"strategy":1}
-						trading_pairs[pair1] = a,trading_pairs[pair2] = b,trading_pairs[pair3] = c;
-						this.broadcastMessage(trading_pairs);
-						message = this.bittrexFormatMessage(e1,u2,b3,_e1,a,c,b,percentage,Transactions);					
-						trades = [["sell",pair3,Transactions[e1],c],["buy",pair2,Number(Transactions[b3].toFixed(8)),b],["buy",pair1,Transactions[_e1].toFixed(8),a]]
-					}
-					else{
-						a =  strategy[this.Settings.Config.pair1].strat2,b = strategy[this.Settings.Config.pair2].strat2,c = strategy[this.Settings.Config.pair3].strat2;
-						percentage = a * b/c * 100;
-						trading_pairs = {"type":"percentage","exchange":"bittrex","percentage":percentage,"strategy":2}
-						trading_pairs[pair1] = a,trading_pairs[pair2] = b,trading_pairs[pair3] = c;
-						this.broadcastMessage(trading_pairs);
-						message = this.bittrexFormatMessage(b3,u2,e1,_b3,a,b,c,percentage,Transactions);
-						trades = [["sell",pair2,Transactions[b3],b],["buy",pair3,Transactions[e1].toFixed(8),c],["sell",pair1,Transactions[e1].toFixed(8),a]]
-					}
-					if(!this.bittrexCheckConditions(Transactions,percentage,e1,b3,u2,message)){
-							return;
-					}
-					this.log("Starting Trades:",message,new Date());	
-					try{
-						for(var key in localMarket){
-							for(var key2 in localMarket[key]){
-								if(key2 !== "Sorted")delete localMarket[key][key2]
-							}
-						}	
-					}catch(e){
-						console.log(e)
-					}	
-					this.notify(message +"\r\n"+JSON.stringify(localMarket).replace(new RegExp('"', 'g'),""));
-					this.bittrexInProcess = true;
-					this.bittrexProcessTime = new Date().getTime();
-					this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
-					return this.niceOrderChain([this.bittrexTrade,this.bittrexTrade,this.bittrexTrade,this.completedTrades],orders)
-					.chain(trades)
-					.then(()=>{
-							localMarket[this.Settings.Config.pair1] = {Bids:{},Asks:{}}
-							localMarket[this.Settings.Config.pair2] = {Bids:{},Asks:{}}
-							localMarket[this.Settings.Config.pair3] = {Bids:{},Asks:{}}
-					})
-					.catch((e)=>{
-						return this.bittrexReset(e,216000000);
-					});						
-				}
-			}
-			catch(e){
-				console.log("Error:",e)
-			}
+			var trades = this.bittrexArbitrage(message,localMarket,Transactions,strategy,pair1,pair2,pair3,e1,_e1,u2,b3,_b3);
+			this.bittrexStartArbitrage(trades,localMarket);
 		},
 		bindingError: (error)=> { this.updateBittrexSocketStatus(error,false);},
 		connectionLost: (error)=> { 
@@ -1579,6 +1613,36 @@ CryptoBot.prototype.bittrexSubscribe= function(client,pairs){
 }
 
 /**
+   * Create Bittrex swing order.
+   * @method bittrexCreateSwingOrder
+   * @param {String} Bittrex trade type
+   * @param {String} Bittrex trade pair
+   * @param {Number} Trade amount
+   * @param {Number} Trade price
+   * @return {Promise} Returns a promise that resolves to an object {status:Number,Timeout:object}
+   */
+CryptoBot.prototype.bittrexCreateSwingOrder = function(type,pair,amount,price){
+	var timeout;
+	return this.bittrexTrade(type,pair,amount,price,{"swing":true})
+		.then((order)=>{
+			if(!order){
+				this.notify("Bittrex swing order error");
+				timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
+				return {status:2,Timeout:timeout}
+			}
+			this.swingTrade = false;
+			this.bittrexAccount();
+			this.saveDB("swing",{},{extra:{"w":1,"upsert":true},method:"update",query:{"swing":1},modifier:{"$set":{"swing":1,"order":order,"filled":false}}});
+			timeout = this.bittrexSwingOrder(order.uuid);
+			return {status:2,Timeout:timeout}
+		}).catch((e)=>{
+			this.log(e);
+			timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
+			return {status:2,Timeout:timeout}
+		});
+}
+
+/**
    * Buy/Sell Bittrex swing pair.
    * @method bittrexSwing
    * @return {Object} Returns a object {status:Number,Timeout:object} Status(0:"Inactive",1:"Trading",2:"Waiting",3:"Wallet Balance Low")
@@ -1588,25 +1652,6 @@ CryptoBot.prototype.bittrexSwing = function(){
 		return {status:0,Timeout:null}
 	}
 	var timeout;
-	var _order = (type,pair,amount,price) => {
-		return this.bittrexTrade(type,pair,amount,price,{"swing":true})
-			.then((order)=>{
-				if(!order){
-					this.log(e);
-					timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
-					return {status:2,Timeout:timeout}
-				}
-				this.swingTrade = false;
-				this.bittrexAccount();
-				this.saveDB("swing",{},{extra:{"w":1,"upsert":true},method:"update",query:{"swing":1},modifier:{"$set":{"swing":1,"order":order,"filled":false}}});
-				timeout = this.bittrexSwingOrder(order.uuid);
-				return {status:2,Timeout:timeout}
-			}).catch((e)=>{
-					this.log(e);
-					timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
-					return {status:2,Timeout:timeout}
-				});
-	}
 	var _swing = (trade) =>{
 		if(trade){
 			if(trade.filled !== true){
@@ -1621,7 +1666,7 @@ CryptoBot.prototype.bittrexSwing = function(){
 					this.broadcastMessage({"type":"swing","target":target,"price":val.sell,"trade":"bid"});
 					if (val.sell < target){
 						this.notify(this.Settings.Swing.pair+" Buying "+trade.order.Quantity+" @"+val.sell);
-						_order("buy",this.Settings.Swing.pair,trade.order.Quantity,val.sell);
+						this.bittrexCreateSwingOrder("buy",this.Settings.Swing.pair,trade.order.Quantity,val.sell);
 						return {status:1,Timeout:null}
 					}
 					else{
@@ -1635,7 +1680,7 @@ CryptoBot.prototype.bittrexSwing = function(){
 					this.broadcastMessage({"type":"swing","target":target,"price":val.buy,"trade":"ask"});
 					if (val.buy > target){
 						this.notify(this.Settings.Swing.pair+" Selling "+trade.order.Quantity+" @"+val.buy);
-						_order("sell",this.Settings.Swing.pair,trade.order.Quantity,val.buy);
+						this.bittrexCreateSwingOrder("sell",this.Settings.Swing.pair,trade.order.Quantity,val.buy);
 						return {status:1,Timeout:null}
 					}
 					else{
@@ -1656,7 +1701,7 @@ CryptoBot.prototype.bittrexSwing = function(){
 			}
 			return this.bittrexDepthPure(this.Settings.Swing.pair).then((val)=>{
 				var amount = (this.Settings.Swing.amount/val.sell).toFixed(8)
-				_order("buy",this.Settings.Swing.pair,amount,val.sell);
+				this.bittrexCreateSwingOrder("buy",this.Settings.Swing.pair,amount,val.sell);
 				return {status:1,Timeout:null}
 			}).catch((e)=>{
 					this.log(e);
@@ -1707,9 +1752,9 @@ CryptoBot.prototype.bittrexSwingOrder = function(uuid){
 				return resolve(setTimeout(()=>{this.bittrexSwingOrder(uuid);},this.swingRate));
 			}
 		}).catch((e)=>{
-				this.log(e);
-				return resolve(setTimeout(()=>{this.bittrexSwingOrder(uuid);},this.swingRate));
-			});	
+			this.log(e);
+			return resolve(setTimeout(()=>{this.bittrexSwingOrder(uuid);},this.swingRate));
+		});	
 	})
 }	
 
