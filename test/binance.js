@@ -542,6 +542,14 @@ describe('Binance', function() {
 			})
 		});
 	});
-	
+	(function(){describe('#Start Bot and catch binancePrecision error', function() {
+		it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
+			var Module = require('module');
+			var originalRequire = Module.prototype.require;
+			Module.prototype.require = function(){return {https:{"request":function(){console.log("going to resolve an error");return new Promise((resolve,reject)=>{reject()}); }}}};
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			assert.equal(JSON.stringify(binanceBot.binancePrec),"{}");
+		});
+	});})()
 		
 });
