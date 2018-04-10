@@ -32,8 +32,8 @@ describe('Bittrex', function() {
 	describe('#Complete Arbitrage', function() {
 		return it('Should return a setTimeout object', async function() {
 			var val = await bot.bittrexCompleteArbitrage({'randomid':false,'randomi2':false,'randomid3':false});
-			assert.equal(typeof val._idleStart,"number");
 			clearTimeout(val);
+			assert.equal(typeof val._idleStart,"number");
 		});
 	});	
 	
@@ -75,8 +75,8 @@ describe('Bittrex', function() {
 		describe('#Swing',function() {
 			it('Should return 2', async function() {
 				var val = await bot.bittrexSwing();
+				clearTimeout(val);
 				assert.equal(val.status,2);
-				clearTimeout(val.Timeout);
 			});
 			it('Should return 0', async function() {
 				bot.vibrate = false;
@@ -92,32 +92,34 @@ describe('Bittrex', function() {
 			bot.DB = bot.database();
 		it('Should return a setTimeout Object > 0 (Unable to find Order)', async function() {
 			var val = await bot.bittrexSwingOrder();
-			assert.equal(typeof val._idleStart,"number");
 			clearTimeout(val);
+			assert.equal(typeof val._idleStart,"number");
 		});
 		it('Should return a setTimeout Object > 0 (Order is filled)', async function() {
 			bot.bittrexAPI = function(){return new Promise((resolve,reject)=>{
 				return resolve({IsOpen:false});
 			})}
 			var val = await bot.bittrexSwingOrder(1234);
-			assert.equal(typeof val._idleStart,"number");
 			clearTimeout(val);
+			assert.equal(typeof val._idleStart,"number");
 		});
 		it('Should return a setTimeout Object > 0 (Order is not filled)', async function() {
 			bot.bittrexAPI = ()=>{return new Promise((resolve,reject)=>{
 				resolve({IsOpen:true});
 			})}
 			var val = await bot.bittrexSwingOrder(1234);
-			assert.equal(typeof val._idleStart,"number");
 			clearTimeout(val);
+			assert.equal(typeof val._idleStart,"number");
+			
 		});
 		it('Should return a setTimeout Object > 0 (Api Error)', async function() {
 			bot.bittrexAPI = function(){return new Promise((resolve,reject)=>{
 				return reject({IsOpen:true});
 			})}
 			var val = await bot.bittrexSwingOrder(1234);
-			assert.equal(typeof val._idleStart,"number");
 			clearTimeout(val);
+			assert.equal(typeof val._idleStart,"number");
+			
 		});		
 	})
 	describe('#Create Bittrex swing order',function() {
@@ -128,25 +130,110 @@ describe('Bittrex', function() {
 			bot.DB = bot.database();
 		it('Should return a setTimeout Object > 0 (API Error)', async function() {
 			var val = await bot.bittrexCreateSwingOrder("BUY","BTC-LTC",500,10);
+			clearTimeout(val.Timeout);
 			assert.equal(typeof val.Timeout._idleStart,"number");
-			clearTimeout(val);
 		});	
 		it('Should return a setTimeout Object > 0 (Error placing order)', async function() {
 			bot.bittrexTrade = function(){return new Promise((resolve,reject)=>{
 				return resolve(false);
 			})}
 			var val = await bot.bittrexCreateSwingOrder("BUY","BTC-LTC",500,10);
+			clearTimeout(val.Timeout);
 			assert.equal(typeof val.Timeout._idleStart,"number");
-			clearTimeout(val);
+			
 		});	
 		it('Should return a setTimeout Object > 0 (Order Complete)', async function() {
 			bot.bittrexTrade = function(){return new Promise((resolve,reject)=>{
 				return resolve({uuid:1234});
 			})}
 			var val = await bot.bittrexCreateSwingOrder("BUY","BTC-LTC",500,10);
+			clearTimeout(val.Timeout);
 			assert(val.Timeout instanceof Promise);
-			clearTimeout(val);
 		});		
+	})
+
+	describe('#Supervise Bittrex swing order',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.https;
+			bot.email = mock.email;
+			bot.MongoClient = mock.MongoClient;
+			bot.DB = bot.database();
+		it('Should return a object with a status of 2', function() {
+			var val = bot.bittrexSwingSupervisor({filled:false,order:{uuid:1234}});
+			clearTimeout(val.Timeout);
+			assert.equal(val.status,2);
+		});			
+		it('Should return a object with a status of 2', async function() {
+			var val = await bot.bittrexSwingSupervisor({filled:true,order:{uuid:1234,Type:"LIMIT_SELL"}});
+			clearTimeout(val.Timeout);
+			assert.equal(val.status,2);
+		});	
+		it('Should return a object with a status of 1', async function() {
+			var val = await bot.bittrexSwingSupervisor({filled:true,order:{uuid:1234,Type:"LIMIT_SELL",Limit:1}});
+			bot.swingPercentage = 0.05;
+			bot.bittrexDepthPure = function(){
+				return new Promise((resolve,reject)=>{
+					resolve({sell:0.5});
+				});
+			}
+			clearTimeout(val.Timeout);
+			assert.equal(val.status,1);
+		});	
+		it('Should return a object with a status of 2', async function() {
+			var val = await bot.bittrexSwingSupervisor({filled:true,order:{uuid:1234,Type:"LIMIT_BUY",Limit:1}});
+			clearTimeout(val.Timeout);
+			assert.equal(val.status,2);
+		});	
+		it('Should return a object with a status of 1', async function() {
+			bot.swingPercentage = 0.05;
+			bot.bittrexDepthPure = function(){
+				return new Promise((resolve,reject)=>{
+					resolve({buy:2.5});
+				});
+			}		
+			var val = await bot.bittrexSwingSupervisor({filled:true,order:{uuid:1234,Type:"LIMIT_BUY",Limit:0.9}});	
+			clearTimeout(val.Timeout);
+			assert.equal(val.status,1);
+		});	
+		it('Should return a object with a status of 2', async function() {
+			bot.swingPercentage = 0.05;
+			bot.bittrexDepthPure = function(){
+				return new Promise((resolve,reject)=>{
+					reject({buy:2.5});
+				});
+			}		
+			var val = await bot.bittrexSwingSupervisor({filled:true,order:{uuid:1234,Type:"LIMIT_BUY",Limit:0.9}});	
+			clearTimeout(val.Timeout);
+			assert.equal(val.status,2);
+		});	
+		it('Should return a object with a status of 2 (Undefined Order - Low account balance) ', function() {	
+			bot.balance.btc = 0;
+			bot.Settings.Swing.amount = 1;
+			var val = bot.bittrexSwingSupervisor(undefined);
+			assert.equal(val.status,2);
+		});		
+		it('Should return a object with a status of 2 (Undefined Order - Low account balance) ', async function() {	
+			bot.balance.btc = 2;
+			bot.Settings.Swing.amount = 1;
+			bot.bittrexDepthPure = function(){
+				return new Promise((resolve,reject)=>{
+					reject({buy:2.5});
+				});
+			}	
+			var val = await bot.bittrexSwingSupervisor(undefined);
+			assert.equal(val.status,2);
+		});		
+		it('Should return a object with a status of 2 (Undefined Order - Low account balance) ', async function() {	
+			bot.balance.btc = 2;
+			bot.Settings.Swing.amount = 1;
+			bot.bittrexDepthPure = function(){
+				return new Promise((resolve,reject)=>{
+					resolve({buy:2.5});
+				});
+			}	
+			var val = await bot.bittrexSwingSupervisor(undefined);
+			assert.equal(val.status,1);
+		});													
 	})
 
 	});
@@ -179,11 +266,11 @@ describe('Bittrex', function() {
 			result.end();
 		});
 	});
-	/*
-	 * 
-	 * Arbitrage Helpers
-	 * 
-	 * */
+	//~ /*
+	 //~ * 
+	 //~ * Arbitrage Helpers
+	 //~ * 
+	 //~ * */
 	describe('#BittrexReset', function() {
 		it('Should reset Bittrex Settings',function(done) {
 			this.timeout(1000)
@@ -452,6 +539,7 @@ describe('Bittrex', function() {
 			assert(!valid);
 		});				
 	});				
+
 });
 
 

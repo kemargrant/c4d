@@ -1652,70 +1652,12 @@ CryptoBot.prototype.bittrexSwing = function(){
 		return {status:0,Timeout:null}
 	}
 	var timeout;
-	var _swing = (trade) =>{
-		if(trade){
-			if(trade.filled !== true){
-				timeout = this.bittrexSwingOrder(trade.order.OrderUuid);
-				return {status:2,Timeout:null}
-			}
-			var newTrade = trade.order.Type === "LIMIT_SELL" ? "buy" : "sell";
-			this.bittrexDepthPure(this.Settings.Swing.pair).then((val)=>{
-				if(newTrade === "buy"){
-					var target =(1 - this.swingPercentage) * trade.order.Limit;
-					this.log("Buying (Target/Price):",target+"/"+val.sell);
-					this.broadcastMessage({"type":"swing","target":target,"price":val.sell,"trade":"bid"});
-					if (val.sell < target){
-						this.notify(this.Settings.Swing.pair+" Buying "+trade.order.Quantity+" @"+val.sell);
-						this.bittrexCreateSwingOrder("buy",this.Settings.Swing.pair,trade.order.Quantity,val.sell);
-						return {status:1,Timeout:null}
-					}
-					else{
-						timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
-						return {status:2,Timeout:timeout}
-					}
-				}
-				else{
-					var target = (1 + this.swingPercentage) * trade.order.Limit;
-					this.log("Selling (Target/Price):",target+"/"+val.buy);
-					this.broadcastMessage({"type":"swing","target":target,"price":val.buy,"trade":"ask"});
-					if (val.buy > target){
-						this.notify(this.Settings.Swing.pair+" Selling "+trade.order.Quantity+" @"+val.buy);
-						this.bittrexCreateSwingOrder("sell",this.Settings.Swing.pair,trade.order.Quantity,val.buy);
-						return {status:1,Timeout:null}
-					}
-					else{
-						timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
-						return {status:2,Timeout:timeout}
-					}
-				}
-			}).catch((e)=>{
-					this.log(e);
-					timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
-					return {status:2,Timeout:timeout}
-				});								
-		}
-		else{	
-			if(this.balance.btc < this.Settings.Swing.amount){
-				this.log("Account balance low:",this.balance);
-				return 3;
-			}
-			return this.bittrexDepthPure(this.Settings.Swing.pair).then((val)=>{
-				var amount = (this.Settings.Swing.amount/val.sell).toFixed(8)
-				this.bittrexCreateSwingOrder("buy",this.Settings.Swing.pair,amount,val.sell);
-				return {status:1,Timeout:null}
-			}).catch((e)=>{
-					this.log(e);
-					setTimeout(()=>{this.bittrexSwing()},this.swingRate);
-					return {status:2,Timeout:timeout}
-				});
-		}	
-	}
 	if(!this.swingTrade){
 		return this.retrieveDB("swing").then((trades)=>{
 			this.swingTrade = trades[0];
 			this.swingTrade.swing = this.Settings.Swing.swing;
 			this.broadcastMessage({"type":"swingOrder","order":this.swingTrade});
-			return _swing(this.swingTrade);
+			return this.bittrexSwingSupervisor(this.swingTrade);
 		}).catch((e)=>{
 				this.log(e);
 				timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
@@ -1723,7 +1665,7 @@ CryptoBot.prototype.bittrexSwing = function(){
 			});
 	}
 	else{
-		return _swing(this.swingTrade);
+		return this.bittrexSwingSupervisor(this.swingTrade);
 	}
 			
 }
@@ -1757,6 +1699,72 @@ CryptoBot.prototype.bittrexSwingOrder = function(uuid){
 		});	
 	})
 }	
+
+/**
+   * Supervise swing trade.
+   * @method bittrexSwingSupervisor
+   * @param {Object} Current swing order object
+   * @return {Object} Returns a object {status:Number,Timeout:object} Status(0:"Inactive",1:"Trading",2:"Waiting",3:"Wallet Balance Low")
+   */
+CryptoBot.prototype.bittrexSwingSupervisor = function (trade){
+	var timeout;
+	if(trade){
+		if(trade.filled !== true){
+			timeout = this.bittrexSwingOrder(trade.order.OrderUuid);
+			return {status:2,Timeout:null}
+		}
+		var newTrade = trade.order.Type === "LIMIT_SELL" ? "buy" : "sell";
+		return this.bittrexDepthPure(this.Settings.Swing.pair).then((val)=>{
+			if(newTrade === "buy"){
+				var target =(1 - this.swingPercentage) * trade.order.Limit;
+				this.log("Buying (Target/Price):",target+"/"+val.sell);
+				this.broadcastMessage({"type":"swing","target":target,"price":val.sell,"trade":"bid"});
+				if (val.sell < target){
+					this.notify(this.Settings.Swing.pair+" Buying "+trade.order.Quantity+" @"+val.sell);
+					this.bittrexCreateSwingOrder("buy",this.Settings.Swing.pair,trade.order.Quantity,val.sell);
+					return {status:1,Timeout:null}
+				}
+				else{
+					timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
+					return {status:2,Timeout:timeout}
+				}
+			}
+			else{
+				var target = (1 + this.swingPercentage) * trade.order.Limit;
+				this.log("Selling (Target/Price):",target+"/"+val.buy);
+				this.broadcastMessage({"type":"swing","target":target,"price":val.buy,"trade":"ask"});
+				if (val.buy > target){
+					this.notify(this.Settings.Swing.pair+" Selling "+trade.order.Quantity+" @"+val.buy);
+					this.bittrexCreateSwingOrder("sell",this.Settings.Swing.pair,trade.order.Quantity,val.buy);
+					return {status:1,Timeout:null}
+				}
+				else{
+					timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
+					return {status:2,Timeout:timeout}
+				}
+			}
+		}).catch((e)=>{
+				this.log(e);
+				timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
+				return {status:2,Timeout:timeout}
+			});								
+	}
+	else{	
+		if(this.balance.btc < this.Settings.Swing.amount){
+			timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
+			return {status:2,Timeout:timeout}
+		}
+		return this.bittrexDepthPure(this.Settings.Swing.pair).then((val)=>{
+			var amount = (this.Settings.Swing.amount/val.sell).toFixed(8)
+			this.bittrexCreateSwingOrder("buy",this.Settings.Swing.pair,amount,val.sell);
+			return {status:1,Timeout:null}
+		}).catch((e)=>{
+				this.log(e);
+				setTimeout(()=>{this.bittrexSwing()},this.swingRate);
+				return {status:2,Timeout:timeout}
+			});
+	}	
+}
 
 /**
    * Conduct Bittrex trade.
