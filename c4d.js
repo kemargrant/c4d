@@ -107,13 +107,6 @@ CryptoBot.prototype.binanceAccount = function(){
 				var parsed;
 				try{
 					parsed = JSON.parse(body);
-					if(parsed.code === -1021){
-						this.log(parsed.msg);
-						return reject(new Error("Error getting Binance account info"));
-					}
-					if(!parsed.balances){
-						return reject(new Error("Error getting Binance balances"));
-					}
 					for(var i=0;i<parsed.balances.length;i++){
 						this.binanceBalance[parsed.balances[i].asset.toLowerCase()] = Number(parsed.balances[i].free) > 0 ? Number(parsed.balances[i].free) : 0;
 					}

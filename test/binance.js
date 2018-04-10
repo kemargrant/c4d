@@ -374,10 +374,24 @@ describe('Binance', function() {
 	});
     
 	describe('#Account Data', function() {
-		return it('Should return account data', async function() {
+		it('Should return account data', async function() {
 			var val = await binanceBot.binanceAccount();
 			assert.equal(typeof val,"object")
 		});
+		it('Account Data Error', async function() {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.https = mock.httpsError;
+			await Promise.resolve(binanceBot.binanceAccount().catch((val)=>{
+				assert.equal(val.message,'Uncaught, unspecified "error" event. (Error Data)')
+			}))
+		});
+		it('Account Data Error parsing data', async function() {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.https = mock.httpsBadData;
+			await Promise.resolve(binanceBot.binanceAccount().catch((val)=>{
+				assert.equal(val.message,"Unexpected token x in JSON at position 0")
+			}))
+		});		
 	});
 	
 	describe('#Precision', function() {			
@@ -546,7 +560,7 @@ describe('Binance', function() {
 		it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
 			var Module = require('module');
 			var originalRequire = Module.prototype.require;
-			Module.prototype.require = function(){return {https:{"request":function(){console.log("going to resolve an error");return new Promise((resolve,reject)=>{reject()}); }}}};
+			Module.prototype.require = function(){return {https:{"request":function(){return new Promise((resolve,reject)=>{reject()}); }}}};
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			assert.equal(JSON.stringify(binanceBot.binancePrec),"{}");
 		});
