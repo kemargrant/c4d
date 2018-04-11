@@ -313,7 +313,7 @@ CryptoBot.prototype.binanceCancelOrder = function(pair,id){
    * @return {Boolean} Return boolean
    */
 CryptoBot.prototype.binanceCheckConditions = function(Transactions,percentage,base,e1,b1,u1,b,c,amount1,amount2){	
-	if(this.binanceBalance[e1] < Transactions[e1] || this.binanceBalance[b1] < Transactions[b1] || this.binanceBalance[u1] < Transactions[u1]){
+	if(Number(this.binanceBalance[e1]) < Transactions[e1] || Number(this.binanceBalance[b1]) < Transactions[b1] || Number(this.binanceBalance[u1]) < Transactions[u1]){
 		this.log("Wallet Balance Low:",new Date());
 		return false
 	}
