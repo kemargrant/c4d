@@ -378,19 +378,19 @@ describe('Binance', function() {
 			var val = await binanceBot.binanceAccount();
 			assert.equal(typeof val,"object")
 		});
-		it('Account Data Error', async function() {
+		it('Account Data Error', function() {
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			binanceBot.https = mock.httpsError;
-			await Promise.resolve(binanceBot.binanceAccount().catch((val)=>{
+			return binanceBot.binanceAccount().catch((val)=>{
 				assert.equal(val.message,'Uncaught, unspecified "error" event. (Error Data)')
-			}))
+			})
 		});
-		it('Account Data Error parsing data', async function() {
+		it('Account Data Error parsing data',function() {
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			binanceBot.https = mock.httpsBadData;
-			await Promise.resolve(binanceBot.binanceAccount().catch((val)=>{
+			return binanceBot.binanceAccount().catch((val)=>{
 				assert.equal(val.message,"Unexpected token x in JSON at position 0")
-			}))
+			})
 		});		
 	});
 	
