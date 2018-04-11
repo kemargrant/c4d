@@ -117,7 +117,6 @@ CryptoBot.prototype.binanceAccount = function(){
 					this.log("Error Getting Binance Balance:",e);
 					return reject(e);
 				}		
-	            return resolve(Number(parsed));
 	        });
 	    }).on('error',(e)=>{
 			return reject(e);
