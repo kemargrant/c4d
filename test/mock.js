@@ -445,8 +445,7 @@ var _httpsError = {
 		const events = new MyEmitter();
 		var data = {};
 		func(events)
-		const error = Error('Unexpected Error');
-		return events.emit("error",error);
+		return events.emit("error","Error Data");
 	}
 }
 var _httpsBadData = {
@@ -1075,6 +1074,8 @@ module.exports = {
 	mockSettings2:settings2,
 	email:_email,
 	https:_https,
+	httpsError:_httpsError,
+	httpsBadData:_httpsBadData,
 	MongoClient:_MongoClient,
 	MongoClient2:_MongoClient2,
 	binanceMessages:_binanceMessages,
