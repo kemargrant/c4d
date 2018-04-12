@@ -241,14 +241,33 @@ describe('Bittrex Server Commands (Network)', function() {
 		});
 	});		
 	describe('#bittrex_control', function() {
-		it('Should start and stop arbitrage process', function(done) {
-			this.timeout(25000)
+		it('Should should have an error when starting arbitrage process', function() {
 			bot.bittrexSocketConnection = false;
-			var streamStarted = Promise.resolve(bot.serverCommand(encrypt({'command':'bittrex_control','bool':true})));
-			assert(bot.serverCommand(encrypt({'command':'bittrex_control','bool':false})))
-			done();
+			bot.bittrexPrepareStream = function(){
+				return new Promise((resolve,reject)=>{
+					reject(false);
+				});
+			}
+			return bot.serverCommand(encrypt({'command':'bittrex_control','bool':true})).catch((val)=>{
+				assert(!val);
+			});
 		});
-	});		
+		it('Should should start bittrex stream', function() {
+			bot.bittrexSocketConnection = false;
+			bot.bittrexPrepareStream = function(){
+				return new Promise((resolve,reject)=>{
+					resolve(["header","cookie"]);
+				});
+			}
+			return bot.serverCommand(encrypt({'command':'bittrex_control','bool':true})).then((val)=>{
+				assert(val);
+			});
+		});
+		it('Should should stop bittrex stream', function() {
+			var val = bot.serverCommand(encrypt({'command':'bittrex_control','bool':false}))
+			assert(val);
+		});					
+	});			
 	bot.MongoClient = mock.MongoClient;
 	bot.DB = bot.database();		 
 	describe('#bittrex_db', function() {
