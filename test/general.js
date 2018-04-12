@@ -9,9 +9,6 @@ describe('General Functions', function() {
 	bot.https = mock.https;
 	bot.MongoClient = mock.MongoClient;
 	bot.DB = bot.database();
-	bot.setupWebsocket().then(()=>{
-		bot.wss.close();
-	});	
 	describe('#Connect To Database', function() {
 		it('Should return a db connection with trade and balance collections', function() {
 			var x = bot.DB.balance;
@@ -130,16 +127,32 @@ describe('General Functions', function() {
 	});
 	
 	describe('#Setup WebSocket', function() {
-		return it('Should setup a web socket server and connect to it', function() {
-			var client = new WebSocket("ws://127.0.0.1:7073");
-			client.onopen = (connected)=>{
-				assert(connected);
-				client.terminate();
-			}
-			client.onerror = (e) =>{
-				console.log("Error:",e.code);
-				assert(false);
-			}	
+		it('Should setup a web socket server and catch error event', function() {
+			setTimeout(()=>{
+				var client = new WebSocket("ws://127.0.0.1:7073");
+				client.onopen = (connected)=>{
+				}
+			},100)
+			return bot.setupWebsocket().then(()=>{
+				bot.wss.emit("error","");
+			}).catch((e)=>{
+				assert(e);
+				bot.wss.close();
+			});	
 		});
 	});	
+	describe('#Setup WebSocket', function() {
+		it('Should setup a web socket server and send a message', function() {
+			setTimeout(()=>{
+				var client = new WebSocket("ws://127.0.0.1:7073");
+				client.onopen = (connected)=>{
+					client.send("Test Message");
+					client.close();
+				}
+			},700)
+			return bot.setupWebsocket().then(()=>{
+				bot.wss.close();
+			})
+		});
+	});		
 })
