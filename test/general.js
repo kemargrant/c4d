@@ -115,25 +115,30 @@ describe('General Functions', function() {
 		});
 	});
 	
-	describe('#Should send Slack Message', function() {
-		return it('Should send a slack message', async function() {
+	describe('#Should send Slack message', function() {
+		it('Should send a slack message', async function() {
 			var val = await bot.slackMessage("Hello World");
 			assert(val);
+		});
+		 it('Should get error sending Slack message', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsError;
+			return bot.slackMessage("Hello World").then((val)=>{
+				assert(!val);
+			});
 		});
 	});
 	
 	describe('#Setup WebSocket', function() {
-		return it('Should setup a web socket server and connect to it', function(done) {
+		return it('Should setup a web socket server and connect to it', function() {
 			var client = new WebSocket("ws://127.0.0.1:7073");
 			client.onopen = (connected)=>{
 				assert(connected);
 				client.terminate();
-				done();
 			}
 			client.onerror = (e) =>{
 				console.log("Error:",e.code);
 				assert(false);
-				done();
 			}	
 		});
 	});	
