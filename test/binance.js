@@ -578,11 +578,26 @@ describe('Binance', function() {
 	});
 	
 	describe('#Place and Remove Order', function() {
-		return it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
+		it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
 			var val = await binanceBot.binanceTrade("BTCUSDT","BUY",1.00,20.00,"GTC")
-			var val2 = await binanceBot.binanceCancelOrder("BTCUSDT",val.orderId);
+			var val2 = await binanceBot.binanceCancelOrder(val.orderId);
 			assert.equal(val2.symbol,"BTCUSDT");
 		});
+		it('Should return error parsing cancelOrder response', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsError;
+			return bot.binanceCancelOrder(1234).catch((e)=>{
+				assert.equal(e.message,'Uncaught, unspecified "error" event. (Error Data)');
+			})
+		});
+		it('Should return unexpected syntax error', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsBadData;
+			return bot.binanceCancelOrder(1234).catch((e)=>{
+				assert.equal(e.message,'Unexpected token x in JSON at position 0');
+			})
+		});		
+		
 	});	
 	describe('#Reject Binance Precision', function() {
 		var binanceBot = new CryptoBot.bot(mock.mockSettings1);
@@ -599,12 +614,13 @@ describe('Binance', function() {
 		});
 	});
 	(function(){describe('#Start Bot and catch binancePrecision error', function() {
-		it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
+		it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol',function() {
 			var Module = require('module');
 			var originalRequire = Module.prototype.require;
-			Module.prototype.require = function(){return {https:{"request":function(){return new Promise((resolve,reject)=>{reject()}); }}}};
+			Module.prototype.require = function(){return {https:{"request":()=>{return new Promise((resolve,reject)=>{reject()}); }}}};
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			assert.equal(JSON.stringify(binanceBot.binancePrec),"{}");
+			
 		});
 	});})()
 		

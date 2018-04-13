@@ -278,9 +278,6 @@ CryptoBot.prototype.binanceCancelOrder = function(pair,id){
 					if(parsed.length < 1){
 						return resolve([]);
 					}
-					else{
-						resolve(parsed);
-					}
 				}
 				catch(e){
 					this.log("Error:",e);
