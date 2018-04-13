@@ -388,6 +388,43 @@ describe('#Arbitrage', function() {
 			assert.equal(format,message);
 		});		
 	})
+	
+	describe('##binanceChecCondition', function() {	
+		var testBot = new CryptoBot.bot(mock.mockSettings1);
+		var base = 'ltcbtc';
+		testBot.MongoClient = mock.MongoClient;
+		testBot.DB = testBot.database();
+		testBot.https = mock.https;
+		testBot.email = mock.email;
+		testBot.binancePrec[base] = [6,2,2,2,6,5];
+		var pairs = ['ltcbtc','btcusdt','ltcusdt'];
+		var e1 = {'ltcbtc':'ltc'} 
+		var b1 = {'ltcbtc':'btc'} 
+		var u1 = {'ltcbtc':'usdt'} 		
+		testBot.liquidTradesBinance[base] = false;
+		testBot.binanceOptimalTrades[base] = true;
+		testBot.binanceLimits[base] = {over:{lowerLimit:100,upperLimit:104},under:{lowerLimit:99,upperLimit:99.9}}	
+		it('Should return false',function() {
+			testBot.binanceStrategy[base] = { 
+			one:{ 
+			     b: 8854,
+			     b_amount: 0.02048,
+			     c: 18.311,
+			     c_amount: 25,
+			     a: 0.00208,
+			     a_amount: 277.84 },
+			two: 
+			   { b: 8843.99,
+			     b_amount: 0.09,
+			     c: 18.321,
+			     c_amount: 4.102,
+			     a: 0.002072,
+			     a_amount: 66.05 } 
+			}
+			var val = testBot.binanceCheckConditions({btc:0.004889,usdt:43.23826711,ltc:2.36004},100.02045346869713,'ltcbtc','ltc','btc','usdt',18.321,18.321,66.05,0.09);
+			assert.equal(val,false)
+	});		
+	})
 
 });	
 	
