@@ -455,19 +455,37 @@ var _https = {
 	}
 }
 var _httpsError = {
-	request:function(options,func){
+	request:(options,func)=>{
 		const events = new MyEmitter();
 		var data = {};
 		func(events)
-		return events.emit("error","Error Data");
+		return{
+			write:()=>{},
+			end:()=>{events.emit("error","Error Data");},
+			on:()=>{
+				return {
+					write:()=>{},
+					end:()=>{events.emit("error","Error Data");},
+				}
+			}
+		}
 	}
 }
 var _httpsBadData = {
-	request:function(options,func){
+	request:(options,func)=>{
 		const events = new MyEmitter();
 		func(events)
+		return{
+			write:()=>{},
+			end:()=>{events.emit("data","x}");return events.emit("end");},
+			on:()=>{
+				return {
+					write:()=>{},
+					end:()=>{events.emit("data","x}");return events.emit("end");},
+				}
+			}
+		}
 		events.emit("data","x}");
-		return events.emit("end");;
 	}
 }
 
