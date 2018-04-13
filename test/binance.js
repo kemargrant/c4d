@@ -424,7 +424,7 @@ describe('Binance', function() {
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			binanceBot.https = mock.httpsError;
 			return binanceBot.binanceAccount().catch((val)=>{
-				assert.equal(val.message,'Uncaught, unspecified "error" event. (Error Data)')
+				assert.equal(val,'ERROR')
 			})
 		});
 		it('Account Data Error parsing data',function() {
@@ -587,7 +587,7 @@ describe('Binance', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.httpsError;
 			return bot.binanceCancelOrder(1234).catch((e)=>{
-				assert.equal(e.message,'Uncaught, unspecified "error" event. (Error Data)');
+				assert.equal(e,'ERROR');
 			})
 		});
 		it('Should return unexpected syntax error', function() {

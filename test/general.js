@@ -119,7 +119,7 @@ describe('General Functions', function() {
 		});
 		 it('Should get error sending Slack message', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			bot.https = mock.httpsError;
+			bot.https = mock.httpsError2;
 			return bot.slackMessage("Hello World").then((val)=>{
 				assert(!val);
 			});

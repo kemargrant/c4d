@@ -455,20 +455,21 @@ var _https = {
 	}
 }
 var _httpsError = {
-	request:(options,func)=>{
-		const events = new MyEmitter();
-		var data = {};
-		func(events)
+	request:()=>{
 		return{
 			write:()=>{},
-			end:()=>{events.emit("error","Error Data");},
-			on:()=>{
-				return {
-					write:()=>{},
-					end:()=>{events.emit("error","Error Data");},
-				}
+			end:()=>{},
+			on:(x,func)=>{
+				return func("ERROR")
 			}
 		}
+	}
+}
+var _httpsError2 = {
+	request:(option,func)=>{
+		const events = new MyEmitter();
+		func(events);
+		events.emit("error","ERROR");
 	}
 }
 var _httpsBadData = {
@@ -1107,6 +1108,7 @@ module.exports = {
 	email:_email,
 	https:_https,
 	httpsError:_httpsError,
+	httpsError2:_httpsError2,
 	httpsBadData:_httpsBadData,
 	MongoClient:_MongoClient,
 	MongoClient2:_MongoClient2,
