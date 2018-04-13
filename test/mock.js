@@ -437,6 +437,11 @@ var _https = {
 		}
 		func(events)
 		return {
+			write:()=>{},
+			end:()=>{
+				events.emit("data",JSON.stringify(data));
+				events.emit("end")
+			},
 			on:()=>{
 				return {
 					write:()=>{},
