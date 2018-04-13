@@ -436,8 +436,17 @@ var _https = {
 			return rhttps.request(options,func);		
 		}
 		func(events)
-		events.emit("data",JSON.stringify(data));
-		return events.emit("end");
+		return {
+			on:()=>{
+				return {
+					write:()=>{},
+					end:()=>{
+						events.emit("data",JSON.stringify(data));
+						events.emit("end")
+					},
+				}
+			}
+		}
 	}
 }
 var _httpsError = {
