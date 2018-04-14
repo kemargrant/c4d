@@ -519,6 +519,16 @@ describe('Binance', function() {
 		
 	});	
 
+	describe('#ListenUser', function() {
+		return it('Should return an Error', function() {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.binanceListenKey = function(){
+				return new Promise((resolve,reject)=>reject("Error"))
+			}
+			return binanceBot.binanceListenUser().catch(e=>assert.equal(e,"Error"));
+		});
+	})
+
 	describe('#Keep Alive', function() {
 		return it('Should return an empty object', async function() {
 			var val = await binanceBot.binanceListenKey();
