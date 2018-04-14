@@ -491,10 +491,32 @@ describe('Binance', function() {
 	});  	
 	
 	describe('#Listen Key', function() {
-		return it('Should return a user listen key of 60 characters', async function() {
+		it('Should return a user listen key of 60 characters', async function() {
 			var val = await binanceBot.binanceListenKey()
 			assert.equal(val.length,60);				
 		});
+		it('Should return an Error', function() {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.https = mock.httpsError
+			return binanceBot.binanceListenKey().catch((e)=>{
+				assert.equal(e,"ERROR");				
+			})
+		});
+		it('Should return an Error', function() {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.https = mock.httpsBadData
+			return binanceBot.binanceListenKey().catch((e)=>{
+				assert.equal(e,"SyntaxError: Unexpected token x in JSON at position 0");				
+			})
+		});	
+		it('Should return an Error (listen Key missing)', function() {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.https = mock.httpsEmptyData
+			return binanceBot.binanceListenKey().catch((e)=>{
+				assert.equal(e.message,"Error Getting Binance Listen Key");				
+			})
+		});				
+		
 	});	
 
 	describe('#Keep Alive', function() {
