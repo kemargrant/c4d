@@ -633,7 +633,14 @@ describe('Binance', function() {
 			return bot.binanceCancelOrder(1234).catch((e)=>{
 				assert.equal(e.message,'Unexpected token x in JSON at position 0');
 			})
-		});		
+		});	
+		it('Should return an empty list', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsEmptyData;
+			return bot.binanceCancelOrder(1234).then((val)=>{
+				assert.equal(val.length,0);
+			})
+		});				
 		
 	});	
 	describe('#Reject Binance Precision', function() {

@@ -490,6 +490,23 @@ var _httpsBadData = {
 	}
 }
 
+var _httpsEmptyData = {
+	request:(options,func)=>{
+		const events = new MyEmitter();
+		func(events)
+		return{
+			write:()=>{},
+			end:()=>{events.emit("data","[]");return events.emit("end");},
+			on:()=>{
+				return {
+					write:()=>{},
+					end:()=>{events.emit("data","[]");return events.emit("end");},
+				}
+			}
+		}
+	}
+}
+
 var _MongoClient = {
 	connect:function(string,func){
 		var database = {
@@ -1110,6 +1127,7 @@ module.exports = {
 	httpsError:_httpsError,
 	httpsError2:_httpsError2,
 	httpsBadData:_httpsBadData,
+	httpsEmptyData:_httpsEmptyData,
 	MongoClient:_MongoClient,
 	MongoClient2:_MongoClient2,
 	binanceMessages:_binanceMessages,
