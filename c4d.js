@@ -435,19 +435,10 @@ CryptoBot.prototype.binanceListenBeat = function(listenkey){
 	        var body = '';
 	        response.on('data',(d)=> {body += d;});
 	        response.on('end',()=> {
-				var parsed;
-				try{
-					parsed = JSON.parse(body);
-					if(parsed.length < 1){
-						return reject(new Error("Error Listening to Binance User Account"));
-					}
-					else{resolve(parsed)}
+				if(body != "{}"){
+					return reject(body)
 				}
-				catch(e){
-					this.log("Error:",e);
-					return reject(e);
-				}		
-	            return resolve(parsed);
+				return resolve(body)
 	        });
 	    }).on('error',(e)=>{
 			return reject(e);

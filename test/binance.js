@@ -501,9 +501,26 @@ describe('Binance', function() {
 		return it('Should return an empty object', async function() {
 			var val = await binanceBot.binanceListenKey();
 			var val2 = await binanceBot.binanceListenBeat(val);
-			assert.equal(JSON.stringify(val2),"{}");
+			assert.equal(val2,"{}");
 		});
 	});
+	
+	describe('#binanceListenBeat', function() {
+		it('Should return a rejected promise with a "x}"', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsBadData;
+			return bot.binanceListenBeat("xyz").catch((e)=>{
+				assert.equal(e,'x}');
+			})
+		});
+		it('Should return a rejected promise with Error', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsError;
+			return bot.binanceListenBeat("xyz").catch((e)=>{
+				assert.equal(e,'ERROR');
+			})
+		});
+	});	
 
 	describe('#ParseUserEvent - outboundAction', function() {
 		it('Should return true',function() {
