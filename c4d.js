@@ -504,7 +504,10 @@ CryptoBot.prototype.binanceListenUser = function(){
 		.then((key)=>{
 			setInterval(()=>{return this.binanceListenBeat(key).catch((e)=>{this.log(e);});},120000);
 			return resolve(this.binanceUserStream(key));
-		}).catch((e)=>{this.log(e);return reject(e);});
+		}).catch((e)=>{
+			this.log(e);
+			return reject(e);
+		});
 	})
 }
 
@@ -653,7 +656,7 @@ CryptoBot.prototype.binanceParseUserEvent = function(message,pairs){
 			return true;									
 		}
 		catch(e){
-			this.log("Error:",e);
+			this.log("Error parsing user event:",e,new Date());
 			return false;
 		}
 	}
