@@ -475,12 +475,11 @@ describe('Binance', function() {
 	
 	describe('#Precision', function() {			
 		it('Should format precision data for ltc/btc/usdt pairs', function(done) {
-			this.timeout(4000);
 			var zBot = new CryptoBot.bot(mock.mockSettings1);
 			setTimeout(()=>{
 				assert.deepEqual(zBot.Settings.Binance.pairs[0].prec,[6,2,2,2,6,5]);
 				done();
-			},3000);			
+			},1500);			
 		});			
 	});		
 		
@@ -650,18 +649,32 @@ describe('Binance', function() {
 				reject(false);
 			});
 		}
-		it('Should reject and resolve false', function(done) {
-			binanceBot.binancePrecision([{pair1:'ltcbtc',pair2:'btcusdt',pair3:'ltcusdt'}]).catch((val)=>{
+		it('Should reject and resolve false', function() {
+			return binanceBot.binancePrecision([{pair1:'ltcbtc',pair2:'btcusdt',pair3:'ltcusdt'}]).catch((val)=>{
 				assert.equal(val,false);
-				done();
 			})
 		});
 	});
+	describe('#binanceExchangeInfo', function() {
+		var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+		binanceBot.https = mock.httpsBadData;		
+		it('Should reject and resolve false', function() {
+			return binanceBot.binanceExchangeInfo().catch((e)=>{
+				assert.equal(e,'SyntaxError: Unexpected token x in JSON at position 0');
+			})
+		});
+		it('Should reject and resolve false', function() {
+			binanceBot.https = mock.httpsError;
+			return binanceBot.binanceExchangeInfo().catch((e)=>{
+				assert.equal(e,'ERROR');
+			})
+		});
+	});	
 	(function(){describe('#Start Bot and catch binancePrecision error', function() {
 		it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol',function() {
 			var Module = require('module');
 			var originalRequire = Module.prototype.require;
-			Module.prototype.require = function(){return {https:{"request":()=>{return new Promise((resolve,reject)=>{reject()}); }}}};
+			Module.prototype.require = function(){return {https:{"request":function(){return new Promise((resolve,reject)=>{reject()}); }}}};
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			assert.equal(JSON.stringify(binanceBot.binancePrec),"{}");
 			

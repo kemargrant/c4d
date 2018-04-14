@@ -373,12 +373,9 @@ CryptoBot.prototype.binanceExchangeInfo = function(){
 				var parsed;
 				try{
 					parsed = JSON.parse(body);
-					if(parsed.length < 1){
-						return reject(new Error("Error Listening to Binance User Account"));
-					}
 				}
 				catch(e){
-					this.log("Error:",e);
+					this.log("Exchange Info Error:",e,new Date());
 					return reject(e);
 				}		
 	            return resolve(parsed);
