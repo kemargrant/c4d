@@ -804,7 +804,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 			break;
 		}
 	}	
-	client.onclose = (error)=> {
+	client.onclose = ()=> {
 	    this.log(pair+'- Binance Connection Closed:',new Date());
 	        return setTimeout(()=>{
 				if(!this.binanceKill){

@@ -716,13 +716,42 @@ describe('Binance', function() {
 		});
 	});		
 	
-	describe('#Stream', function() {
+	describe('#Monitor', function() {
 		it('Should return a connected websocket',function() {
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			var list = binanceBot.binanceMonitor([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
+			list.forEach((client)=>{
+				client.onclose = null;
+				try{client.terminate()}catch(e){console.log(e)}
+			})
 			assert(list.length > 2);
 		});
 	});
+	
+	describe('#Stream', function() {
+		it('Should return undefined',function() {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.binanceMarket = ""
+			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
+			assert(!client);
+		});
+		it('Should return a different client',function(done) {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
+			var prev = client._req
+			client.emit("close");
+			setTimeout(()=>{
+				assert(prev !== client._req)
+				done()	
+			},1100)
+		});
+		it('Should catch error processing message',function(done) {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
+			var x = client.emit("message",null);
+			assert.equal(x,true)			
+		});
+	});	
 	
 	describe('#Place and Remove Order', function() {
 		it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
