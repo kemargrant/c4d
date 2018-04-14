@@ -484,9 +484,30 @@ describe('Binance', function() {
 	});		
 		
 	describe('#Get Orders', function() {
-		return it('Should return a list of open orders for btcusdt', async function() {
+		it('Should return a list of open orders for btcusdt', async function() {
 			var val = await binanceBot.binanceOpenOrders("BTCUSDT");
 			assert(val instanceof Array)
+		})
+		it('Should return a empty list', function() {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.https = mock.httpsEmptyData;
+			return binanceBot.binanceOpenOrders("BTCUSDT").then((val)=>{
+				assert.equal(val.length,0)
+			});
+		})
+		it('Should return an error', function() {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.https = mock.httpsError;
+			return binanceBot.binanceOpenOrders("BTCUSDT").catch((e)=>{
+				assert.equal(e,"ERROR")
+			});
+		})
+		it('Should return a parsing Error',function() {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.https = mock.httpsBadData;
+			return binanceBot.binanceOpenOrders("BTCUSDT").catch((e)=>{
+				assert.equal(e.message,"Unexpected token x in JSON at position 0")
+			});
 		})
 	});  	
 	
