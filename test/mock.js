@@ -593,6 +593,43 @@ var _MongoClient3 = {
 	}
 }
 
+var _MongoClient4 = {
+	connect:function(string,func){
+		var database = {
+			createCollection:function(coll,opts,func){
+				func(true);
+			},
+			collection:(_name)=>{
+				var simpleDB = [{OrderUuid:123456789,text:"hello world"}]
+				return {
+					createIndex:function(x,y){
+						console.log(_name," collection created");
+					},
+					find:function(){
+						return {
+							toArray:function(func){return func(new Error("find error"),simpleDB)}
+						}
+					},
+					insert:function(x,y,func){
+						simpleDB.push[x];
+						func(false,true);
+					},
+					remove:function(x,func){
+						func(false,true);
+					},
+					update:function(x,y,z,func){func(false,true);}
+				};
+			}
+		}
+		var dbConnection = {
+			db:function(){
+				return database;
+			}
+		}
+		return func(undefined,dbConnection);
+	}
+}
+
 
 var settings1 ={
 	"Binance":
@@ -1146,6 +1183,7 @@ module.exports = {
 	MongoClient:_MongoClient,
 	MongoClient2:_MongoClient2,
 	MongoClient3:_MongoClient3,
+	MongoClient4:_MongoClient4,
 	binanceMessages:_binanceMessages,
 	binanceUserEvents: [userevent1,userevent2,userevent3],
 	bittrexBook:_book,
