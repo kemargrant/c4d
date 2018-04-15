@@ -2239,7 +2239,7 @@ CryptoBot.prototype.serverCommand = function(message,ws){
 					return resolve(true);													
 				}).catch((e)=>{
 					this.log(e);
-					return reject(e);
+					return resolve(false);
 				});			
 			})					
 		}						

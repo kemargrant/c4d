@@ -208,14 +208,19 @@ describe('Binance Server Commands (Network)', function() {
 				assert(bot.binanceSocketConnections.length > 0);
 			},2000);
 		});
-		it('Should deactivate Binance', function() {
-			bot.serverCommand(encrypt({'command':'binance_control','bool':false}));
+		it('Should deactivate Binance', function(done) {
+			this.timeout(3100);
 			setTimeout(()=>{
-				assert(bot.binanceSocketConnections.length === 0);
+				for(var i=0;i< bot.binanceSocketConnections.length;i++){
+					bot.binanceSocketConnections[i].terminate = function(){};
+				}
+				bot.serverCommand(encrypt({'command':'binance_control','bool':false}));
+				assert.equal(bot.binanceSocketConnections.length,0);
 				for(var i=0;i< bot.binanceSocketConnections.length;i++){
 					bot.binanceSocketConnections[i].onclose = dummy;
 					bot.binanceSocketConnections[i].close();
 				}
+				done()
 			},3000);
 		});
 	});	 		 	
@@ -223,7 +228,30 @@ describe('Binance Server Commands (Network)', function() {
 		it('Should resolve true', async function() {
 			assert(await bot.serverCommand(encrypt({'command':'binance_orders'}),ws))
 		});
-	});		
+	});	
+	describe('#binance_orders - (send error)', function() {
+		var bot = new CryptoBot.bot(mock.mockSettings1);
+		bot.https = mock.https;
+		var ws = {
+			send:function(){throw new Error("send error")}
+		}
+		it('Should reject an error', function() {
+			return bot.serverCommand(encrypt({'command':'binance_orders'}),ws).catch((e)=>{
+				assert.equal(e.message,"send error");
+			})
+		});
+	});
+	describe('#binance_orders - (api error)', function() {
+		var bot = new CryptoBot.bot(mock.mockSettings1);
+		bot.https = mock.httpsError;
+		var ws = {send:function(){}}
+		it('Should reject an error', function() {
+			return bot.serverCommand(encrypt({'command':'binance_orders'}),ws).catch((e)=>{
+				assert.equal(e,"ERROR");
+			})
+		});
+	});
+				
 });
 
 describe('Bittrex Server Commands (Network)', function() {
@@ -263,9 +291,17 @@ describe('Bittrex Server Commands (Network)', function() {
 				assert(val);
 			});
 		});
-		it('Should should stop bittrex stream', function() {
-			var val = bot.serverCommand(encrypt({'command':'bittrex_control','bool':false}))
-			assert(val);
+		it('Should should stop bittrex stream', function(done) {
+			this.timeout(3000)
+			setTimeout(()=>{
+				_r = bot.bittrexSocketConnection.close;
+				bot.bittrexSocketConnection.close = function(){
+					return setTimeout(()=>{_r()},1000)
+				};
+				var val = bot.serverCommand(encrypt({'command':'bittrex_control','bool':false}))
+				assert(val);
+				done()
+			},2000);
 		});					
 	});			
 	bot.MongoClient = mock.MongoClient;
@@ -274,11 +310,27 @@ describe('Bittrex Server Commands (Network)', function() {
 		it('Should return true',async function() {
 			assert(await bot.serverCommand(encrypt({'command':'bittrex_db','db':'trade'}),ws))
 		});
+		it('Should return an Error',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var ws = {
+				send:function(){throw new Error("send error")}
+			}
+			return bot.serverCommand(encrypt({'command':'bittrex_db','db':'trade'}),ws).then((e)=>{
+				assert.equal(e,false);
+			});
+		});		
 	});			 
 	describe('#bittrex_orders', function() {
 		it('Should return true', async function() {
 			assert(await bot.serverCommand(encrypt({'command':'bittrex_orders'}),ws))
 		});
+		it('Should return an Error', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsError2;
+			return bot.serverCommand(encrypt({'command':'bittrex_orders'}),ws).then((e)=>{
+				assert.equal(e,false);
+			});
+		});		
 	});	
 });
 
