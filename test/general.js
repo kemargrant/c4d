@@ -93,9 +93,9 @@ describe('General Functions', function() {
 		it('Should return a general error', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.MongoClient = mock.MongoClient4;
-			bot.log = null
-			return bot.saveDB("trade",{},{method:"update"}).catch((e)=>{
-				assert.equal(e.message,"this.log is not a function");
+			bot.database = null;
+			return bot.saveDB("trade",{},{method:"update"}).then((e)=>{
+				assert.equal(e.message,"this.database is not a function");
 			})
 		});									
 	});		
@@ -136,9 +136,9 @@ describe('General Functions', function() {
 		it('Should return error retrieving (general error)', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.MongoClient = mock.MongoClient4;
-			bot.log = null
-			return bot.retrieveDB("trade",{query:{}}).catch((e)=>{
-				assert.equal(e.message,"this.log is not a function");
+			bot.database = null
+			return bot.retrieveDB("trade",{query:{}}).then((e)=>{
+				assert.equal(e.message,"this.database is not a function");
 			})
 			
 		});						
