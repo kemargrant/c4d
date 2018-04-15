@@ -71,6 +71,50 @@ describe('General Functions', function() {
 		});
 	});		
 	
+	describe('#Retrieve database', function() {
+		it('Should retrieve records from the database', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.MongoClient = mock.MongoClient;
+			return bot.retrieveDB("trade").then((orders)=>{
+				assert(orders.length > 0)
+			})
+			
+		});
+		it('Should return error retrieving from the database', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.MongoClient = mock.MongoClient4;
+			return bot.retrieveDB("trade").catch((e)=>{
+				assert.equal(e.message,"find error");
+			})
+			
+		});	
+		it('Should retrieve records from the database (options)', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.MongoClient = mock.MongoClient;
+			return bot.retrieveDB("trade",{query:{}}).then((orders)=>{
+				assert(orders.length > 0)
+			})
+			
+		});
+		it('Should return error retrieving from the database (options)', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.MongoClient = mock.MongoClient4;
+			return bot.retrieveDB("trade",{query:{}}).catch((e)=>{
+				assert.equal(e.message,"find error");
+			})
+			
+		});	
+		it('Should return error retrieving (general error)', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.MongoClient = mock.MongoClient4;
+			bot.log = null
+			return bot.retrieveDB("trade",{query:{}}).catch((e)=>{
+				assert.equal(e.message,"this.log is not a function");
+			})
+			
+		});						
+	});			
+	
 	describe('#Log', function() {
 		var bot = new CryptoBot.bot(mock.mockSettings1);
 		it('Should log a message', function() {
