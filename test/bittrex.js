@@ -51,10 +51,17 @@ describe('Bittrex', function() {
 	});
 	
 	describe('#Get Open Orders', function() {
-		return it('Should return open orders list', async function() {
+		it('Should return open orders list', async function() {
 			var val = await bot.bittrexGetOrders();
 			assert(val instanceof Array)
 		});
+		it('Should catch an error', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsError2;
+			return bot.bittrexGetOrders().catch((e)=>{
+				assert.equal(e,"ERROR")
+			});
+		});		
 	});	
 	
 	describe('#Complete Arbitrage', function() {
