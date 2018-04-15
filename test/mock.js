@@ -581,6 +581,18 @@ var _MongoClient2 = {
 	}
 }
 
+var _MongoClient3 = {
+	connect:function(x,func){
+		var database = {}
+		var dbConnection = {
+			db:function(){
+				return database;
+			}
+		}
+		return func(true,dbConnection);
+	}
+}
+
 
 var settings1 ={
 	"Binance":
@@ -1133,6 +1145,7 @@ module.exports = {
 	httpsEmptyData:_httpsEmptyData,
 	MongoClient:_MongoClient,
 	MongoClient2:_MongoClient2,
+	MongoClient3:_MongoClient3,
 	binanceMessages:_binanceMessages,
 	binanceUserEvents: [userevent1,userevent2,userevent3],
 	bittrexBook:_book,
