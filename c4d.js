@@ -1760,10 +1760,7 @@ CryptoBot.prototype.bittrexTrade = function(type,pair,quantity,rate,options){
 					if(!options){
 						this.saveDB("order",{"uuid":result.uuid,"order":order});
 					}
-				}).catch((e)=>{
-						this.log("Error Saving Order:",e,new Date());
-						return reject(e);
-					});	
+				})	
 				return resolve(result);	
 			}
 			else{
