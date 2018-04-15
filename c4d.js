@@ -2070,7 +2070,7 @@ CryptoBot.prototype.saveDB = function(type,doc,options){
 				return this.DB[type].insert(doc, {w:1},(err, result)=> {
 					if(err){
 						this.log("Error adding "+type+" to DB:",err);
-						return resolve(new Error("Error adding "+type+" to DB:",err));
+						return resolve(err);
 					}
 					else{
 						this.log(type+" added to DB:",new Date());
@@ -2083,7 +2083,7 @@ CryptoBot.prototype.saveDB = function(type,doc,options){
 					return this.DB[type][options.method](options.query,(err, result)=> {
 						if(err){
 							this.log("Error Removing "+type+" in DB:",err);
-							return resolve(new Error("Error Removing "+type+" in DB:",err));
+							return resolve(err);
 						}
 						else{
 							this.log(type+" removed from DB");
@@ -2094,7 +2094,7 @@ CryptoBot.prototype.saveDB = function(type,doc,options){
 				return this.DB[type][options.method](options.query,options.modifier,options.extra,(err, result)=> {
 					if(err){
 						this.log("Error updating "+type+" in DB:",err);
-						return resolve(false);
+						return resolve(err);
 					}
 					else{
 						this.log(type+" updated in DB");
