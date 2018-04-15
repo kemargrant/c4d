@@ -169,6 +169,9 @@ describe('General Functions', function() {
 	describe('#Notify', function() {
 		 it('Should catch errors notify user', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var error = function(){throw new Error("error");}
+			bot.sendEmail = error;
+			bot.slackMessage = error;
 			bot.https = mock.httpsError;
 			var val = bot.notify("Hello World")
 			assert(val);
