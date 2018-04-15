@@ -37,12 +37,19 @@ describe('General Functions', function() {
 		});	
 	});
 	describe('#Connect To Database Error', function() {
-		it('Should return a db connection with trade and balance collections', function() {
-			var bot = new CryptoBot.bot(mock.mockSettings1);
+		it('Should return an empty db', function() {
+			let bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.MongoClient = mock.MongoClient3;
 			bot.DB = bot.database();
 			assert.equal(JSON.stringify(bot.DB),"{}");
 		});	
+		it('Should return an empty db', function() {
+			let bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.Settings.MongoDB.connect = false;
+			bot.DB = bot.database();
+			assert.equal(JSON.stringify(bot.DB),"{}");
+			bot.Settings.MongoDB.connect = true;
+		});			
 	});	
 	
 	describe('#Save to Database', function() {
