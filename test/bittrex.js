@@ -33,10 +33,21 @@ describe('Bittrex', function() {
 	});
 	
 	describe('#Account Data', function() {
-		return it('Should return account data', async function() {
+		it('Should return account data', async function() {
 			var val = await bot.bittrexAccount();
 			assert.equal(typeof val,"object")
 		});
+		it('Should catch error getting account data', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexAPI = function(){
+				return new Promise((resolve,reject)=>{
+					return resolve(null)
+				})
+			}
+			return bot.bittrexAccount().catch((e)=>{
+				assert.equal(e.message,"Error getting Bittrex account info")
+			})
+		});		
 	});
 	
 	describe('#Get Open Orders', function() {
