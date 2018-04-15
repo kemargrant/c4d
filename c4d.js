@@ -1842,30 +1842,24 @@ CryptoBot.prototype.broadcastMessage = function(data){
    * Prepare Bittrex arbitrage orders to be monitored.
    * @method completedTrades
    * @param {Object} Object with 3 Bittrex order uuids as keys
+   * @return Returns a setTimeout object or false
    */
 CryptoBot.prototype.completedTrades = function(_orders) {
-	try{
-		var orders = {}
-		if(!_orders){
-			this.log("Error Completing Trades");
-			this.bittrexInProcess = false;
-			this.bittrexProcessTime = 0;
-			this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
-		}
-		for(var key in _orders){
-			orders[_orders[key]['uuid']] = false;
-		}
-		return setTimeout(()=>{
-			this.bittrexCompleteArbitrage(orders);
-			this.saveDB("trade",{"Exchange":"Bittrex","Time":new Date().getTime(),Orders:orders,"Percent":this.Transactions.percentage,"Before":this.Transactions.before,"After":this.Transactions.after,"Profit":this.Transactions.profit});
-		},10000);
-	}
-	catch(e){
-		this.log("Error Completing Trades:",e);
+	var orders = {}
+	if(!_orders){
+		this.log("Error Completing Trades");
 		this.bittrexInProcess = false;
 		this.bittrexProcessTime = 0;
 		this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
+		return false;
 	}
+	for(var key in _orders){
+		orders[_orders[key]['uuid']] = false;
+	}
+	return setTimeout(()=>{
+		this.bittrexCompleteArbitrage(orders);
+		this.saveDB("trade",{"Exchange":"Bittrex","Time":new Date().getTime(),Orders:orders,"Percent":this.Transactions.percentage,"Before":this.Transactions.before,"After":this.Transactions.after,"Profit":this.Transactions.profit});
+	},10000);
 }
 
 /**
