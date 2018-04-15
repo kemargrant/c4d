@@ -1869,7 +1869,7 @@ CryptoBot.prototype.database = function(){
 			this.MongoClient.connect(this.Settings.MongoDB.db_string, (err, client)=>{
 				var db = client.db(this.Settings.MongoDB.db_string.split("/")[this.Settings.MongoDB.db_string.split("/").length - 1]);
 				if(err) { 
-					return (this.log("Unable to connect to the database:",err)); 
+					this.log("Unable to connect to the database:",err); 
 				}
 				else{
 					db.createCollection('bittrexBalance',{strict:true},(err,collection)=>{ 

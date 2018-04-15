@@ -22,7 +22,7 @@ describe('General Functions', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			var _mockSettings = mock.mockSettings1;
 			var empty = bot.database();
-			assert(JSON.stringify(empty),"{}");
+			assert.equal(JSON.stringify(empty),"{}");
 			console.log = old;
 		});		
 	});
@@ -36,7 +36,14 @@ describe('General Functions', function() {
 			assert((x && y) !== undefined);
 		});	
 	});
-	
+	describe('#Connect To Database Error', function() {
+		it('Should return a db connection with trade and balance collections', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.MongoClient = mock.MongoClient3;
+			bot.DB = bot.database();
+			assert.equal(JSON.stringify(bot.DB),"{}");
+		});	
+	});	
 	
 	describe('#Save to Database', function() {
 		it('Should save and delete record from the database', function(done) {
