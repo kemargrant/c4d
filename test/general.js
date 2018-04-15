@@ -14,7 +14,8 @@ describe('General Functions', function() {
 		it('Should return a db connection with trade and balance collections', function() {
 			var x = bot.DB.balance;
 			var y = bot.DB.trade;
-			assert((x && y) !== undefined);
+			console.log(x,y)
+			assert(x && y);
 		});
 		it('Should return empty DB', function() {
 			let old = console.log
@@ -53,22 +54,50 @@ describe('General Functions', function() {
 	});	
 	
 	describe('#Save to Database', function() {
-		it('Should save and delete record from the database', function(done) {
-			this.timeout(2000);
-			var date = new Date().getTime();
-			setTimeout( async function(){
-				var x = await bot.saveDB("trade",{"UUID":date});
-				var y = await bot.saveDB("trade",{},{method:"remove",query:{'UUID':date}});	
-				try{
-					console.log(x,y)
-					assert(x && y,true);
-					done();
-				}
-				catch(e){
-					done(e);
-				}
-			},150)
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.MongoClient = mock.MongoClient;
+		it('Should return an error', async function() {
+			bot.Settings.MongoDB.connect = false;
+			bot.saveDB("trade",{}).catch((e)=>{
+				assert.equal(e.message,"MongoDB setting error");
+			})
 		});
+		it('Should save and delete record from the database', async function() {
+			bot.Settings.MongoDB.connect = true;
+			var date = new Date().getTime();
+			var x = await bot.saveDB("trade",{"UUID":date});
+			var y = await bot.saveDB("trade",{},{method:"remove",query:{'UUID':date}});	
+			assert.equal(x && y,true);
+		});	
+		it('Should return an insert error', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.MongoClient = mock.MongoClient4;
+			return bot.saveDB("trade",{}).then((e)=>{
+				assert.equal(e.message,"insert error");
+			})
+		});	
+		it('Should return a remove error', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.MongoClient = mock.MongoClient4;
+			return bot.saveDB("trade",{},{method:"remove"}).then((e)=>{
+				assert.equal(e.message,"remove error");
+			})
+		});		
+		it('Should return an update error', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.MongoClient = mock.MongoClient4;
+			return bot.saveDB("trade",{},{method:"update"}).then((e)=>{
+				assert.equal(e.message,"update error");
+			})
+		});	
+		it('Should return a general error', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.MongoClient = mock.MongoClient4;
+			bot.log = null
+			return bot.saveDB("trade",{},{method:"update"}).catch((e)=>{
+				assert.equal(e.message,"this.log is not a function");
+			})
+		});									
 	});		
 	
 	describe('#Retrieve database', function() {

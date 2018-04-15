@@ -612,12 +612,12 @@ var _MongoClient4 = {
 					},
 					insert:function(x,y,func){
 						simpleDB.push[x];
-						func(false,true);
+						func(new Error("insert error"),true);
 					},
 					remove:function(x,func){
-						func(false,true);
+						func(new Error("remove error"),true);
 					},
-					update:function(x,y,z,func){func(false,true);}
+					update:function(x,y,z,func){func(new Error("update error"),true);}
 				};
 			}
 		}
