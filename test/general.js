@@ -121,8 +121,17 @@ describe('General Functions', function() {
 				assert(e.message,"cb error");
 			})			
 		});
-	});	
-	describe('#NiceOrderChain - Function Error', function() {
+	});		
+	(function (){describe('#NiceOrderChain - 2', function() {
+		it('Should return a promise', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.cb = function(){}
+			bot.add = function(x,y){return new Promise(function(resolve,reject){resolve(x+y)})}
+			var y = Promise.resolve(bot.niceOrderChain([bot.add,bot.add,bot.cb],{}).chain([[1,1],[1,1]]))
+			assert(y instanceof Promise);
+		});
+	});})()		
+	describe('#NiceOrderChain - 2 Function Error', function() {
 		it('Should return an error', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.cb = function (red){
@@ -130,21 +139,11 @@ describe('General Functions', function() {
 			}
 			bot.add = function(x,y){return new Promise((resolve,reject)=>reject(new Error("func error")))}
 			var answer = {}
-			return bot.niceOrderChain([bot.add,bot.cb],answer).chain([[1,1]]).catch((e)=>{
+			return bot.niceOrderChain([bot.add,bot.add,bot.cb],answer).chain([[1,1],[1,2]]).catch((e)=>{
 				assert(e.message,"func error");
 			})			
 		});
 	});		
-	(function (){describe('#NiceOrderChain - 2', function() {
-		it('Should return a promise', function(done) {
-			var bot = new CryptoBot.bot(mock.mockSettings1);
-			bot.cb = function(){}
-			bot.add = function(x,y){return new Promise(function(resolve,reject){resolve(x+y)})}
-			var y = Promise.resolve(bot.niceOrderChain([bot.add,bot.add,bot.cb],{}).chain([[1,1],[1,1]]))
-			assert(y instanceof Promise);
-			done();;
-		});
-	});})()			
 	describe('#Send Email', function() {
 		return it('Should send an email message', async function() {
 			bot.email = mock.email;
