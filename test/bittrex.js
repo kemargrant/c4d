@@ -74,6 +74,27 @@ describe('Bittrex', function() {
 				done()
 			})
 		});
+		it('Should return an error', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsError2;
+			return bot.bittrexDepthPure('USDT-BTC').catch((e)=>{
+				assert.equal(e,"ERROR");
+			})
+		});
+		it('Should return an error (empty data)', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsEmptyData;
+			return bot.bittrexDepthPure('USDT-BTC').catch((e)=>{
+				assert.equal(e,"Error:[]");
+			})
+		});	
+		it('Should return an error (bad data)', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsBadData;
+			return bot.bittrexDepthPure('USDT-BTC').catch((e)=>{
+				assert(!e);
+			})
+		});				
 	});		
 
 	describe('#Cancel Order', function() {
