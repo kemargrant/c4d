@@ -109,6 +109,32 @@ describe('General Functions', function() {
 			bot.niceOrderChain([bot.add,bot.cb],answer).chain([[1,1]])			
 		});
 	});
+	describe('#NiceOrderChain - CB Error', function() {
+		it('Should return an error', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.cb = function (red){
+				throw new Error("cb error")
+			}
+			bot.add = function(x,y){return new Promise((resolve,reject)=>resolve(x+y))}
+			var answer = {}
+			return bot.niceOrderChain([bot.add,bot.cb],answer).chain([[1,1]]).catch((e)=>{
+				assert(e.message,"cb error");
+			})			
+		});
+	});	
+	describe('#NiceOrderChain - Function Error', function() {
+		it('Should return an error', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.cb = function (red){
+				return true;
+			}
+			bot.add = function(x,y){return new Promise((resolve,reject)=>reject(new Error("func error")))}
+			var answer = {}
+			return bot.niceOrderChain([bot.add,bot.cb],answer).chain([[1,1]]).catch((e)=>{
+				assert(e.message,"func error");
+			})			
+		});
+	});		
 	(function (){describe('#NiceOrderChain - 2', function() {
 		it('Should return a promise', function(done) {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
