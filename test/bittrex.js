@@ -139,11 +139,16 @@ describe('Bittrex', function() {
 		});	
 	});
 
+	
 	describe('#Completed Trades', function() {
 		it('Should return a settimeout object', function() {
 			var val = bot.completedTrades(['xxxx']);
-			assert.equal(Number(val._idleStart > 0),true);
-			clearTimeout(val);
+			var _setTimeout = setTimeout
+			setTimeout = function(x,y){
+				return _setTimeout(x,10)
+			}
+			assert.equal(typeof val._idleTimeout,"number");
+			setTimeout = _setTimeout;
 		});
 		it('Should reset bittrexProcess (orders is null)', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
