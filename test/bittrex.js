@@ -114,7 +114,7 @@ describe('Bittrex', function() {
 		});
 		it('Should return false (empty data)', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			bot.https = mock.httpsEmptyData
+			bot.https = mock.httpsEmptyData;
 			return bot.bittrexCancelOrder().catch((e)=>{
 				assert.equal(e,false);
 			})
@@ -128,6 +128,16 @@ describe('Bittrex', function() {
 			assert.equal(val2.success,true);
 		});
 	});	
+
+	describe('#Trades', function() {
+		it('Should return a settimeout object', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsError2;
+			return bot.bittrexTrade("buy","USDT-BTC",1,20.00).catch((e)=>{
+				assert.equal(e,"ERROR");
+			});
+		});
+	});
 
 	describe('#Completed Trades', function() {
 		return it('Should return a settimeout object', function() {
@@ -146,6 +156,10 @@ describe('Bittrex', function() {
 		})
 
 		describe('#Swing',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.email = mock.email;
+			bot.MongoClient = mock.MongoClient;
+			bot.DB = bot.database();
 			it('Should return 2', async function() {
 				var val = await bot.bittrexSwing();
 				clearTimeout(val);
@@ -156,6 +170,13 @@ describe('Bittrex', function() {
 				var val = await bot.bittrexSwing();
 				assert.equal(val.status,0);
 			});
+			it('Should return 2', async function() {
+				bot.vibrate = true;
+				bot.swingTrade = {filled:false,order:{OrderUuid:"1234"}}
+				var val = await bot.bittrexSwing();
+				clearTimeout(val)
+				assert.equal(val.status,2);
+			});			
 		})
 		
 	describe('#Prepare Swing Order',function() {
