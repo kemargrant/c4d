@@ -786,6 +786,29 @@ describe('Binance', function() {
 		});
 	});	
 	
+	
+	describe('#Trade', function() {
+		var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+		it('Should return an Error',function() {
+			binanceBot.https = mock.httpsError;
+			return binanceBot.binanceTrade().catch((e)=>{
+				assert.equal(e,'ERROR');
+			})
+		});
+		it('Should return an Error (empty data)',function() {
+			binanceBot.https = mock.httpsEmptyData;
+			return binanceBot.binanceTrade().catch((e)=>{
+				assert.equal(e.message,'Error trading');
+			})
+		});	
+		it('Should return an Error (bad data)',function() {
+			binanceBot.https = mock.httpsBadData;
+			return binanceBot.binanceTrade().catch((e)=>{
+				assert.equal(e.message,'Unexpected token x in JSON at position 0');
+			})
+		});				
+	});		
+	
 	describe('#Place and Remove Order', function() {
 		it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
 			var val = await binanceBot.binanceTrade("BTCUSDT","BUY",1.00,20.00,"GTC")

@@ -898,10 +898,7 @@ CryptoBot.prototype.binanceTrade = function(pair,side,amount,price,timeInForce){
 					if(!parsed.orderId){
 						this.notify("Error trading:"+pair+","+side+","+amount+","+price+","+new Date().toString());
 						this.log("Error trading:",pair,side,amount,price,new Date());
-						return reject(new Error("Error trading:",pair,side,amount,price,new Date()));
-					}
-					else{
-						return resolve(parsed);
+						return reject(new Error("Error trading",pair,side,amount,price,new Date()));
 					}
 				}
 				catch(e){
