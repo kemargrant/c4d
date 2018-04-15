@@ -481,6 +481,10 @@ describe('Bittrex', function() {
 	});	 
 	describe('#Bittrex Conditions', function() {
 		var bot = new CryptoBot.bot(mock.mockSettings1);
+		it('Should return false NAN',function() {
+			var trade = bot.bittrexCheckConditions({btc:undefined,ltc:5,usdt:5},50,'ltc','btc','usdt','Should return false Insane Trade(<100)')
+			assert.equal(trade,false);
+		});		
 		it('Should return false Insane Trade(<100)',function() {
 			var trade = bot.bittrexCheckConditions({btc:5,ltc:5,usdt:5},50,'ltc','btc','usdt','Should return false Insane Trade(<100)')
 			assert.equal(trade,false);
