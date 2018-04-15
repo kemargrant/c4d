@@ -1854,10 +1854,7 @@ CryptoBot.prototype.completedTrades = function(_orders) {
 	for(var key in _orders){
 		orders[_orders[key]['uuid']] = false;
 	}
-	return setTimeout(()=>{
-		this.bittrexCompleteArbitrage(orders);
-		this.saveDB("trade",{"Exchange":"Bittrex","Time":new Date().getTime(),Orders:orders,"Percent":this.Transactions.percentage,"Before":this.Transactions.before,"After":this.Transactions.after,"Profit":this.Transactions.profit});
-	},10000);
+	return setTimeout(()=>{this.bittrexCompleteArbitrage(orders);this.saveDB("trade",{"Exchange":"Bittrex","Time":new Date().getTime(),Orders:orders,"Percent":this.Transactions.percentage,"Before":this.Transactions.before,"After":this.Transactions.after,"Profit":this.Transactions.profit});},10000);
 }
 
 /**
