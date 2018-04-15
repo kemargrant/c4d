@@ -2002,7 +2002,7 @@ CryptoBot.prototype.notify = function(message){
 			this.log(e);
 		}
 	}
-	return;
+	return true;
 }
 
 /**

@@ -166,6 +166,16 @@ describe('General Functions', function() {
 			});
 		});
 	});
+
+	describe('#Notify', function() {
+		 it('Should catch errors notify user', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsError;
+			var val = bot.notify("Hello World")
+			assert(val);
+		});
+	});
+
 	
 	describe('#Should broadcast a message', function() {
 		 it('Should send a message to a websocket client', function() {
