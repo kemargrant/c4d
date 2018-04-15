@@ -14,6 +14,23 @@ describe('Bittrex', function() {
 			assert.equal(bot.Settings.Bittrex.apikey.length > 0 && bot.Settings.Bittrex.secret.length > 0, true);
 		});
 	});
+
+	describe('#Api', function() {
+		it('Should catch an Api Error', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsError2;
+			return bot.bittrexAPI().catch((e)=>{
+				assert.equal(e,"ERROR")
+			});
+		});
+		it('Should catch error parsing API response', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsBadData;
+			return bot.bittrexAPI().catch((e)=>{
+				assert.equal(e.message,'Unexpected token x in JSON at position 0');
+			});
+		});		
+	});
 	
 	describe('#Account Data', function() {
 		return it('Should return account data', async function() {
@@ -243,19 +260,19 @@ describe('Bittrex', function() {
 			assert.equal(bot.updateBittrexSocketStatus("",false),false);
 		});
 	});	
-	describe('#PrepareStream', function() {
-		it('Should return cookie and header', function() {
-			this.timeout(15000);
-			var bot = new CryptoBot.bot(mock.mockSettings1);
-			return Promise.resolve(bot.bittrexPrepareStream().then((val)=>{
-				assert(val[0].length > 50)
-			}).catch((e)=>{
-				console.log("Error:",e);
-				assert(false);
-			}))
+	//~ describe('#PrepareStream', function() {
+		//~ it('Should return cookie and header', function() {
+			//~ this.timeout(15000);
+			//~ var bot = new CryptoBot.bot(mock.mockSettings1);
+			//~ return bot.bittrexPrepareStream().then((val)=>{
+				//~ assert(val[0].length > 50)
+			//~ }).catch((e)=>{
+				//~ console.log("Error:",e);
+				//~ assert(false);
+			//~ })
 			
-		});
-	});	
+		//~ });
+	//~ });	
 	describe('#BittrexStream', function() {
 		it('Should return a signal-r client',function() {
 			this.timeout(15000)

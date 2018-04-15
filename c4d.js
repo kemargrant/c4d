@@ -959,7 +959,6 @@ CryptoBot.prototype.bittrexAPI = function(path,options){
 						this.log("Bittrex API Error:",e);
 						return reject(e);
 					}		
-		            return resolve(parsed);
 			    });
 		        response.on('error',(e)=>{
 					this.log("Bittrex API Error => ",e,new Date());
