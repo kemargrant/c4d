@@ -444,7 +444,40 @@ describe('Binance', function() {
 			userStream.close();			
 			done()
 		});
-	});	
+	});
+	
+	describe('#UserStream', function() {
+		it('Should return a connected websocket client',function(done) {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			var val = binanceBot.binanceUserStream('randomekey');
+			assert(binanceBot.binanceUserStreamString.search(val.url.host) > -1);
+			userStream.close();			
+			done()
+		});
+		it('Should open binance user Socket',function() {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			var client = binanceBot.binanceUserStream('randomekey');
+			client.emit("open");
+			assert(binanceBot.binanceUserStreamStatus);
+		});	
+		it('Should close binance user Socket',function() {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			var client = binanceBot.binanceUserStream('randomekey');
+			client.emit("open");
+			client.emit("close");
+			assert(!binanceBot.binanceUserStreamStatus);
+		});	
+		it('Should parse a user message onMessage',function() {
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			var client = binanceBot.binanceUserStream('randomekey');
+			binanceBot.messageParsed = false;
+			binanceBot.binanceParseUserEvent = ()=>{
+				binanceBot.messageParsed = true;
+			}
+			client.emit("message");
+			assert(binanceBot.messageParsed);
+		});						
+	});		
 	
 	describe('#ApiKeys', function() {
 		return it('should return true when the apikey and apisecret are present', function() {
@@ -735,7 +768,7 @@ describe('Binance', function() {
 			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
 			assert(!client);
 		});
-		it('Should return a different client',function(done) {
+		it('Should return a different websocket client',function(done) {
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
 			var prev = client._req
@@ -745,7 +778,7 @@ describe('Binance', function() {
 				done()	
 			},1100)
 		});
-		it('Should catch error processing message',function(done) {
+		it('Should catch error processing message',function() {
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
 			var x = client.emit("message",null);
