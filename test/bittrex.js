@@ -316,19 +316,28 @@ describe('Bittrex', function() {
 			assert.equal(bot.updateBittrexSocketStatus("",false),false);
 		});
 	});	
-	//~ describe('#PrepareStream', function() {
-		//~ it('Should return cookie and header', function() {
-			//~ this.timeout(15000);
-			//~ var bot = new CryptoBot.bot(mock.mockSettings1);
-			//~ return bot.bittrexPrepareStream().then((val)=>{
-				//~ assert(val[0].length > 50)
-			//~ }).catch((e)=>{
-				//~ console.log("Error:",e);
-				//~ assert(false);
-			//~ })
-			
-		//~ });
-	//~ });	
+	describe('#PrepareStream', function() {
+		it('Should return cookie and header', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var replace = function (x,cb){
+				cb(null,{request:{headers:{"cookie":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}}},"body")
+			}
+			var _cloudscraper = {"get":replace}
+			return bot.bittrexPrepareStream(_cloudscraper).then((val)=>{
+				assert(val[0].length > 50);
+			})
+		});
+		it('Should return an error', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			var replace = function (x,cb){
+				cb(true)
+			}
+			var _cloudscraper = {"get":replace}
+			return bot.bittrexPrepareStream(_cloudscraper).catch((e)=>{
+				assert(e);
+			})
+		});		
+	});
 	describe('#BittrexStream', function() {
 		it('Should return a signal-r client',function() {
 			this.timeout(15000)

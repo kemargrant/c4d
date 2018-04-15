@@ -1362,7 +1362,8 @@ CryptoBot.prototype.bittrexGetOrders = function(){
 			}
 			return resolve(orders);
 		}).catch((e)=>{
-			this.log(e);return reject(e);
+			this.log(e);
+			return reject(e);
 		});	
 	})
 }	
@@ -1372,7 +1373,7 @@ CryptoBot.prototype.bittrexGetOrders = function(){
    * @method bittrexPrepareStream
    * @return {Promise} Should resolve {Object} with Bittrex cookie and a user-agent
    */
-CryptoBot.prototype.bittrexPrepareStream = function(){
+CryptoBot.prototype.bittrexPrepareStream = function(cloudscraper){
 	return new Promise((resolve,reject) =>{	
 		cloudscraper.get('https://bittrex.com/',(error,response,body)=> {
 			if (error) {
@@ -1524,7 +1525,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 			clearTimeout(timeout);
 			this.updateBittrexSocketStatus(error,false);
 			if(!this.bittrexKill){
-				return this.bittrexPrepareStream().then((info2)=>{
+				return this.bittrexPrepareStream(cloudscraper).then((info2)=>{
 					this.bittrexStream(info2[0],info2[1])
 				}).catch((e)=>{
 					this.log("Error connecting to Bittrex Websocket:",new Date());
@@ -2324,7 +2325,7 @@ CryptoBot.prototype.serverCommand = function(message,ws){
 			else if(!this.bittrexKill && !this.bittrexSocketConnection){
 				return new Promise((resolve,reject)=>{
 					this.log("Starting Bittrex Stream");
-					this.bittrexPrepareStream().then((info)=>{
+					this.bittrexPrepareStream(cloudscraper).then((info)=>{
 						this.bittrexStream(info[0],info[1])
 						return resolve(true)
 					}).catch((e)=>{
