@@ -294,10 +294,7 @@ describe('Bittrex Server Commands (Network)', function() {
 		it('Should should stop bittrex stream', function(done) {
 			this.timeout(3000)
 			setTimeout(()=>{
-				_r = bot.bittrexSocketConnection.close;
-				bot.bittrexSocketConnection.close = function(){
-					return setTimeout(()=>{_r()},1000)
-				};
+				bot.bittrexSocketConnection ={close:function(){}}
 				var val = bot.serverCommand(encrypt({'command':'bittrex_control','bool':false}))
 				assert(val);
 				done()
