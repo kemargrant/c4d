@@ -1247,11 +1247,9 @@ CryptoBot.prototype.bittrexDepthPure = function(pair){
 				body += d;
 			});
 	        response.on('end',()=> {	
+				var parsed;
 				try{
-					if(!body){
-						return reject(body);
-					}
-		            var parsed = JSON.parse(body);
+		            parsed = JSON.parse(body);
 		            if(!parsed || !parsed.success){
 						return reject("Error:"+body);
 					}
