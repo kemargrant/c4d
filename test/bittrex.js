@@ -76,6 +76,23 @@ describe('Bittrex', function() {
 		});
 	});		
 
+	describe('#Cancel Order', function() {
+		it('Should return false (error)', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsError2
+			return bot.bittrexCancelOrder().catch((e)=>{
+				assert.equal(e,false);
+			})
+		});
+		it('Should return false (empty data)', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.httpsEmptyData
+			return bot.bittrexCancelOrder().catch((e)=>{
+				assert.equal(e,false);
+			})
+		});		
+	});	
+
 	describe('#Place and Remove Order', function() {
 		it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
 			var val = await bot.bittrexTrade("buy","USDT-BTC",1,20.00);
