@@ -3,6 +3,7 @@ var Settings = require('../config.json');
 var mock = require('./mock.js');
 var assert = require('assert');
 var WebSocket = require('ws');
+var crypto = require("crypto-js");
 
 describe('General Functions', function() {
 	var bot = new CryptoBot.bot(mock.mockSettings1);
@@ -125,6 +126,47 @@ describe('General Functions', function() {
 			});
 		});
 	});
+	
+	describe('#Should broadcast a message', function() {
+		 it('Should send a message to a websocket client', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.wss = {
+				clients:[{
+					readyState:1,
+					send:(x)=>{
+						bot.sent = x;
+					},
+					}]
+			}
+			bot.broadcastMessage('hello world');
+			assert.equal(crypto.AES.decrypt(bot.sent,bot.Settings.Config.key).toString(crypto.enc.Utf8),"hello world");
+		});
+		it('Should catch error broadcasting message', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.wss = {
+				clients:[
+					{readyState:1,
+					send:(x)=>{throw new Error("Error");},},
+					{readyState:1,
+					send:(x)=>{bot.sent = x},},
+					
+					]
+			}
+			bot.logLevel = 1;
+			var val = bot.broadcastMessage('hello world');
+			assert(bot.sent);
+		});	
+		it('Should catch error broadcasting message', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.wss = {
+				clients:true
+			}
+			bot.logLevel = 1;
+			var e = bot.broadcastMessage('hello world');
+			assert.equal(e.message,"this.wss.clients.forEach is not a function");
+		});				
+	});
+		
 	
 	//~ describe('#Setup WebSocket', function() {
 		//~ it('Should setup a web socket server and catch error event', function() {

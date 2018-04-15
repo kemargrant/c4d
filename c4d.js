@@ -1833,7 +1833,8 @@ CryptoBot.prototype.broadcastMessage = function(data){
 		});
 	}
 	catch(e){
-		return this.log(e);
+		this.log(e);
+		return e
 	}
 }	
 
