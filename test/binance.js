@@ -873,7 +873,7 @@ describe('Binance', function() {
 			Module.prototype.require = function(){return {https:{"request":function(){return new Promise((resolve,reject)=>{reject()}); }}}};
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			assert.equal(JSON.stringify(binanceBot.binancePrec),"{}");
-			
+			Module.prototype.require = originalRequire;
 		});
 	});})()
 		
