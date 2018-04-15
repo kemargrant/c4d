@@ -126,21 +126,21 @@ describe('General Functions', function() {
 		});
 	});
 	
-	describe('#Setup WebSocket', function() {
-		it('Should setup a web socket server and catch error event', function() {
-			setTimeout(()=>{
-				var client = new WebSocket("ws://127.0.0.1:7073");
-				client.onopen = (connected)=>{
-				}
-			},100)
-			return bot.setupWebsocket().then(()=>{
-				bot.wss.emit("error","");
-			}).catch((e)=>{
-				assert(e);
-				bot.wss.close();
-			});	
-		});
-	});	
+	//~ describe('#Setup WebSocket', function() {
+		//~ it('Should setup a web socket server and catch error event', function() {
+			//~ setTimeout(()=>{
+				//~ var client = new WebSocket("ws://127.0.0.1:7073");
+				//~ client.onopen = (connected)=>{
+				//~ }
+			//~ },100)
+			//~ return bot.setupWebsocket().then(()=>{
+				//~ bot.wss.emit("error","");
+			//~ }).catch((e)=>{
+				//~ assert(e);
+				//~ bot.wss.close();
+			//~ });	
+		//~ });
+	//~ });	
 	
 	//~ describe('#Setup WebSocket', function() {
 		//~ it('Should setup a web socket server and send a message', function() {
