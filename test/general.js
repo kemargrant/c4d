@@ -142,19 +142,19 @@ describe('General Functions', function() {
 		});
 	});	
 	
-	describe('#Setup WebSocket', function() {
-		it('Should setup a web socket server and send a message', function() {
-			setTimeout(()=>{
-				var client = new WebSocket("ws://127.0.0.1:7073");
-				client.onopen = (connected)=>{
-					client.send("Test Message");
-					client.close();
-				}
-			},700)
-			return bot.setupWebsocket().then(()=>{
-				bot.wss.close();
-			})
-		});
-	});	
+	//~ describe('#Setup WebSocket', function() {
+		//~ it('Should setup a web socket server and send a message', function() {
+			//~ setTimeout(()=>{
+				//~ var client = new WebSocket("ws://127.0.0.1:7073");
+				//~ client.onopen = (connected)=>{
+					//~ client.send("Test Message");
+					//~ client.close();
+				//~ }
+			//~ },700)
+			//~ return bot.setupWebsocket().then(()=>{
+				//~ bot.wss.close();
+			//~ })
+		//~ });
+	//~ });	
 		
 })
