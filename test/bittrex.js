@@ -479,6 +479,21 @@ describe('Bittrex', function() {
 			var x = bot.bittrexStartArbitrage([1,2,3],{});
 			assert(x instanceof Promise);;
 		});
+		it('Should resolve and clear local order book',function() {
+			bot.niceOrderChain = function(){
+				return{
+					chain:function(){
+						return new Promise((resolve,reject)=>{
+							resolve(true);
+						})
+					}
+				}
+			}
+			var localMarket = {"BTC-LTC":{Bids:true,Asks:true}}
+			return bot.bittrexStartArbitrage([1,2,3],localMarket).then(()=>{
+				assert.equal(JSON.stringify(localMarket["BTC-LTC"].Bids),"{}");
+			})
+		});		
 	});
 
 	describe('#Subscribe to market', function() {
