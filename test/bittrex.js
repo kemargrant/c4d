@@ -318,10 +318,11 @@ describe('Bittrex', function() {
 		var bot = new CryptoBot.bot(mock.mockSettings2);
 		bot.email = mock.email;
 		bot.https = mock.https;
+		bot.viewBittrexBook = true;
 		[bot.balance.btc ,bot.balance.xvg,bot.balance.usdt] = [1,5000,3000]
 		bot.p1 = 0.01;
 		bot.p2 = 1;
-		it('Should return valid trades (< 100%)',function() {
+		it('Should return valid trades (converting percentage to < 100%)',function() {
 			var message = mock.bittrexArbitrage1[0]
 			var localMarket = mock.bittrexArbitrage1[1]
 			var Transactions = mock.bittrexArbitrage1[2]
@@ -331,6 +332,25 @@ describe('Bittrex', function() {
 			assert.equal(JSON.stringify(validTrades),JSON.stringify(trades));
 			
 		});
+		it('Should return valid trades (< 100%)',function() {
+			var bot = new CryptoBot.bot(mock.mockSettings2);
+			bot.email = mock.email;
+			bot.https = mock.https;
+			bot.viewBittrexBook = true;
+			[bot.balance.btc ,bot.balance.xvg,bot.balance.usdt] = [2,7000,9000]
+			bot.p1 = 0.01;
+			bot.p2 = 0.1;
+			bot.saneTrades = false;
+			bot.liquidTrades = false;
+			var message = mock.bittrexArbitrage5[0]
+			var localMarket = mock.bittrexArbitrage5[1]
+			var Transactions = mock.bittrexArbitrage5[2]
+			var strategy =mock.bittrexArbitrage5[3]
+			var trades = bot.bittrexArbitrage(message,localMarket,Transactions,strategy,"BTC-XVG","USDT-BTC","USDT-XVG","xvg","_xvg","usdt","btc","_btc")
+			var validTrades = [["sell","USDT-XVG",70,126.73315001],["buy","USDT-BTC",1.16914163,7550],["buy","BTC-XVG","73.76462877",0.01581]]
+			assert.equal(JSON.stringify(validTrades),JSON.stringify(trades));
+			
+		});		
 		it('Should return valid trades (> 100%)',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings2);
 			[bot.balance.btc ,bot.balance.xvg,bot.balance.usdt] = [1,5000,3000]
