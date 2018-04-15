@@ -1761,7 +1761,8 @@ CryptoBot.prototype.bittrexTrade = function(type,pair,quantity,rate,options){
 						this.saveDB("order",{"uuid":result.uuid,"order":order});
 					}
 				}).catch((e)=>{
-						this.log("Error Placing Order:",e,new Date());
+						this.log("Error Saving Order:",e,new Date());
+						return reject(e);
 					});	
 				return resolve(result);	
 			}

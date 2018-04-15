@@ -130,13 +130,30 @@ describe('Bittrex', function() {
 	});	
 
 	describe('#Trades', function() {
-		it('Should return a settimeout object', function() {
+		it('Should return an Error', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.httpsError2;
 			return bot.bittrexTrade("buy","USDT-BTC",1,20.00).catch((e)=>{
 				assert.equal(e,"ERROR");
 			});
 		});
+		it('Should return an Error saving order', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexAPI = function(x,y){
+				return new Promise((resolve,reject)=>{
+					if(!y){
+						return resolve({ uuid: '614c34e4-8d71-11e3-94b5'})
+					}
+					else{
+						reject(false)
+					}
+				})
+			}
+			bot.saveDB = new Error()
+			return bot.bittrexTrade("buy","USDT-BTC",1,20.00,false).catch((e)=>{
+				assert.equal(e,false);
+			});
+		});		
 	});
 
 	describe('#Completed Trades', function() {
