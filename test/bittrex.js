@@ -3,7 +3,7 @@ describe('Bittrex', function() {
 	var Settings = require('../config.json');
 	var mock = require('./mock.js');
 	var assert = require('assert');
-
+	Math.random = function(){return 3}
     var bot = new CryptoBot.bot(mock.mockSettings1);
     bot.https = mock.https;
     bot.email = mock.email;
