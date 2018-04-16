@@ -1150,16 +1150,8 @@ CryptoBot.prototype.bittrexCheckConditions = function(Transactions,percentage,e1
    * @param {Object} Object with 3 Bittrex ids as keys
    */	
 CryptoBot.prototype.bittrexCompleteArbitrage = function(tracking){
-	if(Object.keys(tracking).length === 0 && obj.constructor === Object){
-		this.rate = 52000;
-		this.broadcastMessage({"type":"poll_rate","polling":this.rate});
-		return setTimeout(()=>{
-			this.bittrexAccount();
-			this.rate = this.Settings.Config.polling;
-			this.bittrexInProcess = false;
-			this.bittrexProcessTime = 0;
-			this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
-		},52000);
+	if(Object.keys(tracking).length === 0 && tracking.constructor === Object){
+		return setTimeout(()=>{this.bittrexReset("",52000)},0)
 	}
 	this.log("Monitoring Orders: ",tracking,new Date(),this.rate);
 	var _checkFilled = (uuid) => {
@@ -1172,12 +1164,9 @@ CryptoBot.prototype.bittrexCompleteArbitrage = function(tracking){
 					var key= "Orders."+uuid;
 					var lookupOrder = {}
 					lookupOrder[key] = false;
-					try{
-						this.saveDB("trade",{},{extra:{"w":1},method:"update",query:lookupOrder,modifier:{"$set":{"Orders":tracking},"$inc":{"OrdersFilled":1}}});	
-					}
-					catch(e){
+					this.saveDB("trade",{},{extra:{"w":1},method:"update",query:lookupOrder,modifier:{"$set":{"Orders":tracking},"$inc":{"OrdersFilled":1}}}).catch((e)=>{
 						this.log(e);
-					}							
+					});						
 					this.bittrexAccount().catch((e)=>{
 						this.log(e);
 					});
@@ -1399,8 +1388,11 @@ CryptoBot.prototype.bittrexReset = function(e,time){
 	this.log(e,new Date());
 	this.notify("Error completing arbitrage:"+e);
 	return setTimeout(()=>{
+		this.bittrexAccount();
+		this.rate = this.Settings.Config.polling;
 		this.bittrexInProcess = false;	
 		this.bittrexProcessTime = 0;
+		this.broadcastMessage({"type":"poll_rate","polling":this.rate});
 		this.broadcastMessage({type:"bittrexStatus",value:this.bittrexInProcess,time:this.bittrexProcessTime,wsStatus:this.bittrexSocketStatus});
 	},time);
 }

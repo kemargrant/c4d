@@ -65,11 +65,58 @@ describe('Bittrex', function() {
 	});	
 	
 	describe('#Complete Arbitrage', function() {
-		return it('Should return a setTimeout object', async function() {
+		it('Should return a setTimeout object', async function() {
 			var val = await bot.bittrexCompleteArbitrage({'randomid':false,'randomi2':false,'randomid3':false});
 			clearTimeout(val);
 			assert.equal(typeof val._idleStart,"number");
 		});
+		it('Should return a setTimeout object (Order Error)', async function() {
+			var val = await bot.bittrexCompleteArbitrage({});
+			clearTimeout(val);
+			assert.equal(typeof val._idleStart,"number");
+		});
+		it('Should return a setTimeout object (1 order filled)', async function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexAPI = function(){
+				return new Promise((resolve,reject)=>{
+					return resolve({IsOpen:false})
+				});
+			}
+			bot.bittrexAccount = function(){return new Promise((resolve,reject)=>reject(new Error()));}
+			bot.saveDB = function(){return new Promise((resolve,reject)=>reject(new Error()));}
+			var val = await bot.bittrexCompleteArbitrage({'randomid':true,'randomi2':true,'randomid3':false});
+			clearTimeout(val);
+			assert.equal(typeof val._idleStart,"number");
+		});		
+		it('Should return a setTimeout object (1 order filled - API Error)', async function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexAPI = function(){
+				return new Promise((resolve,reject)=>{
+					return reject(new Error(""))
+				});
+			}
+			var val = await bot.bittrexCompleteArbitrage({'randomid':true,'randomi2':true,'randomid3':false});
+			clearTimeout(val);
+			assert.equal(typeof val._idleStart,"number");
+		});	
+		it('Should modify bittrexInProcess status', async function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexInProcess = true;
+			bot.https = mock.https;
+			var val = await bot.bittrexCompleteArbitrage({'randomid':true,'randomi2':true,'randomid3':true});
+			assert.equal(bot.bittrexInProcess,false);
+		});		
+		it('Should modify bittrexInProcess (Api Error)', async function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexInProcess = true;
+			bot.bittrexAPI = function(){
+				return new Promise((resolve,reject)=>{
+					return reject(new Error(""))
+				});
+			}
+			var val = await bot.bittrexCompleteArbitrage({'randomid':true,'randomi2':true,'randomid3':true});
+			assert.equal(bot.bittrexInProcess,false);
+		});							
 	});	
 	
 	describe('#Market Depth', function() {
