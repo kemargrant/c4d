@@ -116,7 +116,23 @@ describe('Bittrex', function() {
 			}
 			var val = await bot.bittrexCompleteArbitrage({'randomid':true,'randomi2':true,'randomid3':true});
 			assert.equal(bot.bittrexInProcess,false);
-		});							
+		});	
+		it('Should modify bittrexInProcess (Api/broadcast Error)', async function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexInProcess = true;
+			bot.bittrexAccount = function(){
+				return new Promise((resolve,reject)=>{
+					bot.bittrexAccount = function(){
+						return new Promise((resolve,reject)=>{
+							return resolve(true)
+						});
+					}
+					return reject(new Error(""))
+				})
+			}
+			var val = await bot.bittrexCompleteArbitrage({'randomid':true,'randomi2':true,'randomid3':true});
+			assert.equal(bot.bittrexInProcess,false);
+		});									
 	});	
 	
 	describe('#Market Depth', function() {
