@@ -1494,7 +1494,6 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 			this.bittrexSubscribe(client,[this.Settings.Config.pair1,this.Settings.Config.pair2,this.Settings.Config.pair3]);
 			this.bittrexSocketConnection = connection;
 			this.log("Bittrex Websocket connected:",new Date()); 
-			this.updateBittrexSocketStatus(true);
 			if(!this.bittrexKill){
 				timeout = setTimeout(()=>{
 					if(this.bittrexSocketConnection){
@@ -1504,6 +1503,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 					}
 				},1800000);
 			}
+			return this.updateBittrexSocketStatus("Bittrex Websocket connected:",true);
 		},
 		disconnected: ()=> { 
 			clearTimeout(timeout);
@@ -1530,7 +1530,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 		},
 		messageReceived: (message)=> {
 			var trades = this.bittrexArbitrage(message,localMarket,Transactions,strategy,pair1,pair2,pair3,e1,_e1,u2,b3,_b3);
-			this.bittrexStartArbitrage(trades,localMarket);
+			return this.bittrexStartArbitrage(trades,localMarket);
 		},
 		bindingError: (error)=> { this.updateBittrexSocketStatus(error,false);},
 		connectionLost: (error)=> { 

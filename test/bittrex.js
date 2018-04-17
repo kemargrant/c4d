@@ -428,14 +428,74 @@ describe('Bittrex', function() {
 		});		
 	});
 	describe('#BittrexStream', function() {
-		it('Should return a signal-r client',function() {
+		it('Should return a signal-r client',function(done) {
 			this.timeout(15000)
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			var result = bot.bittrexStream("dummy","dummy")
 			assert(result.end);
 			bot.bittrexKill = true;
 			result.end();
+			done();
 		});
+		it('Should update bittrexSocketStatus (connectFailed)',function(done) {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexSocketStatus = true;
+			var client = bot.bittrexStream("dummy","dummy");
+			client.serviceHandlers.connectFailed("test failed");
+			assert.equal(bot.bittrexSocketStatus,false);
+			done()
+		});			
+		it('Should update bittrexSocketStatus (connected)',function(done) {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexSocketStatus = false;
+			var _client = bot.bittrexStream("dummy","dummy");
+			_client.serviceHandlers.bound();
+			var ans = _client.serviceHandlers.connected({close:function(){}});
+			console.log(ans)
+			assert.equal(bot.bittrexSocketStatus,true);
+			done()
+		});			
+		it('Should update bittrexSocketStatus (disconnected)',function(done) {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexSocketStatus = true;
+			var client = bot.bittrexStream("dummy","dummy");
+			client.serviceHandlers.disconnected();
+			client.serviceHandlers.reconnecting();
+			assert.equal(bot.bittrexSocketStatus,false);
+			done()
+		});	
+		it('Should update bittrexSocketStatus (onerror)',function(done) {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexSocketStatus = true;
+			var client = bot.bittrexStream("dummy","dummy");
+			client.serviceHandlers.onerror();
+			assert.equal(bot.bittrexSocketStatus,false);
+			done()
+		});	
+		it('Should update bittrexSocketStatus (bindingerror)',function(done) {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexSocketStatus = true;
+			var client = bot.bittrexStream("dummy","dummy");
+			client.serviceHandlers.bindingError();
+			assert.equal(bot.bittrexSocketStatus,false);
+			done()
+		});
+		it('Should update bittrexSocketStatus (connectionLost)',function(done) {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexSocketStatus = true;
+			var client = bot.bittrexStream("dummy","dummy");
+			client.serviceHandlers.connectionLost();
+			assert.equal(bot.bittrexSocketStatus,false);
+			done()
+		});		
+		it('Should update bittrexSocketStatus (message)',function(done) {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexSocketStatus = true;
+			var client = bot.bittrexStream("dummy","dummy");
+			var val = client.serviceHandlers.messageReceived("{}");
+			assert.equal(val,false);
+			done()
+		});										
 	});
 	//~ /*
 	 //~ * 
