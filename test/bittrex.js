@@ -458,6 +458,7 @@ describe('Bittrex', function() {
 		it('Should update bittrexSocketStatus (disconnected)',function(done) {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.bittrexSocketStatus = true;
+			bot.bittrexKill = true;
 			var client = bot.bittrexStream("dummy","dummy");
 			client.serviceHandlers.disconnected();
 			client.serviceHandlers.reconnecting();
