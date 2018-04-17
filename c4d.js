@@ -1023,7 +1023,6 @@ CryptoBot.prototype.bittrexArbitrage = function(bmessage,localMarket,Transaction
 	var trading_pairs;
 	var trades = [];
 	try{
-		var before = JSON.stringify({"bmessage:":bmessage,"localMarket":localMarket,"Transactions:":Transactions,"strategy":strategy})
 		data = JSON.parse(bmessage.utf8Data);
 		if(data.M && data.M[0] && data.M[0].M === "updateExchangeState"){
 			pair = data.M[0].A[0].MarketName;
