@@ -450,9 +450,13 @@ describe('Bittrex', function() {
 			bot.bittrexSocketStatus = false;
 			var _client = bot.bittrexStream("dummy","dummy");
 			_client.serviceHandlers.bound();
+			var oldTimeout = setTimeout;
+			setTimeout = function(func,time){
+				oldTimeout(func,10)
+			}
 			var ans = _client.serviceHandlers.connected({close:function(){}});
-			console.log(ans)
 			assert.equal(bot.bittrexSocketStatus,true);
+			setTimeout = oldTimeout;
 			done()
 		});			
 		it('Should update bittrexSocketStatus (disconnected)',function(done) {
