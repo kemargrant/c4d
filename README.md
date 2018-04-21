@@ -23,6 +23,9 @@ Sample Bittrex Wallet
 So for every 1 unit of your target currency you should have double the btc value. When configuring for BTC arbitrage in this scenario set percentage2 in the config file to be less than or equal to 0.5
 to ensure you can convert from BTC/USDT to your target currency.
  
+## Requirements
+Node v8
+ 
 ## Running
 ```
 git clone https://github.com/kemargrant/c4d
