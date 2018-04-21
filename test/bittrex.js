@@ -193,13 +193,24 @@ describe('Bittrex', function() {
 	});	
 
 	describe('#Trades', function() {
-		it('Should return an Error', function() {
+		it('Should return an Error (API Error)', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.httpsError2;
 			return bot.bittrexTrade("buy","USDT-BTC",1,20.00).catch((e)=>{
 				assert.equal(e,"ERROR");
 			});
 		});	
+		it('Should return an Error - (Undefined Trade)', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.bittrexAPI = function(){
+				return new Promise((resolve,reject)=>{
+					return resolve(false);
+				});
+			}
+			return bot.bittrexTrade("buy","USDT-BTC",1,20.00).catch((e)=>{
+				assert.equal(e.message,"Error Placing Order");
+			});
+		});			
 	});
 
 	
@@ -299,7 +310,7 @@ describe('Bittrex', function() {
 			bot.DB = bot.database();
 		it('Should return a setTimeout Object > 0 (API Error)', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-				bot.bittrexTrade = function(){return new Promise((resolve,reject)=>{
+			bot.bittrexTrade = function(){return new Promise((resolve,reject)=>{
 				return reject(false);
 			})}
 			return bot.bittrexCreateSwingOrder("BUY","BTC-LTC",500,10).then((val)=>{
