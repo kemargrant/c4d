@@ -1644,7 +1644,7 @@ CryptoBot.prototype.bittrexSwing = function(){
    */
 CryptoBot.prototype.bittrexSwingOrder = function(uuid){
 	return new Promise((resolve,reject) => {	
-		this.bittrexAPI("account/getorder","&uuid="+uuid).then((order)=>{
+		return this.bittrexAPI("account/getorder","&uuid="+uuid).then((order)=>{
 			if(order){
 				this.saveDB("swing",{},{extra:{"w":1},method:"update",query:{"swing":1},modifier:{"$set":{"swing":1,"order":order,"filled":!order.IsOpen}}});
 				if(order.IsOpen !== true){
