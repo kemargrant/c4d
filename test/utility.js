@@ -22,5 +22,43 @@ describe('Utilities', function() {
 			var solution = bot.utilities.solveUnder(3,0.075332,11525,869.5);
 			assert.equal(0.073,solution);
 		});
-	});	
+	});
+	describe('#Solve < 100 wasm vs js', function() {
+		it('Should return the ideal solution faster than js', function() {
+			var jsa;
+			var wasma;
+			var time;	
+			time = process.hrtime();
+			for(var i = 0;i < 1;i ++){
+				jsa = bot.utilities.solveUnder(2,0.002077,8836,18.38);     
+			}
+			var js = process.hrtime(time)[1]/1000000;	
+			time = process.hrtime();
+			for(var i = 0;i < 1;i ++){
+				wasma = bot.utilities.solveUnderWasm(2,0.002077,8836,18.38);     
+			}
+			var wasm = process.hrtime(time)[1]/1000000;		
+			//console.log(wasma,":WASM:",wasm,"vs",jsa,":JS:",js);	
+			assert(wasm < js && wasma === jsa);
+		});
+	});
+	describe('#Solve > 100 wasm vs js', function() {
+		it('Should return the ideal solution faster than js', function() {
+			var jsa;
+			var wasma;
+			var time;
+			time = process.hrtime();
+			for(var i = 0;i < 1;i ++){
+				wasma = bot.utilities.solveOverWasm(0.0046,6,2,0.002185,8838,19.279);     
+			}		
+			var wasm = process.hrtime(time)[1]/1000000;						
+			time = process.hrtime();
+			for(var i = 0;i < 1;i ++){
+				jsa = bot.utilities.solveOver(0.0046,6,2,0.002185,8838,19.279);     
+			}
+			var js = process.hrtime(time)[1]/1000000;
+			//console.log(wasma,":WASM:",wasm,"vs",jsa,":JS:",js);	
+			assert(wasm < js && wasma === jsa);
+		});
+	});					
 });
