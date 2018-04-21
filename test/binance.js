@@ -771,14 +771,16 @@ describe('Binance', function() {
 			assert(!client);
 		});
 		it('Should return a different websocket client',function(done) {
+			this.timeout(5000);
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
-			var prev = client._req
-			client.emit("close");
+			var prev = client._req;
+			setTimeout(()=>client.emit("close"),2000);
 			setTimeout(()=>{
+				console.log(prev);
 				assert(prev !== client._req)
 				done()	
-			},1100)
+			},4900)
 		});
 		it('Should catch error processing message',function() {
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
