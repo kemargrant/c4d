@@ -308,6 +308,7 @@ describe('General Functions', function() {
 			});	
 		});
 		it('Should setup a web socket server, send a message and close', function(done) {
+			bot.setupWebsocket()
 			setTimeout(()=>{
 				var client = new WebSocket("ws://127.0.0.1:7073");
 				client.onopen = (connected)=>{
@@ -317,7 +318,7 @@ describe('General Functions', function() {
 					done()
 				}
 			},500)
-			bot.setupWebsocket()
+			
 		});		
 	});	
 		
