@@ -43,7 +43,7 @@ function CryptoBot(Settings){
 	//Binance Settings
 	this.binanceApiKey = Settings.Binance.apikey;
 	this.binanceApiSecret = Settings.Binance.secretkey;
-	this.binanceMarket = 'wss://stream.binance.com:9443/ws/xxx@depth';
+	this.binanceMarket = 'wss://stream.binance.com:9443/ws/xxx@ticker';
 	this.binanceUserStreamString = 'wss://stream.binance.com:9443/ws/';
 	this.binanceBalance = {account:"Binance"}	
 	this.binanceB1Min = {}
@@ -410,22 +410,22 @@ CryptoBot.prototype.binanceExchangeInfo = function(){
    */
 CryptoBot.prototype.binanceGenerateStrategy = function(base,index,message){
 	if(index === 0){
-		this.binanceStrategy[base]['one']['a'] = Number((Number(message.a[0][0])).toFixed(this.binancePrec[base][0]));
-		this.binanceStrategy[base]['one']['a_amount'] = Number(message.a[0][1]);
-		this.binanceStrategy[base]['two']['a'] = Number((Number(message.b[0][0])).toFixed(this.binancePrec[base][0]));
-		this.binanceStrategy[base]['two']['a_amount'] = Number(message.b[0][1]);
+		this.binanceStrategy[base]['one']['a'] = Number(message.a);
+		this.binanceStrategy[base]['one']['a_amount'] = Number(message.A);
+		this.binanceStrategy[base]['two']['a'] = Number(message.b);
+		this.binanceStrategy[base]['two']['a_amount'] = Number(message.B);
 	}
 	if(index === 1){
-		this.binanceStrategy[base]['one']['b'] =  Number((Number(message.a[0][0])).toFixed(this.binancePrec[base][1]));
-		this.binanceStrategy[base]['one']['b_amount'] = Number(message.a[0][1]);
-		this.binanceStrategy[base]['two']['b'] = Number((Number(message.b[0][0])).toFixed(this.binancePrec[base][1]));					
-		this.binanceStrategy[base]['two']['b_amount'] = Number(message.b[0][1]);
+		this.binanceStrategy[base]['one']['b'] =  Number(message.a);
+		this.binanceStrategy[base]['one']['b_amount'] = Number(message.A);
+		this.binanceStrategy[base]['two']['b'] =  Number(message.b);					
+		this.binanceStrategy[base]['two']['b_amount'] = Number(message.B);
 	}
 	if(index === 2){
-		this.binanceStrategy[base]['one']['c'] =  Number((Number(message.b[0][0])).toFixed(this.binancePrec[base][2]));
-		this.binanceStrategy[base]['one']['c_amount'] =  Number(message.b[0][1]);
-		this.binanceStrategy[base]['two']['c']  = Number((Number(message.a[0][0])).toFixed(this.binancePrec[base][2]));
-		this.binanceStrategy[base]['two']['c_amount'] = Number(message.a[0][1]);
+		this.binanceStrategy[base]['one']['c'] =   Number(message.b);
+		this.binanceStrategy[base]['one']['c_amount'] = Number(message.B);
+		this.binanceStrategy[base]['two']['c']  = Number(message.a);
+		this.binanceStrategy[base]['two']['c_amount'] = Number(message.A);
 	}
 }
 
