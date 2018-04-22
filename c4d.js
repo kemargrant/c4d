@@ -2381,7 +2381,8 @@ CryptoBot.prototype.setupWebsocket = function(){
 	this.wss = new WebSocket.Server({port:this.Settings.Config.port});
 	return new Promise((resolve,reject) =>{			
 		this.wss.on('connection',(ws)=>{
-			resolve(this.log("Websocket connection created:",new Date()));
+			this.log("Websocket connection created:",new Date());
+			resolve(ws);
 			ws.on('error',(e)=>{
 				return this.log("WebSocket Error:",e,new Date());
 			})
