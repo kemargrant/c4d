@@ -56,9 +56,9 @@ describe('General Functions', function() {
 	describe('#Save to Database', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.MongoClient = mock.MongoClient;
-		it('Should return an error', async function() {
+		it('Should return an error', function() {
 			bot.Settings.MongoDB.connect = false;
-			bot.saveDB("trade",{}).catch((e)=>{
+			return bot.saveDB("trade",{}).catch((e)=>{
 				assert.equal(e.message,"MongoDB setting error");
 			})
 		});
@@ -308,17 +308,21 @@ describe('General Functions', function() {
 			});	
 		});
 		it('Should setup a web socket server, send a message and close', function(done) {
-			bot.setupWebsocket()
 			setTimeout(()=>{
 				var client = new WebSocket("ws://127.0.0.1:7073");
 				client.onopen = (connected)=>{
 					client.send("hello world");
 					client.close();
-					assert(true);
-					done()
 				}
-			},500)
-			
+			},1500)
+			bot.setupWebsocket().then((ws)=>{
+				ws.on("message",()=>{
+					var val = ws.emit("error",new Error("Dummy Error"));
+					assert(val);
+					bot.wss.close();
+					done();
+				});
+			});
 		});		
 	});	
 		
