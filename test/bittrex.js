@@ -451,14 +451,12 @@ describe('Bittrex', function() {
 		});		
 	});
 	describe('#BittrexStream', function() {
-		it('Should return a signal-r client',function(done) {
-			this.timeout(15000)
+		it('Should return a signal-r client',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			var result = bot.bittrexStream("dummy","dummy")
 			assert(result.end);
 			bot.bittrexKill = true;
 			result.end();
-			done();
 		});
 		it('Should update bittrexSocketStatus (connectFailed)',function(done) {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
@@ -691,13 +689,11 @@ describe('Bittrex', function() {
 	});	
 	
 	describe('#Update Market', function() {
-		it('Should update local order book',function(done) {
-			this.timeout(300000)
+		it('Should update local order book',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			var update = bot.bittrexUpdateMarket('BTC-LTC',mock.bittrexData[0],mock.bittrexData[1]);
 			var updated = JSON.stringify({ 'BTC-LTC': { Bids: { '3.33': 1 }, Asks: { '7.77': 1 } } })
 			assert.equal(JSON.stringify(update),updated);
-			done();		
 		});
 	});		
 	describe('#SortBook', function() {
