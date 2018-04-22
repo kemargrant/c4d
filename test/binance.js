@@ -777,7 +777,6 @@ describe('Binance', function() {
 			var prev = client._req;
 			setTimeout(()=>client.emit("close"),2000);
 			setTimeout(()=>{
-				console.log(prev);
 				assert(prev !== client._req)
 				done()	
 			},4900)
