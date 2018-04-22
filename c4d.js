@@ -308,7 +308,7 @@ CryptoBot.prototype.binanceCancelOrder = function(pair,id){
 
 
 /**
-   * Check Binance arbirage conditions
+   * Check Binance arbitrage conditions
    * @method binanceCheckConditions
    * @param {Object} Transactions object
    * @param {Number} Percentage 
