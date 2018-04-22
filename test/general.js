@@ -293,32 +293,34 @@ describe('General Functions', function() {
 	});
 		
 	describe('#Setup WebSocket', function() {
-		it('Should setup a web socket server and catch error event', function() {
+		it('Should setup a web socket server and catch error event', function(done) {
 			setTimeout(()=>{
 				var client = new WebSocket("ws://127.0.0.1:7073");
 				client.onopen = (connected)=>{
 				}
 			},10)
-			return bot.setupWebsocket().then(()=>{
+			bot.setupWebsocket().then(()=>{
 				bot.wss.emit("error",new Error("fast close"));
 			}).catch((e)=>{
 				assert.equal(e.message,"fast close");
 				bot.wss.close();
+				done();
 			});	
 		});
-		it('Should setup a web socket server, send a message and close', function() {
+		it('Should setup a web socket server, send a message and close', function(done) {
 			setTimeout(()=>{
 				var client = new WebSocket("ws://127.0.0.1:7073");
 				client.onopen = (connected)=>{
 					client.send("hello world");
 					client.close();
 				}
-			},300)
-			return bot.setupWebsocket().then((ws)=>{
+			},1000)
+			bot.setupWebsocket().then((ws)=>{
 				ws.on("message",()=>{
 					var val = ws.emit("error",new Error("Dummy Error"));
 					assert(val);
 					bot.wss.close();
+					done();
 				});
 			});
 		});		
