@@ -205,24 +205,32 @@ describe('#Arbitrage', function() {
 		testBot.liquidTradesBinance[base] = false;
 		testBot.binanceLimits[base] = {over:{lowerLimit:100,upperLimit:104},under:{lowerLimit:99,upperLimit:99.9}}	
 		it('Should return false (sub optimal trade)',function() {
+			var testBot = new CryptoBot.bot(mock.mockSettings1);
+			var base = 'ltcbtc';
+			testBot.MongoClient = mock.MongoClient;
+			testBot.DB = testBot.database();
+			testBot.https = mock.https;
+			testBot.email = mock.email;
+			testBot.binancePrec[base] = [6,2,2,2,6,5];
+			var pairs = ['ltcbtc','btcusdt','ltcusdt'];
+			var e1 = {'ltcbtc':'ltc'} 
+			var b1 = {'ltcbtc':'btc'} 
+			var u1 = {'ltcbtc':'usdt'} 		
+			testBot.liquidTradesBinance[base] = false;
+			testBot.binanceOptimalTrades[base] = false;
+			testBot.binanceLimits[base] = {over:{lowerLimit:100,upperLimit:104},under:{lowerLimit:99,upperLimit:99.9}}	
 			testBot.binanceStrategy[base] = { 
-			one:{ 
-			     b: 8854,
-			     b_amount: 0.02048,
-			     c: 18.311,
-			     c_amount: 25,
-			     a: 0.00208,
-			     a_amount: 277.84 },
-			two: 
-			   { b: 8843.99,
-			     b_amount: 0.09,
-			     c: 18.321,
-			     c_amount: 4.102,
-			     a: 0.002072,
-			     a_amount: 66.05 } 
+			 "one":{"a":0.071226,"a_amount":0.131,"b":8838,"b_amount":0.00403,"c":628.93,"c_amount":0.39703},
+			 "two":{"a":0.071225,"a_amount":0.16,"b":8832,"b_amount":2,"c":629,"c_amount":0.00002}
 			}
-			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1);
-			assert.equal(val,true)
+			var messageData = {
+			  b: '8832.00000000',
+			  B: '2.00000000',
+			  a: '8838.00000000',
+			  A: '0.00403000',
+			}
+			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1,messageData);
+			assert.equal(val,false)
 	});		
 	})
 	describe('##Trade (<100)', function() {	
@@ -283,13 +291,11 @@ describe('#Arbitrage', function() {
 			  s: 'LTCUSDT',
 			  U: 37583033,
 			  u: 37583038,
-			  b: 
-			   [ [ '113.28000000', '8.69530000', [] ],
-			     [ '111.21000000', '1.44577000', [] ] ],
-			  a: 
-			   [ [ '113.46000000', '0.00000000', [] ],
-			     [ '113.66000000', '7.50000000', [] ],
-			     [ '113.78000000', '0.00000000', [] ] ] }
+			  b:'113.28000000',
+			  B:'1.44577000',
+			  a:'113.46000000',
+			  A:'0.00000000' 
+			}
 			var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1,2,messageData);
 			assert.equal(val,false)
 		});		
