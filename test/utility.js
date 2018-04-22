@@ -29,12 +29,12 @@ describe('Utilities', function() {
 			var wasma;
 			var time;	
 			time = process.hrtime();
-			for(var i = 0;i < 1;i ++){
+			for(var i = 0;i < 5;i ++){
 				jsa = bot.utilities.solveUnder(2,0.002077,8836,18.38);     
 			}
 			var js = process.hrtime(time)[1]/1000000;	
 			time = process.hrtime();
-			for(var i = 0;i < 1;i ++){
+			for(var i = 0;i < 5;i ++){
 				wasma = bot.utilities.solveUnderWasm(2,0.002077,8836,18.38);     
 			}
 			var wasm = process.hrtime(time)[1]/1000000;		
