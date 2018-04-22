@@ -60,5 +60,15 @@ describe('Utilities', function() {
 			//console.log(wasma,":WASM:",wasm,"vs",jsa,":JS:",js);	
 			assert(wasm < js && wasma === jsa);
 		});
+	});		
+	describe('#Enable Wasm', function() {
+		it('Should enable wasm code', function() {
+			var temp = JSON.parse(JSON.stringify(mock.mockSettings1));
+			temp.Config.useWasm = true;
+			var bot = new CryptoBot.bot(temp);
+			var over = bot.utilities.solveOverWasm.toString() == bot.utilities.solveOver.toString() ? true:false;
+			var under = bot.utilities.solveUnderWasm.toString() == bot.utilities.solveUnder.toString() ? true:false;
+			assert(over && under);
+		});
 	});					
 });

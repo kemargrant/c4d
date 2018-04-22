@@ -64,6 +64,11 @@ function CryptoBot(Settings){
 	//format Binance pairs for general usage
 	this.Settings.Binance.formatPairs = Settings.Binance.pairs;
 	this.Settings.Binance.pairs = JSON.parse(JSON.stringify(Settings.Binance.pairs).replace(new RegExp("_", 'g'),""));
+	//wasmCode
+	if(this.Settings.Config.useWasm){
+		this.utilities.solveOver = OverwasmInstance.exports.over;
+		this.utilities.solveUnder = UnderwasmInstance.exports.under;
+	}
 	//Get Exchange Information
 	this.binancePrecision(this.Settings.Binance.pairs).then((exchangeData)=>{
 		this.binanceFormatPairs(exchangeData);

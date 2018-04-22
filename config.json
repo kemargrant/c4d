@@ -38,6 +38,7 @@
 			"port":7071,
 			"saneTrades":true,
 			"upperLimit":101.79,
+			"useWasm":false,
 			"viewBook":false
 		},
 	"Email":
