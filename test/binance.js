@@ -766,46 +766,51 @@ describe('Binance', function() {
 	describe('#Stream', function() {
 		it('Should return undefined',function() {
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
-			binanceBot.binanceMarket = ""
+			binanceBot.binanceMarket = "";
 			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
 			assert(!client);
 		});
 		it('Should return a different websocket client',function(done) {
-			this.timeout(5000);
+			this.timeout(6000);
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
 			var prev = client._req;
-			setTimeout(()=>client.emit("close"),2000);
+			setTimeout(()=>{client.emit("close")},2000);
 			setTimeout(()=>{
+				binanceBot.binanceKill = true;
+				setTimeout(()=>{binanceBot.binanceKill = true;client.close()},4000);
 				assert(prev !== client._req)
 				done()	
-			},4900)
+			},5500)
 		});
 		it('Should catch error processing message',function() {
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
 			var x = client.emit("message",null);
-			assert.equal(x,true)			
+			assert.equal(x,true);
+			setTimeout(()=>{binanceBot.binanceKill = true;client.close()},2000);
+
 		});
 	});	
-	
-	
 	describe('#Trade', function() {
 		var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 		it('Should return an Error',function() {
 			binanceBot.https = mock.httpsError;
+			binanceBot.notify = function(){}
 			return binanceBot.binanceTrade().catch((e)=>{
 				assert.equal(e,'ERROR');
 			})
 		});
 		it('Should return an Error (empty data)',function() {
 			binanceBot.https = mock.httpsEmptyData;
+			binanceBot.notify = function(){}
 			return binanceBot.binanceTrade().catch((e)=>{
 				assert.equal(e.message,'Error trading');
 			})
 		});	
 		it('Should return an Error (bad data)',function() {
 			binanceBot.https = mock.httpsBadData;
+			binanceBot.notify = function(){}
 			return binanceBot.binanceTrade().catch((e)=>{
 				assert.equal(e.message,'Unexpected token x in JSON at position 0');
 			})
@@ -841,6 +846,7 @@ describe('Binance', function() {
 		});				
 		
 	});	
+	
 	describe('#Reject Binance Precision', function() {
 		var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 		binanceBot.binanceExchangeInfo = function(){
@@ -879,5 +885,5 @@ describe('Binance', function() {
 			Module.prototype.require = originalRequire;
 		});
 	});})()
-		
+
 });
