@@ -87,6 +87,7 @@ Bot settings are controlled by the 'config.json' file
 			"port":7071,
 			"saneTrades":true,
 			"upperLimit":101.79,
+			"useWasm":false,
 			"viewBook":false
 		},
 	"Email":
@@ -154,6 +155,7 @@ Bot settings are controlled by the 'config.json' file
 | Config.port | Websocket port number | Number
 | Config.saneTrades | Perform arbitrage between upper and lower limits (Prevents trading during flash crashes...probably) | Boolean
 | Config.upperLimit | Upper percentage limit when saneTrades is true | Number
+| Config.useWasm | Use web assembly code for over/under calculations | Boolean
 | Config.viewBook | View Bittrex order book in c4dc client (Default false)| Boolean
 | Email.addr | Recipient Email Address | String
 | Email.host_smtp | Email SMTP Address| String
