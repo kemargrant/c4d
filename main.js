@@ -8,6 +8,7 @@ function main(){
 		return console.log(e);
 	}
 	var bot = new CryptoBot.bot(Settings);
+	bot.DB = bot.database();
 	return bot.setupWebsocket().then(()=>{
 		return bot.bittrexAccount().then(()=>{
 			if(bot.vibrate === true){
