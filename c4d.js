@@ -2,7 +2,6 @@
 
 var crypto = require("crypto-js");
 var signalR = require('signalr-client');
-var cloudscraper = require('cloudscraper');
 var WebSocket = require('ws');
 var https = require('https');
 //load Wasm code
@@ -1369,25 +1368,6 @@ CryptoBot.prototype.bittrexGetOrders = function(){
 	})
 }	
 
-/**
-   * Get Bittrex cookie and user-agent.
-   * @method bittrexPrepareStream
-   * @return {Promise} Should resolve {Object} with Bittrex cookie and a user-agent
-   */
-CryptoBot.prototype.bittrexPrepareStream = function(cloudscraper){
-	return new Promise((resolve,reject) =>{	
-		cloudscraper.get('https://bittrex.com/',(error,response,body)=> {
-			if (error) {
-				this.log('Cloudscraper error occurred');
-				return reject(error);
-			} 
-			else{  
-				this.log('CloudFlare bypassed:',new Date());
-				return resolve([response.request.headers["cookie"],response.request.headers["User-Agent"]]);
-			}
-		});
-	});
-}
 
 /**
    * Reset Bittrex status.
@@ -1462,11 +1442,9 @@ CryptoBot.prototype.bittrexStartArbitrage = function(trades,localMarket){
 /**
    * Monitor Bittrex pairs for arbitrage opportunities.
    * @method bittrexStream
-   * @param {String} Bittrex cookie
-   * @param {String} A user-agent
    * @return Should return signalr-client
    */
-CryptoBot.prototype.bittrexStream = function(cookie,agent){
+CryptoBot.prototype.bittrexStream = function(){
 	var a;
 	var b;
 	var c;
@@ -1495,8 +1473,6 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 	strategy[pair2] = {}
 	strategy[pair3] = {}
 	client = new signalR.client("wss://socket.bittrex.com/signalr",['CoreHub']);	
-	client.headers['User-Agent'] = agent;
-	client.headers['cookie'] = cookie;
 	client.serviceHandlers = {
 			bound: ()=> { 
 			this.log("Bittrex Websocket bound"); 
@@ -1511,7 +1487,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 					if(this.bittrexSocketConnection){
 						this.log("Resetting Bittrex Connection:",new Date())
 						this.bittrexSocketConnection.close();
-						return this.bittrexStream(cookie,agent);
+						return this.bittrexStream();
 					}
 				},1800000);
 			}
@@ -1529,9 +1505,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 			clearTimeout(timeout);
 			this.updateBittrexSocketStatus(error,false);
 			if(!this.bittrexKill){
-				return this.bittrexPrepareStream(cloudscraper).then((info2)=>{
-					this.bittrexStream(info2[0],info2[1])
-				}).catch((e)=>{
+				return this.bittrexStream().catch((e)=>{
 					this.log("Error connecting to Bittrex Websocket:",new Date());
 				});
 			}
@@ -1548,7 +1522,7 @@ CryptoBot.prototype.bittrexStream = function(cookie,agent){
 		connectionLost: (error)=> { 
 			this.updateBittrexSocketStatus(error,false);
 			if(!this.bittrexKill){
-				return this.bittrexStream(cookie,agent);
+				return this.bittrexStream();
 			}
 		},
 		reconnecting: (retry)=> {return this.updateBittrexSocketStatus("Bittrex Websocket Retrying",false)}
@@ -2319,8 +2293,7 @@ CryptoBot.prototype.serverCommand = function(message,ws){
 			else if(!this.bittrexKill && !this.bittrexSocketConnection){
 				return new Promise((resolve,reject)=>{
 					this.log("Starting Bittrex Stream");
-					this.bittrexPrepareStream(cloudscraper).then((info)=>{
-						this.bittrexStream(info[0],info[1])
+					this.bittrexStream().then(()=>{
 						return resolve(true)
 					}).catch((e)=>{
 						this.log("Error connecting to Bittrex Websocket:",e);

@@ -3,7 +3,6 @@
     "test": "nyc mocha test/tests.js --exit"
   },
   "dependencies": {
-    "cloudscraper": "^1.4.1",
     "crypto-js": "^3.1.9-1",
     "emailjs": "^1.0.12",
     "https": "^1.0.0",
