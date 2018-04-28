@@ -624,7 +624,7 @@ describe('Binance', function() {
 		});
 	});	
 	describe('#ParseUserEvent - Error', function() {
-		it('Should return true',function() {
+		it('Should return false',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			assert(!bot.binanceParseUserEvent({type:"message",data:"x/"},{}));
 		});
