@@ -201,6 +201,7 @@ describe('Binance Server Commands (Network)', function() {
 		var bot = new CryptoBot.bot(mock.mockSettings1);
 		bot.binanceUserStreamStatus = true;
 		bot.https = mock.https;
+		bot.binanceInProcess={"ltcbtc":undefined}
 		function dummy(){}
 		it('Should activate Binance', function() {
 			bot.serverCommand(encrypt({'command':'binance_control','bool':true}));
@@ -218,7 +219,7 @@ describe('Binance Server Commands (Network)', function() {
 				assert.equal(bot.binanceSocketConnections.length,0);
 				for(var i=0;i< bot.binanceSocketConnections.length;i++){
 					bot.binanceSocketConnections[i].onclose = dummy;
-					bot.binanceSocketConnections[i].close();
+					try{bot.binanceSocketConnections[i].close();}catch(e){}
 				}
 				done()
 			},3000);
@@ -269,36 +270,20 @@ describe('Bittrex Server Commands (Network)', function() {
 		});
 	});		
 	describe('#bittrex_control', function() {
-		it('Should should have an error when starting arbitrage process', function() {
+		it('Should should return a bittrex client', function(done) {
 			bot.bittrexSocketConnection = false;
-			bot.bittrexPrepareStream = function(){
-				return new Promise((resolve,reject)=>{
-					reject(false);
-				});
-			}
-			return bot.serverCommand(encrypt({'command':'bittrex_control','bool':true})).catch((val)=>{
-				assert(!val);
-			});
-		});
-		it('Should should start bittrex stream', function() {
-			bot.bittrexSocketConnection = false;
-			bot.bittrexPrepareStream = function(){
-				return new Promise((resolve,reject)=>{
-					resolve(["header","cookie"]);
-				});
-			}
-			return bot.serverCommand(encrypt({'command':'bittrex_control','bool':true})).then((val)=>{
-				assert(val);
-			});
+			var client = bot.serverCommand(encrypt({'command':'bittrex_control','bool':true}))
+			assert(client.hub && client.proxy);
+			done();
 		});
 		it('Should should stop bittrex stream', function(done) {
 			this.timeout(3000)
 			setTimeout(()=>{
-				bot.bittrexSocketConnection ={close:function(){}}
+				//bot.bittrexSocketConnection ={close:function(){}}
 				var val = bot.serverCommand(encrypt({'command':'bittrex_control','bool':false}))
 				assert(val);
 				done()
-			},2000);
+			},2500);
 		});					
 	});			
 	bot.MongoClient = mock.MongoClient;

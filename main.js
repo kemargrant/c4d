@@ -26,20 +26,10 @@ function main(){
 				}
 			})
 			if(bot.bittrexSocketConnection){
-					bot.bittrexStream().catch((e)=>{
-					bot.log("Error connecting to Bittrex Websocket:",e);
-				});
+					bot.bittrexStream()
 			}
 		}).catch((e)=>{
-			if(bot.Settings.Binance.enabled){
-				bot.binanceMonitor(bot.Settings.Binance.pairs);
-				bot.binanceListenUser();
-			}
-			if(bot.bittrexSocketConnection){
-				bot.bittrexStream().catch((e)=>{
-					bot.log("Error connecting to Bittrex Websocket");
-				});
-			}
+			bot.log(e);
 		});
 	});
 }
