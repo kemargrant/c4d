@@ -750,7 +750,16 @@ describe('Bittrex', function() {
 			bot.bittrexInProcess = false;
 			var trades = bot.bittrexArbitrage(localMarket,Transactions,strategy,"BTC-XVG","USDT-BTC","USDT-XVG","xvg","_xvg","usdt","btc","_btc");
 			assert(trades.length < 3);
-		});				
+		});	
+		it('Should return an array with length < 3 (try/catch error)',function() {
+			var message = mock.bittrexArbitrage3[0]
+			var localMarket = mock.bittrexArbitrage3[1]
+			var Transactions = mock.bittrexArbitrage3[2]
+			var strategy = null
+			bot.bittrexInProcess = false;
+			var trades = bot.bittrexArbitrage(localMarket,Transactions,strategy,"BTC-XVG","USDT-BTC","USDT-XVG","xvg","_xvg","usdt","btc","_btc");
+			assert(trades.length < 3);
+		});						
 	});
 
 	describe('#BittrexStartArbitrage', function() {
