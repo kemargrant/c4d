@@ -69,26 +69,25 @@ Bot settings are controlled by the 'config.json' file
 		{
 			"apikey":"Bittrex_API_Key",
 			"secret":"Bittrex_API_Secret",
-			"minimum":0.001
-		},
-	"Config":
-		{
 			"enabled":true,
-			"key":"Secret Private Key",	
 			"liquidTrades":true,
-			"logs":3,
 			"lowerLimit":98.3,
+			"minimum":0.001,
 			"pair1":"BTC-XXX",
 			"pair2":"USDT-BTC",
 			"pair3":"USDT-XXX",		
 			"percentage1":1,
 			"percentage2":0.5,					
-			"polling":45000,
-			"port":7071,
 			"saneTrades":true,
 			"upperLimit":101.79,
-			"useWasm":false,
 			"viewBook":false
+		},
+	"Config":
+		{
+			"key":"Secret Private Key",	
+			"logs":3,
+			"port":7071,
+			"useWasm":false
 		},
 	"Email":
 		{
@@ -140,23 +139,22 @@ Bot settings are controlled by the 'config.json' file
 | Binance.pairs.upperLimit2 | Maximum percent to perform trade when percentage > 100% | Number
 | Bittrex.apikey | Bittrex Api Key | String
 | Bittrex.secret | Bittrex Api Secret | String
+| Bittrex.enabled | Enable trading on Bittrex (Default true) | Boolean
+| Bittrex.liquidTrades | Perform arbitrage between when enough liquidity is on the books (prevents left behind trades...usually) | Boolean
+| Bittrex.lowerLimit | Lower percentage limit when saneTrades is true | Number
 | Bittrex.minimum | Bittrex minimum btc order size Defaut(0.001)| Number
-| Config.enabled | Enable trading on Bittrex (Default true) | Boolean
+| Bittrex.pair1 | BTC- your target currency | String
+| Bittrex.pair2 | “USDT-BTC” (Required) | String
+| Bittrex.pair3 |  USDT-  your target currency| String
+| Bittrex.percentage1 | Percentage of XXX currency to use when performing trades (Default 100%)| Number
+| Bittrex.percentage2 | Percentage of BTC to use when performing BTC=>BTC trade (Default 50%) | Number
+| Bittrex.saneTrades | Perform arbitrage between upper and lower limits (Prevents trading during flash crashes...probably) | Boolean
+| Bittrex.upperLimit | Upper percentage limit when saneTrades is true | Number
+| Bittrex.viewBook | View Bittrex order book in c4dc client (Default false)| Boolean
 | Config.key | The key used to encrypt messages between the bot and a web client | String
-| Config.liquidTrades | Perform arbitrage between when enough liquidity is on the books (prevents left behind trades...usually) | Boolean
 | Config.logs | 0-None 1-Server Only 2-Client Only 3-Server and Client Default(3) | Number
-| Config.lowerLimit | Lower percentage limit when saneTrades is true | Number
-| Config.pair1 | BTC- your target currency | String
-| Config.pair2 | “USDT-BTC” (Required) | String
-| Config.pair3 |  USDT-  your target currency| String
-| Config.percentage1 | Percentage of XXX currency to use when performing trades (Default 100%)| Number
-| Config.percentage2 | Percentage of BTC to use when performing BTC=>BTC trade (Default 50%) | Number
-| Config.polling | The default milliseconds for the bot to query the Bittrex ticker | Number
 | Config.port | Websocket port number | Number
-| Config.saneTrades | Perform arbitrage between upper and lower limits (Prevents trading during flash crashes...probably) | Boolean
-| Config.upperLimit | Upper percentage limit when saneTrades is true | Number
 | Config.useWasm | Use web assembly code for over/under calculations | Boolean
-| Config.viewBook | View Bittrex order book in c4dc client (Default false)| Boolean
 | Email.addr | Recipient Email Address | String
 | Email.host_smtp | Email SMTP Address| String
 | Email.use | Use email notifications | Boolean
