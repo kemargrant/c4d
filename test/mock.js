@@ -721,7 +721,7 @@ var settings1 ={
 		{
 			"amount":0.001,
 			"pair":"BTC-USDT",
-			"rate":60000,
+			"rate":6000,
 			"swing":0.02,
 			"swingTrade":true
 		}		

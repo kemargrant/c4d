@@ -173,12 +173,14 @@ describe('Bittrex', function() {
 				var val = bot.bittrexSwing()
 				assert.equal(val.status,0);
 			});
-			it('Should return 2', async function() {
+			it('Should return 2', function() {
 				bot.vibrate = true;
 				bot.swingTrade = {filled:false,order:{OrderUuid:"1234"}}
-				var val = await bot.bittrexSwing();
-				clearTimeout(val.Timeout)
+				var val = bot.bittrexSwing();
 				assert.equal(val.status,2);
+				val.Timeout.then((timer)=>{
+					clearTimeout(timer);
+				})
 			});			
 		})
 		
@@ -236,7 +238,7 @@ describe('Bittrex', function() {
 			bot.bittrexAPI = function(){return new Promise((resolve,reject)=>{
 				return reject(new Error("API Error"));
 			})}
-			return bot.bittrexSwingOrder(1234).then((val)=>{
+			return bot.bittrexSwingOrder(12344).then((val)=>{
 				clearTimeout(val);
 				assert.equal(typeof val._idleStart,"number");
 			});
@@ -268,78 +270,141 @@ describe('Bittrex', function() {
 			assert.equal(typeof val.Timeout._idleStart,"number");
 			
 		});	
-		it('Should return a setTimeout Object > 0 (Order Complete)', async function() {
+		it('Should return a setTimeout Object > 0 (Order Complete)', function() {
 			bot.bittrexTrade = function(){return new Promise((resolve,reject)=>{
-				return resolve({uuid:1234});
+				return resolve({uuid:2233});
 			})}
-			var val = await bot.bittrexCreateSwingOrder("BUY","BTC-LTC",500,10);
-			clearTimeout(val.Timeout);
-			assert(val.Timeout instanceof Promise);
+			return bot.bittrexCreateSwingOrder("BUY","BTC-LTC",500,10).then((val)=>{
+				assert(val.Timeout instanceof Promise);
+				val.Timeout.then((timer)=>{
+					clearTimeout(timer)
+				})
+			})
 		});		
 	})
 
 	describe('#Supervise Bittrex swing order',function() {
+		it('Should return a object with a status of 2', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.https;
 			bot.email = mock.email;
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
-		it('Should return a object with a status of 2', function() {
-			var val = bot.bittrexSwingSupervisor({filled:false,order:{uuid:1234}});
-			clearTimeout(val.Timeout);
+			bot.Account = function(){}
+			var val = bot.bittrexSwingSupervisor({filled:false,order:{OrderUuid:123422}});
 			assert.equal(val.status,2);
+			val.Timeout.then((timer)=>{
+				clearTimeout(timer)
+			})
 		});			
-		it('Should return a object with a status of 2', async function() {
-			var val = await bot.bittrexSwingSupervisor({filled:true,order:{uuid:1234,Type:"LIMIT_SELL"}});
-			clearTimeout(val.Timeout);
-			assert.equal(val.status,2);
+		it('Should return a object with a status of 2', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.https;
+			bot.email = mock.email;
+			bot.Account = function(){}
+			bot.MongoClient = mock.MongoClient;
+			bot.DB = bot.database();
+			return bot.bittrexSwingSupervisor({filled:true,order:{uuid:12345,Type:"LIMIT_SELL"}}).then((val)=>{
+				clearTimeout(val.Timeout);
+				assert.equal(val.status,2);
+			})
 		});	
-		it('Should return a object with a status of 1', async function() {
-			var val = await bot.bittrexSwingSupervisor({filled:true,order:{uuid:1234,Type:"LIMIT_SELL",Limit:1}});
+		it('Should return a object with a status of 1', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.https;
+			bot.email = mock.email;
+			bot.MongoClient = mock.MongoClient;
+			bot.DB = bot.database();
+			bot.Account = function(){}
+			bot.notify = function(x){console.log("Notify:",x)}
 			bot.swingPercentage = 0.05;
 			bot.bittrexDepthPure = function(){
 				return new Promise((resolve,reject)=>{
-					resolve({sell:0.5});
+					return resolve({sell:0.5});
 				});
 			}
-			clearTimeout(val.Timeout);
-			assert.equal(val.status,1);
+			return bot.bittrexSwingSupervisor({filled:true,order:{uuid:1234,Type:"LIMIT_SELL",Limit:1}}).then((val)=>{
+				assert.equal(val.status,1);
+				return val.Timeout.then((timer)=>{
+					timer.Timeout.then(val=>{
+						clearTimeout(val)
+					})
+				})
+			});
 		});	
-		it('Should return a object with a status of 2', async function() {
-			var val = await bot.bittrexSwingSupervisor({filled:true,order:{uuid:1234,Type:"LIMIT_BUY",Limit:1}});
-			clearTimeout(val.Timeout);
-			assert.equal(val.status,2);
+		it('Should return a object with a status of 2', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.https;
+			bot.email = mock.email;
+			bot.MongoClient = mock.MongoClient;
+			bot.DB = bot.database();
+			bot.Account = function(){}
+			return bot.bittrexSwingSupervisor({filled:true,order:{uuid:1234,Type:"LIMIT_BUY",Limit:1}}).then((val)=>{
+				clearTimeout(val.Timeout);
+				assert.equal(val.status,2);
+			})
 		});	
-		it('Should return a object with a status of 1', async function() {
+		it('Should return a object with a status of 1', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.https;
+			bot.email = mock.email;
+			bot.MongoClient = mock.MongoClient;
+			bot.DB = bot.database();
+			bot.Account = function(){}
 			bot.swingPercentage = 0.05;
 			bot.bittrexDepthPure = function(){
 				return new Promise((resolve,reject)=>{
 					resolve({buy:2.5});
 				});
 			}		
-			var val = await bot.bittrexSwingSupervisor({filled:true,order:{uuid:1234,Type:"LIMIT_BUY",Limit:0.9}});	
-			clearTimeout(val.Timeout);
-			assert.equal(val.status,1);
+			return bot.bittrexSwingSupervisor({filled:true,order:{uuid:1234,Type:"LIMIT_BUY",Limit:0.9}}).then((val)=>{
+				assert.equal(val.status,1);
+				return val.Timeout.then((timer)=>{
+					timer.Timeout.then(val=>{
+						clearTimeout(val)
+					})
+				})
+			});
 		});	
-		it('Should return a object with a status of 2', async function() {
+		it('Should return a object with a status of 2', function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.https;
+			bot.email = mock.email;
+			bot.MongoClient = mock.MongoClient;
+			bot.DB = bot.database();
+			bot.Account = function(){}
 			bot.swingPercentage = 0.05;
 			bot.bittrexDepthPure = function(){
 				return new Promise((resolve,reject)=>{
 					reject({buy:2.5});
 				});
 			}		
-			var val = await bot.bittrexSwingSupervisor({filled:true,order:{uuid:1234,Type:"LIMIT_BUY",Limit:0.9}});	
-			clearTimeout(val.Timeout);
-			assert.equal(val.status,2);
+			return bot.bittrexSwingSupervisor({filled:true,order:{uuid:1234,Type:"LIMIT_BUY",Limit:0.9}}).then((val)=>{	
+				clearTimeout(val.Timeout);
+				assert.equal(val.status,2);
+			})
 		});	
 		it('Should return a object with a status of 2 (Undefined Order - Low account balance) ', function() {	
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.https;
+			bot.email = mock.email;
+			bot.MongoClient = mock.MongoClient;
+			bot.DB = bot.database();
+			bot.Account = function(){}
 			bot.balance.btc = 0;
 			bot.Settings.Swing.amount = 1;
 			var val = bot.bittrexSwingSupervisor(undefined);
 			clearTimeout(val.Timeout);
 			assert.equal(val.status,2);
 		});		
-		it('Should return a object with a status of 2 (Undefined Order - Low account balance) ', async function() {	
+		it('Should return a object with a status of 2 (Undefined Order - Low account balance) ', function() {	
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.https;
+			bot.email = mock.email;
+			bot.MongoClient = mock.MongoClient;
+			bot.DB = bot.database();
+			bot.Account = function(){}
+			bot.notify = function(x){console.log("Notify:",x)}
 			bot.balance.btc = 2;
 			bot.Settings.Swing.amount = 1;
 			bot.bittrexDepthPure = function(){
@@ -347,11 +412,18 @@ describe('Bittrex', function() {
 					reject({buy:2.5});
 				});
 			}	
-			var val = await bot.bittrexSwingSupervisor(undefined);
-			clearTimeout(val.Timeout);
-			assert.equal(val.status,2);
+			return bot.bittrexSwingSupervisor(undefined).then((val)=>{	
+				clearTimeout(val.Timeout);
+				assert.equal(val.status,2);
+			})
 		});		
-		it('Should return a object with a status of 2 (Undefined Order - Low account balance) ', async function() {	
+		it('Should return a object with a status of 2 (Undefined Order - Low account balance) ', function() {	
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.https = mock.https;
+			bot.email = mock.email;
+			bot.MongoClient = mock.MongoClient;
+			bot.DB = bot.database();
+			bot.Account = function(){}
 			bot.balance.btc = 2;
 			bot.Settings.Swing.amount = 1;
 			bot.bittrexDepthPure = function(){
@@ -359,8 +431,14 @@ describe('Bittrex', function() {
 					resolve({buy:2.5});
 				});
 			}	
-			var val = await bot.bittrexSwingSupervisor(undefined);
-			assert.equal(val.status,1);
+			return bot.bittrexSwingSupervisor(undefined).then((val)=>{	
+				assert.equal(val.status,1);
+				return val.Timeout.then((timer)=>{
+					timer.Timeout.then(val=>{
+						clearTimeout(val)
+					})
+				})
+			})
 		});													
 	})
 

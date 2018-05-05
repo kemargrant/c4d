@@ -1752,7 +1752,7 @@ CryptoBot.prototype.bittrexSwingSupervisor = function (trade){
 	if(trade){
 		if(trade.filled !== true){
 			timeout = this.bittrexSwingOrder(trade.order.OrderUuid);
-			return {status:2,Timeout:null}
+			return {status:2,Timeout:timeout}
 		}
 		var newTrade = trade.order.Type === "LIMIT_SELL" ? "buy" : "sell";
 		return this.bittrexDepthPure(this.Settings.Swing.pair).then((val)=>{
@@ -1762,8 +1762,8 @@ CryptoBot.prototype.bittrexSwingSupervisor = function (trade){
 				this.broadcastMessage({"type":"swing","target":target,"price":val.sell,"trade":"bid"});
 				if (val.sell < target){
 					this.notify(this.Settings.Swing.pair+" Buying "+trade.order.Quantity+" @"+val.sell);
-					this.bittrexCreateSwingOrder("buy",this.Settings.Swing.pair,trade.order.Quantity,val.sell);
-					return {status:1,Timeout:null}
+					timeout = this.bittrexCreateSwingOrder("buy",this.Settings.Swing.pair,trade.order.Quantity,val.sell);
+					return {status:1,Timeout:timeout}
 				}
 				else{
 					timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
@@ -1776,8 +1776,8 @@ CryptoBot.prototype.bittrexSwingSupervisor = function (trade){
 				this.broadcastMessage({"type":"swing","target":target,"price":val.buy,"trade":"ask"});
 				if (val.buy > target){
 					this.notify(this.Settings.Swing.pair+" Selling "+trade.order.Quantity+" @"+val.buy);
-					this.bittrexCreateSwingOrder("sell",this.Settings.Swing.pair,trade.order.Quantity,val.buy);
-					return {status:1,Timeout:null}
+					timeout = this.bittrexCreateSwingOrder("sell",this.Settings.Swing.pair,trade.order.Quantity,val.buy);
+					return {status:1,Timeout:timeout}
 				}
 				else{
 					timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
@@ -1797,11 +1797,11 @@ CryptoBot.prototype.bittrexSwingSupervisor = function (trade){
 		}
 		return this.bittrexDepthPure(this.Settings.Swing.pair).then((val)=>{
 			var amount = (this.Settings.Swing.amount/val.sell).toFixed(8)
-			this.bittrexCreateSwingOrder("buy",this.Settings.Swing.pair,amount,val.sell);
-			return {status:1,Timeout:null}
+			timeout = this.bittrexCreateSwingOrder("buy",this.Settings.Swing.pair,amount,val.sell);
+			return {status:1,Timeout:timeout}
 		}).catch((e)=>{
 				this.log(e);
-				setTimeout(()=>{this.bittrexSwing()},this.swingRate);
+				timeout = setTimeout(()=>{this.bittrexSwing()},this.swingRate);
 				return {status:2,Timeout:timeout}
 			});
 	}	
