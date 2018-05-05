@@ -96,18 +96,6 @@ describe('Bittrex Server Commands (Offline)', function() {
 			assert.equal(bot.lowerLimit,99);
 		});
 	});
-	describe('#poll', function() {
-		it('Should update Bittrex Polling rate', function() {
-			bot.rate = 2000;
-			bot.serverCommand(encrypt({'command':'poll','rate':25}));
-			assert.equal(bot.rate,25000);
-		});
-	});
-	describe('#poll_rate', function() {
-		it('Should get Bittrex polling rate', function() {
-			assert(bot.serverCommand(encrypt({'command':'poll_rate'})));
-		});
-	});	
 	describe('#Sanity', function() {
 		it('Should change Bittrex sane trading option', function() {
 			bot.saneTrades = true;

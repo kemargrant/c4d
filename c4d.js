@@ -23,26 +23,26 @@ function CryptoBot(Settings){
 	this.email = require("emailjs");
 	this.https = require('https');
 	this.MongoClient = require('mongodb').MongoClient;
+	this.Settings = Settings;
+	this.logLevel = Settings.Config.logs;
+	//Bittrex Settings
 	this.balance = {}
 	this.bittrexInProcess = false;
 	this.bittrexOrders = []
 	this.bittrexProcessTime = 0;
-	this.bittrexSocketConnection = Settings.Config ? Settings.Config.enabled : false;
+	this.bittrexSocketConnection = Settings.Config.enabled;
 	this.bittrexSocketStatus = false;
 	this.bittrexTradesMade = 0;
-	this.rate = Settings.Config ? Settings.Config.polling : 60000;
-	this.swingRate = Settings.Config ? Settings.Swing.rate : 60000;
-	this.saneTrades = Settings.Config ? Settings.Config.saneTrades : true;
-	this.Settings = Settings;
-	this.liquidTrades = Settings.Config ? Settings.Config.liquidTrades : true;
-	this.vibrate = Settings.Config ? Settings.Swing.swingTrade : false;
-	this.viewBittrexBook = Settings.Config.viewBook;
-	this.lowerLimit = Settings.Config ? Settings.Config.lowerLimit : 89;
-	this.upperLimit = Settings.Config ? Settings.Config.upperLimit : 101.79;
-	this.swingPercentage = Settings.Config ? Settings.Swing.swing : 0.02;
-	this.logLevel = Settings.Config.logs;
-	this.p1 = Settings.Config.percentage1;
-	this.p2 = Settings.Config.percentage2;
+	this.swingRate = Settings.Swing.rate;
+	this.saneTrades =  Settings.Bittrex.saneTrades;
+	this.liquidTrades = Settings.Bittrex.liquidTrades;
+	this.vibrate = Settings.Swing.swingTrade;
+	this.viewBittrexBook = Settings.Bittrex.viewBook;
+	this.lowerLimit = Settings.Bittrex.lowerLimit
+	this.upperLimit = Settings.Bittrex.upperLimit;
+	this.swingPercentage = Settings.Swing.swing;
+	this.p1 = Settings.Bittrex.percentage1;
+	this.p2 = Settings.Bittrex.percentage2;
 	//Binance Settings
 	this.binanceApiKey = Settings.Binance.apikey;
 	this.binanceApiSecret = Settings.Binance.secretkey;
@@ -1257,21 +1257,21 @@ CryptoBot.prototype.bittrexFormatMessage = function(e1,u2,b3,_e1,a,b,c,percentag
    */
 CryptoBot.prototype.bittrexGenerateStrategy = function(pair,localMarket,strategy,Transactions,e1,u2,b3){
 	try{
-		if(pair === this.Settings.Config.pair3){
-			strategy[this.Settings.Config.pair3]["strat1"] = Number(localMarket[pair]["Sorted"][1][0]);
-			strategy[this.Settings.Config.pair3]["strat2"] = Number(localMarket[pair]["Sorted"][0][localMarket[pair]["Sorted"][0].length - 1]);
+		if(pair === this.Settings.Bittrex.pair3){
+			strategy[this.Settings.Bittrex.pair3]["strat1"] = Number(localMarket[pair]["Sorted"][1][0]);
+			strategy[this.Settings.Bittrex.pair3]["strat2"] = Number(localMarket[pair]["Sorted"][0][localMarket[pair]["Sorted"][0].length - 1]);
 			//If lowest Ask < highest bid delete
-			if(strategy[this.Settings.Config.pair3]["strat2"] < strategy[this.Settings.Config.pair3]["strat1"]){
+			if(strategy[this.Settings.Bittrex.pair3]["strat2"] < strategy[this.Settings.Bittrex.pair3]["strat1"]){
 				delete localMarket[pair]["Bids"][localMarket[pair]["Sorted"][1][0]];
 				return false
 			}
 			Transactions[e1+'_amount1'] = localMarket[pair]["Bids"][localMarket[pair]["Sorted"][1][0]];
 			Transactions[e1+'_amount2'] = localMarket[pair]["Asks"][localMarket[pair]["Sorted"][0][localMarket[pair]["Sorted"][0].length - 1]];
 		}
-		else if(pair === this.Settings.Config.pair2){
-			strategy[this.Settings.Config.pair2]["strat1"] = Number(localMarket[pair]["Sorted"][1][0]);
-			strategy[this.Settings.Config.pair2]["strat2"] = Number(localMarket[pair]["Sorted"][1][0]);
-			if(strategy[this.Settings.Config.pair2]["strat1"] > Number(localMarket[pair]["Sorted"][0][localMarket[pair]["Sorted"][0].length - 1])){
+		else if(pair === this.Settings.Bittrex.pair2){
+			strategy[this.Settings.Bittrex.pair2]["strat1"] = Number(localMarket[pair]["Sorted"][1][0]);
+			strategy[this.Settings.Bittrex.pair2]["strat2"] = Number(localMarket[pair]["Sorted"][1][0]);
+			if(strategy[this.Settings.Bittrex.pair2]["strat1"] > Number(localMarket[pair]["Sorted"][0][localMarket[pair]["Sorted"][0].length - 1])){
 				delete localMarket[pair]["Bids"][localMarket[pair]["Sorted"][1][0]];
 				return false
 			}
@@ -1279,9 +1279,9 @@ CryptoBot.prototype.bittrexGenerateStrategy = function(pair,localMarket,strategy
 			Transactions[b3+'_amount2'] = localMarket[pair]["Bids"][localMarket[pair]["Sorted"][1][0]];
 		}
 		else{
-			strategy[this.Settings.Config.pair1]["strat1"] = Number(localMarket[pair]["Sorted"][0][localMarket[pair]["Sorted"][0].length - 1]);
-			strategy[this.Settings.Config.pair1]["strat2"] = Number(localMarket[pair]["Sorted"][1][0]);
-			if(strategy[this.Settings.Config.pair1]["strat1"] < strategy[this.Settings.Config.pair1]["strat2"]){
+			strategy[this.Settings.Bittrex.pair1]["strat1"] = Number(localMarket[pair]["Sorted"][0][localMarket[pair]["Sorted"][0].length - 1]);
+			strategy[this.Settings.Bittrex.pair1]["strat2"] = Number(localMarket[pair]["Sorted"][1][0]);
+			if(strategy[this.Settings.Bittrex.pair1]["strat1"] < strategy[this.Settings.Bittrex.pair1]["strat2"]){
 				delete localMarket[pair]["Bids"][localMarket[pair]["Sorted"][1][0]];
 				return false;
 			}
@@ -1485,9 +1485,9 @@ CryptoBot.prototype.bittrexStream = function(){
 	var c;
 	var client;
 	var localMarket = {}
-	var pair1 = this.Settings.Config.pair1;
-	var pair2 = this.Settings.Config.pair2;
-	var pair3 = this.Settings.Config.pair3;
+	var pair1 = this.Settings.Bittrex.pair1;
+	var pair2 = this.Settings.Bittrex.pair2;
+	var pair3 = this.Settings.Bittrex.pair3;
 	var strategy = {};	
 	var Transactions = this.Transactions;
 	var e1;
@@ -1501,9 +1501,9 @@ CryptoBot.prototype.bittrexStream = function(){
 	b3 = pair1.split('-')[0].toLowerCase();
 	_b3 = "_"+pair1.split('-')[0].toLowerCase();
 	u2 = pair2.split('-')[0].toLowerCase();		
-	localMarket[this.Settings.Config.pair1] = {Bids:{},Asks:{}}
-	localMarket[this.Settings.Config.pair2] = {Bids:{},Asks:{}}
-	localMarket[this.Settings.Config.pair3] = {Bids:{},Asks:{}}
+	localMarket[this.Settings.Bittrex.pair1] = {Bids:{},Asks:{}}
+	localMarket[this.Settings.Bittrex.pair2] = {Bids:{},Asks:{}}
+	localMarket[this.Settings.Bittrex.pair3] = {Bids:{},Asks:{}}
 	strategy[pair1] = {}
 	strategy[pair2] = {}
 	strategy[pair3] = {}
@@ -1515,7 +1515,7 @@ CryptoBot.prototype.bittrexStream = function(){
 		connectFailed: (error)=> {this.updateBittrexSocketStatus(error,false);},
 		connected: (connection)=> {
 			if(!this.bittrexSocketStatus){
-				this.bittrexSubscribe(client,[this.Settings.Config.pair1,this.Settings.Config.pair2,this.Settings.Config.pair3]);
+				this.bittrexSubscribe(client,[this.Settings.Bittrex.pair1,this.Settings.Bittrex.pair2,this.Settings.Bittrex.pair3]);
 				this.bittrexSocketConnection = connection;
 				this.log("Bittrex Websocket connected:",new Date()); 
 				if(!this.bittrexKill){
@@ -2289,7 +2289,7 @@ CryptoBot.prototype.serverCommand = function(message,ws){
 			})					
 		}						
 		if(message.command === "connect"){
-			ws.send(crypto.AES.encrypt(JSON.stringify({"type":'balance',"balance":this.balance,"p1":this.p1,"p2":this.p2,"polling":this.rate}),this.Settings.Config.key).toString());
+			ws.send(crypto.AES.encrypt(JSON.stringify({"type":'balance',"balance":this.balance,"p1":this.p1,"p2":this.p2}),this.Settings.Config.key).toString());
 			ws.send(crypto.AES.encrypt(JSON.stringify({"type":'config',"logLevel":this.logLevel,"swingPercentage":this.swingPercentage,"swingRate":this.swingRate,"sanity":this.saneTrades,"liquid":this.liquidTrades,"vibrate":this.vibrate,"upperLimit":this.upperLimit,"lowerLimit":this.lowerLimit,"status":this.bittrexInProcess,"time":this.bittrexProcessTime,"wsStatus":this.bittrexSocketStatus,"viewBook":this.viewBittrexBook}),this.Settings.Config.key).toString());
 			ws.send(crypto.AES.encrypt(JSON.stringify({"type":'swingStatus',"amount":this.Settings.Swing.amount,"pair":this.Settings.Swing.pair,"order":this.swingTrade,"swing":this.Settings.Swing.swing,"on":this.Settings.Swing.swingTrade}),this.Settings.Config.key).toString());
 			ws.send(crypto.AES.encrypt(JSON.stringify({"type":'configBinance',
@@ -2312,14 +2312,7 @@ CryptoBot.prototype.serverCommand = function(message,ws){
 		if(message.command === "lowerLimit"){
 			this.lowerLimit = message.limit;
 			return this.log("Lower Limit:",this.lowerLimit);
-		}															
-		if(message.command === "poll"){
-			if(Number(message.rate)){this.rate = message.rate * 1000;}
-			this.log("poll_rate:",this.rate/1000 +" seconds");
-		}									
-		if(message.command === "poll_rate"){
-			this.broadcastMessage({"type":"poll_rate","polling":this.rate});
-		}											
+		}																									
 		if(message.command === "bittrex_balance"){
 			return new Promise((resolve,reject)=>{return this.bittrexAccount(resolve(true)).catch(e=>{this.log(e);reject(false);});})
 		}	

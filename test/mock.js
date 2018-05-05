@@ -677,25 +677,25 @@ var settings1 ={
 		{
 			"apikey":"Bittrex_API_Key",
 			"secret":"Bittrex_API_Secret",
-			"minimum":0.001
-		},
-	"Config":
-		{
 			"enabled":true,
-			"key":"Secret Private Key",	
 			"liquidTrades":true,
-			"logs":3,
 			"lowerLimit":98.3,
 			"pair1":"BTC-LTC",
 			"pair2":"USDT-BTC",
 			"pair3":"USDT-LTC",		
 			"percentage1":1,
 			"percentage2":0.5,					
-			"polling":45000,
-			"port":7073,
 			"saneTrades":true,
 			"upperLimit":101.79,
-			"viewBook":false
+			"viewBook":false,
+			"minimum":0.001
+		},
+	"Config":
+		{
+			"key":"Secret Private Key",	
+			"logs":3,
+			"port":7073,
+			"useWasm":false
 		},
 	"Email":
 		{
@@ -748,25 +748,25 @@ var settings2 ={
 		{
 			"apikey":"Bittrex_API_Key",
 			"secret":"Bittrex_API_Secret",
-			"minimum":0.001
-		},
-	"Config":
-		{
 			"enabled":true,
-			"key":"Secret Private Key",	
 			"liquidTrades":true,
-			"logs":3,
 			"lowerLimit":98.3,
 			"pair1":"BTC-XVG",
 			"pair2":"USDT-BTC",
 			"pair3":"USDT-XVG",		
 			"percentage1":1,
 			"percentage2":0.5,					
-			"polling":45000,
-			"port":7073,
 			"saneTrades":true,
 			"upperLimit":101.79,
-			"viewBook":false
+			"viewBook":false,
+			"minimum":0.001
+		},
+	"Config":
+		{
+			"key":"Secret Private Key",	
+			"logs":3,
+			"port":7073,
+			"useWasm":false
 		},
 	"Email":
 		{
