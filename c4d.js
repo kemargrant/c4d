@@ -651,7 +651,7 @@ CryptoBot.prototype.binanceParseUserEvent = function(message,pairs){
 								this.binanceOrders[base] = [this.binanceOrders[base][0],this.binanceOrders[base][2]];
 							}
 						}
-						this.log("Binance Order Removed:",data.c,new Date().toString()+":"+this.binanceOrders[base].length+"/"+this.binanceTradesMade[base]);
+						this.log("Binance Order Removed:",data.c,new Date(),":",this.binanceOrders[base].length+"/"+this.binanceTradesMade[base]);
 						this.broadcastMessage({type:"orderRemove",order_id:data.c});
 						if(this.binanceOrders[base].length === 0 && this.binanceTradesMade[base] === 3){
 							this.binanceStrategy[base] = {one:{},two:{}}
