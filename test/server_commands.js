@@ -187,6 +187,7 @@ describe('Binance Server Commands (Network)', function() {
 
 	describe('#Should activate Binance', function() {
 		var bot = new CryptoBot.bot(mock.mockSettings1);
+		bot.broadcastMessage = console.log;
 		bot.binanceUserStreamStatus = true;
 		bot.https = mock.https;
 		bot.binanceInProcess={"ltcbtc":undefined}

@@ -790,6 +790,7 @@ describe('Binance', function() {
 	describe('#Monitor', function() {
 		it('Should return a connected websocket',function() {
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.broadcastMessage = console.log;
 			var list = binanceBot.binanceMonitor([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
 			list.forEach((client)=>{
 				client.onclose = null;
@@ -802,6 +803,7 @@ describe('Binance', function() {
 	describe('#Stream', function() {
 		it('Should return undefined',function() {
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.broadcastMessage = console.log;
 			binanceBot.binanceMarket = "";
 			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
 			assert(!client);
@@ -809,6 +811,7 @@ describe('Binance', function() {
 		it('Should return a different websocket client',function(done) {
 			this.timeout(6000);
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.broadcastMessage = console.log;
 			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
 			var prev = client._req;
 			setTimeout(()=>{client.emit("close")},2000);
@@ -821,6 +824,7 @@ describe('Binance', function() {
 		});
 		it('Should catch error processing message',function() {
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.broadcastMessage = console.log;
 			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
 			var x = client.emit("message",null);
 			assert.equal(x,true);

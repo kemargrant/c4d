@@ -831,6 +831,7 @@ CryptoBot.prototype.binanceStream = function(base,pair){
 	
 	client.onopen = ()=> {
 	    this.log(pair+' - Binance WebSocket Client Connected:',new Date());
+	    this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
 	};
 	client.onmessage = (message) => {
 		if(this.binanceInProcess[base]){return}
