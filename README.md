@@ -31,7 +31,7 @@ Node v8
 git clone https://github.com/kemargrant/c4d
 cd c4d
 npm install
-node c4d.js
+node main.js
 ```
 ## Testing
 ```npm test```
