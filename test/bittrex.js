@@ -5,11 +5,11 @@ describe('Bittrex', function() {
 	var assert = require('assert');
 	const zlib = require('zlib');
 	const jsonic = require('jsonic');
-
+	var fauxEmail = console.log;
 	Math.random = function(){return 3}
     var bot = new CryptoBot.bot(mock.mockSettings1);
     bot.https = mock.https;
-    bot.email = mock.email;
+    bot.sendEmail = fauxEmail;
 	bot.MongoClient = mock.MongoClient;
 	bot.DB = bot.database();
 	describe('#ApiKeys', function() {
@@ -130,6 +130,7 @@ describe('Bittrex', function() {
 	describe('#Trades', function() {
 		it('Should return an Error (API Error)', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.sendEmail = fauxEmail;
 			bot.https = mock.httpsError2;
 			return bot.bittrexTrade("buy","USDT-BTC",1,20.00).catch((e)=>{
 				assert.equal(e,"ERROR");
@@ -137,6 +138,7 @@ describe('Bittrex', function() {
 		});	
 		it('Should return an Error - (Undefined Trade)', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.sendEmail = fauxEmail;
 			bot.bittrexAPI = function(){
 				return new Promise((resolve,reject)=>{
 					return resolve(false);
@@ -159,7 +161,7 @@ describe('Bittrex', function() {
 
 		describe('#Swing',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
 			it('Should return 2', function() {
@@ -187,11 +189,10 @@ describe('Bittrex', function() {
 	describe('#Prepare Swing Order',function() {
 		it('Should return a setTimeout Object > 0 (Unable to find Order)', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.https = mock.https;
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
-			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.bittrexAPI = function(){return new Promise((resolve,reject)=>{
 				return resolve(false);
 			})}
@@ -202,7 +203,7 @@ describe('Bittrex', function() {
 		});
 		it('Should return a setTimeout Object > 0 (Order is filled)', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.https = mock.https;
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
@@ -216,7 +217,7 @@ describe('Bittrex', function() {
 		});
 		it('Should return a setTimeout Object > 0 (Order is not filled)', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.https = mock.https;
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
@@ -230,11 +231,10 @@ describe('Bittrex', function() {
 		});
 		it('Should return a setTimeout Object > 0 (Api Error)', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.https = mock.https;
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
-			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.bittrexAPI = function(){return new Promise((resolve,reject)=>{
 				return reject(new Error("API Error"));
 			})}
@@ -248,7 +248,7 @@ describe('Bittrex', function() {
 	describe('#Create Bittrex swing order',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.https;
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
 		it('Should return a setTimeout Object > 0 (API Error)', function() {
@@ -287,7 +287,7 @@ describe('Bittrex', function() {
 		it('Should return a object with a status of 2', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.https;
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
 			bot.Account = function(){}
@@ -300,7 +300,7 @@ describe('Bittrex', function() {
 		it('Should return a object with a status of 2', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.https;
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.Account = function(){}
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
@@ -312,7 +312,7 @@ describe('Bittrex', function() {
 		it('Should return a object with a status of 1', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.https;
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
 			bot.Account = function(){}
@@ -335,7 +335,7 @@ describe('Bittrex', function() {
 		it('Should return a object with a status of 2', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.https;
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
 			bot.Account = function(){}
@@ -347,7 +347,7 @@ describe('Bittrex', function() {
 		it('Should return a object with a status of 1', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.https;
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
 			bot.Account = function(){}
@@ -369,7 +369,7 @@ describe('Bittrex', function() {
 		it('Should return a object with a status of 2', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.https;
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
 			bot.Account = function(){}
@@ -387,7 +387,7 @@ describe('Bittrex', function() {
 		it('Should return a object with a status of 2 (Undefined Order - Low account balance) ', function() {	
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.https;
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
 			bot.Account = function(){}
@@ -400,7 +400,7 @@ describe('Bittrex', function() {
 		it('Should return a object with a status of 2 (Undefined Order - Low account balance) ', function() {	
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.https;
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
 			bot.Account = function(){}
@@ -420,7 +420,7 @@ describe('Bittrex', function() {
 		it('Should return a object with a status of 2 (Undefined Order - Low account balance) ', function() {	
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.https = mock.https;
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
 			bot.Account = function(){}
@@ -629,7 +629,7 @@ describe('Bittrex', function() {
 
 	describe('#BittrexArbitrage', function() {
 		var bot = new CryptoBot.bot(mock.mockSettings2);
-		bot.email = mock.email;
+		bot.sendEmail = fauxEmail;
 		bot.https = mock.https;
 		bot.viewBittrexBook = true;
 		[bot.balance.btc ,bot.balance.xvg,bot.balance.usdt] = [1,5000,3000]
@@ -656,7 +656,7 @@ describe('Bittrex', function() {
 		});
 		it('Should return valid trades (< 100%)',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings2);
-			bot.email = mock.email;
+			bot.sendEmail = fauxEmail;
 			bot.https = mock.https;
 			bot.viewBittrexBook = true;
 			[bot.balance.btc ,bot.balance.xvg,bot.balance.usdt] = [2,7000,9000]
@@ -684,6 +684,7 @@ describe('Bittrex', function() {
 		});		
 		it('Should return valid trades (> 100%)',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings2);
+			bot.sendEmail = fauxEmail;
 			[bot.balance.btc ,bot.balance.xvg,bot.balance.usdt] = [1,5000,3000]
 			var message = mock.bittrexArbitrage4[0]
 			var localMarket = mock.bittrexArbitrage4[1]
@@ -764,7 +765,7 @@ describe('Bittrex', function() {
 
 	describe('#BittrexStartArbitrage', function() {
 		var bot = new CryptoBot.bot(mock.mockSettings1);
-		bot.email = mock.email;
+		bot.sendEmail = fauxEmail;
 		bot.https = mock.https;
 		it('Should return false',function() {
 			var x = bot.bittrexStartArbitrage([],{});
@@ -1009,6 +1010,7 @@ describe('Bittrex', function() {
 	describe('#ParseUserEvent - Error', function() {
 		it('Should return false',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.sendEmail = fauxEmail;
 			assert(!bot.bittrexParseUserEvent(undefined));
 		});
 	});	
