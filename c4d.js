@@ -1496,7 +1496,6 @@ CryptoBot.prototype.bittrexStream = function(){
 	var u2;
 	var b3;
 	var _b3;
-	var timeout;
 	e1 = pair1.split('-')[1].toLowerCase();
 	_e1 = "_" + pair1.split('-')[1].toLowerCase();
 	b3 = pair1.split('-')[0].toLowerCase();
@@ -1519,20 +1518,10 @@ CryptoBot.prototype.bittrexStream = function(){
 				this.bittrexSubscribe(client,[this.Settings.Bittrex.pair1,this.Settings.Bittrex.pair2,this.Settings.Bittrex.pair3]);
 				this.bittrexSocketConnection = connection;
 				this.log("Bittrex Websocket connected:",new Date()); 
-				if(!this.bittrexKill){
-					timeout = setTimeout(()=>{
-						if(this.bittrexSocketConnection){
-							this.log("Resetting Bittrex Connection:",new Date())
-							this.bittrexSocketConnection.close();
-							return this.bittrexStream();
-						}
-					},1800000);
-				}
 				return this.updateBittrexSocketStatus("Bittrex Websocket connected:",true);
 			}
 		},
 		disconnected: ()=> { 
-			clearTimeout(timeout);
 			if(this.bittrexKill){
 				client.end()
 				this.log("Connection closed by user");
@@ -1540,7 +1529,6 @@ CryptoBot.prototype.bittrexStream = function(){
 			return this.updateBittrexSocketStatus("Bittrex Websocket disconnected",false);
 		},
 		onerror:(error)=> { 
-			clearTimeout(timeout);
 			this.updateBittrexSocketStatus(error,false);
 		},
 		messageReceived: (message)=> {
@@ -1588,13 +1576,14 @@ CryptoBot.prototype.bittrexStream = function(){
 			}
 		},
 		bindingError: (error)=> { this.updateBittrexSocketStatus(error,false);},
-		connectionLost: (error)=> { 
-			this.updateBittrexSocketStatus(error,false);
+		reconnecting: (retry)=> {
 			if(!this.bittrexKill){
-				return this.bittrexStream();
+				return this.updateBittrexSocketStatus("Bittrex Websocket Retrying",false);
 			}
-		},
-		reconnecting: (retry)=> {return !this.updateBittrexSocketStatus("Bittrex Websocket Retrying",false);}
+			else{
+				return true;
+			}
+		}
 	};
 	client.start();
 	return client;
@@ -2181,7 +2170,7 @@ CryptoBot.prototype.sendEmail = function(email_message){
 			   attachment:[{data:"<html>"+email_message+"</html>",alternative:true,inline:true}]			   
 		};		
 		return server.send(message,(err, message)=>{
-			var bool = true;
+			var bool = err ? false: true;
 			if(err){
 				this.log("Error Sending Email:",err);
 				bool = false;

@@ -515,16 +515,16 @@ describe('Bittrex', function() {
 			client.end();
 			done()
 		});
-		it('Should update bittrexSocketStatus (connectionLost)',function(done) {
+		it('Should update bittrexSocketStatus (disconnected -> reconnect)',function(done) {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.bittrexSocketStatus = true;
+			bot.bittrexKill = false;
 			var client = bot.bittrexStream();
-			client.serviceHandlers.connectionLost();
-			assert.equal(bot.bittrexSocketStatus,false);
-			bot.bittrexKill = true;
+			client.serviceHandlers.disconnected();
+			assert.equal(client.serviceHandlers.reconnecting(),false);
 			client.end();
 			done()
-		});		
+		});				
 		it('Should test bittrex client message received (false)',function(done) {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.bittrexSocketStatus = true;
