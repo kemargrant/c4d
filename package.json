@@ -8,7 +8,7 @@
     "https": "^1.0.0",
     "jsonic": "^0.3.0",
     "mongodb": "^3.0.3",
-    "signalr-client": "0.0.17",
+    "signalr-client-kg": "0.0.5",
     "ws": "^3.3.0",
     "zlib": "^1.0.5"
   },
