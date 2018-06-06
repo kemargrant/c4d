@@ -551,7 +551,24 @@ describe('Binance', function() {
 				assert.equal(JSON.stringify(zBot.Settings.Binance.pairs[0].prec),correct);
 				done();
 			},4900);			
-		});			
+		});	
+		it('Should return true (Binance Pairs Error)', function() {
+			this.timeout(5000);
+			var temp = JSON.parse(JSON.stringify(mock.mockSettings1));
+			temp.Binance.pairs = [ { liquidTrades: true,
+			    lowerLimit1: 100.2,
+			    lowerLimit2: 99,
+			    optimalTrades: true,
+			    pair1: 'xxxyyy',
+			    pair2: 'yyyzzz',
+			    pair3: 'xxxzzz',
+			    upperLimit1: 100.5,
+			    upperLimit2: 99.99 } ]
+			var zBot = new CryptoBot.bot(temp);    
+			return zBot.binancePrecision(zBot.Settings.Binance.pairs).then((exchangeData)=>{
+				return assert.equal(zBot.binanceFormatPairs(exchangeData),true);
+			})		
+		});					
 	});		
 		
 	describe('#Get Orders', function() {
