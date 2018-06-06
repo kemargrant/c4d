@@ -15,18 +15,15 @@ function main(){
 				bot.bittrexSwing();
 			}
 			bot.binanceAccount().then(()=>{
-				if(bot.binanceSocketConnections){
-					bot.binanceMonitor(bot.Settings.Binance.pairs);
-					return bot.binanceListenUser();
-				}
-			}).catch((e)=>{
 				if(bot.Settings.Binance.enabled){
 					bot.binanceMonitor(bot.Settings.Binance.pairs);
 					return bot.binanceListenUser();
 				}
+			}).catch((e)=>{
+				this.log(e);
 			})
 			if(bot.bittrexSocketConnection){
-					bot.bittrexStream()
+				bot.bittrexStream()
 			}
 		}).catch((e)=>{
 			bot.log(e);
