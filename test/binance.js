@@ -229,7 +229,6 @@ describe('#Arbitrage', function() {
 				  a: '8838.00000000',
 				  A: '0.00403000',
 				}
-				console.log(testBot)
 				var val = testBot.binanceArbitrage(base,pairs,e1,b1,u1,messageData);
 				assert.equal(val,true)
 		});	
