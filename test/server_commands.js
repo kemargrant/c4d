@@ -192,19 +192,13 @@ describe('Binance Server Commands (Network)', function() {
 		bot.https = mock.https;
 		bot.binanceInProcess = {"ltcbtc":undefined}
 		bot.binanceListenUser = ()=>console.log("Mock listening to user account")
-		var dummy = console.log
-		
+		var dummy = function(){}
 		it('Should activate Binance', function(done) {
 			bot.serverCommand(encrypt({'command':'binance_control','bool':true}));
 			setTimeout(()=>{
 				assert(bot.binanceSocketConnections.length > 0);
 				for(var i=0;i< bot.binanceSocketConnections.length;i++){
-					bot.binanceSocketConnections[i].message = dummy;
-					bot.binanceSocketConnections[i].onopen = dummy;
-					bot.binanceSocketConnections[i].onerror = dummy;
-					bot.binanceSocketConnections[i].onclose = ()=>{
-						dummy(bot.binanceSocketConnections)
-					}
+					bot.binanceSocketConnections[i].onclose = dummy;
 				}
 				done()
 			},2900);
