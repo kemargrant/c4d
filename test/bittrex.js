@@ -449,28 +449,28 @@ describe('Bittrex', function() {
 			assert.equal(bot.updateBittrexSocketStatus("",false),false);
 		});
 	});	
-	describe('#BittrexStream', function() {
+	describe('#BittrexStream', function(done) {
 		it('Should return a signal-r client',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			var result = bot.bittrexStream()
-			assert(result.end);
+			var client = bot.bittrexStream()
+			client.serviceHandlers=  {connected:()=>{
+				client.end()
+				done();
+			}}
+			assert(client.end);
 			bot.bittrexKill = true;
-			result.end();
 		});		
 		it('Should update bittrexSocketStatus (connected)',function(done) {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.bittrexSocketStatus = false;
-			var _client = bot.bittrexStream();
-			var oldTimeout = setTimeout;
-			setTimeout = function(func,time){
-				oldTimeout(func,10)
-			}
-			var ans = _client.serviceHandlers.connected({close:function(){}});
+			var client = bot.bittrexStream();
+			var connected = client.serviceHandlers.connected()
 			assert.equal(bot.bittrexSocketStatus,true);
-			setTimeout = oldTimeout;
 			bot.bittrexKill = true;
-			_client.end();
-			done()
+			client.serviceHandlers.connected =()=>{
+				client.end();
+			}
+			done();
 		});			
 		it('Should update bittrexSocketStatus (disconnected)',function(done) {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
@@ -480,8 +480,10 @@ describe('Bittrex', function() {
 			client.serviceHandlers.disconnected();
 			assert.equal(bot.bittrexSocketStatus,false);
 			bot.bittrexKill = true;
-			client.end();
-			done()
+			client.serviceHandlers.connected =()=>{
+				client.end();
+			}
+			done();
 		});	
 		it('Should send error message (onerror)',function(done) {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
@@ -489,18 +491,21 @@ describe('Bittrex', function() {
 			var client = bot.bittrexStream();
 			assert.equal(client.serviceHandlers.onerror(new Error("test error")),true);
 			bot.bittrexKill = true;
-			client.end();
-			done()
+			client.serviceHandlers.connected =()=>{
+				client.end();
+			}
+			done();
 		});	
 		it('Should update bittrexSocketStatus (disconnected -> reconnect)',function(done) {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			bot.bittrexSocketStatus = true;
 			bot.bittrexKill = false;
 			var client = bot.bittrexStream();
-			var x = client.serviceHandlers.disconnected();
-			assert.equal(typeof x.end === "function",true);
-			client.end();
-			x.end();
+			var client2 = client.serviceHandlers.disconnected();
+			assert.equal(typeof client2.end === "function",true);
+			client.serviceHandlers={connected:()=>{client.end();}}
+			client2.serviceHandlers={connected:()=>{client2.end();}}
+			bot.bittrexKill = true;
 			done()
 		});				
 		it('Should test bittrex client message received (false)',function(done) {
@@ -510,8 +515,10 @@ describe('Bittrex', function() {
 			var val = client.serviceHandlers.messageReceived({utf8:{}});
 			assert.equal(val,false);
 			bot.bittrexKill = true;
-			client.end();
-			done()
+			client.serviceHandlers.connected =()=>{
+				client.end();
+			}
+			done();
 		});		
 
 	it('Should test bittrex client message received (Exchange Delta)',function(done) {
@@ -536,7 +543,9 @@ describe('Bittrex', function() {
 			var validTrades = [["sell","USDT-BTC",0.01,7002],["buy","USDT-XVG","1042.96912612",0.0668],["sell","BTC-XVG","1042.96912612",0.00000946]]
 			assert.equal(trades,false);
 			bot.bittrexKill = true;
-			client.end()
+			client.serviceHandlers=  {connected:()=>{
+				client.end();
+			}}
 			done();
 		});			
 
@@ -561,7 +570,10 @@ describe('Bittrex', function() {
 			var val = client.serviceHandlers.messageReceived(message);
 			assert.equal(val,true);
 			bot.bittrexKill = true;
-			client.end();
+			client.serviceHandlers=  {connected:()=>{
+				client.end();
+				
+			}}
 			done();
 		});
 
@@ -571,6 +583,7 @@ describe('Bittrex', function() {
 			bot.MongoClient = mock.MongoClient;
 			bot.DB = bot.database();
 			bot.bittrexSocketStatus = true;
+			bot.bittrexKill = true;
 			var message = {}
 			var localMarket = mock.bittrexArbitrage1[1]
 			var Transactions = mock.bittrexArbitrage1[2]
@@ -580,16 +593,18 @@ describe('Bittrex', function() {
 			var b3 = "btc"		
 			message.utf8Data = '{M: "USDT-BTC","N": 6136,"Z": [{"TY": 0,"R": 9101.28710053,"Q": 0.68329490	},{"TY": 1,"R": 8552.00000000,"Q": 0.0}],"S": [],"f": []}'
 			let buffer = Buffer.from(message.utf8Data,'utf8');
-			message = {utf8Data:JSON.stringify({M:[{M:'uE',A:[zlib.deflateRawSync(buffer).toString("base64")]}]})}
+			message = JSON.stringify({M:[{M:'uE',A:[zlib.deflateRawSync(buffer).toString("base64")]}]})
 			var client = bot.bittrexStream();
 			var trades = client.serviceHandlers.messageReceived(message);
 			assert.equal(trades,false);
-			bot.bittrexKill = true;
-			client.end();
+			client.serviceHandlers = {connected:()=>{
+				client.end();
+			}}
 			done();
 		});							
 										
 	});
+	
 	//~ /*
 	 //~ * 
 	 //~ * Arbitrage Helpers
