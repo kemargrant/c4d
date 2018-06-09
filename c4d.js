@@ -2312,7 +2312,7 @@ CryptoBot.prototype.serverCommand = function(message,ws){
 			this.binanceKill = !message.bool;
 			if(this.binanceKill === true){
 				for(var i = 0; i < this.binanceSocketConnections.length;i++){
-					this.binanceSocketConnections[i].terminate();
+					this.binanceSocketConnections[i].close();
 				}
 				for(var key in this.binanceInProcess){
 					this.binanceInProcess[key] = "killed";
