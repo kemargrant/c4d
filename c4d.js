@@ -869,7 +869,7 @@ CryptoBot.prototype.binanceUserStream = function(key){
 	client.onclose = (error)=> {
 		if(this.binanceUserStreamStatus){
 			this.binanceUserStreamStatus = false;
-		    this.log('Binance User Account Connect Error: ' + error.toString(),new Date());
+		    this.log('Binance User Account Connect Error:',error.toString(),new Date());
 			this.broadcastMessage({type:"binanceStatus",connections:this.binanceSocketConnections.length,value:this.binanceInProcess,"time":this.binanceProcessTime,ustream:this.binanceUserStreamStatus});										
 			return setTimeout(()=>{this.binanceUserStream(key)},10000);
 		}
