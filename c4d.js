@@ -1575,9 +1575,6 @@ CryptoBot.prototype.bittrexStream = function(){
 				this.log("Error processing Bittrex message:",e);
 				return false;
 			}
-		},
-		bindingError: (e)=> { 
-			return this.log("Binding Error",e.message,new Date())
 		}
 	};
 	return client;
