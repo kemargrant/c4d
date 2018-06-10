@@ -536,7 +536,7 @@ describe('Bittrex', function() {
 				client.end();
 			}
 			done();
-		});		
+		});					
 
 	it('Should test bittrex client message received (Exchange Delta)',function(done) {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
@@ -596,24 +596,10 @@ describe('Bittrex', function() {
 
 		it('Should test bittrex client message received (Error parsing data)',function(done) {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			[bot.balance.btc ,bot.balance.xvg,bot.balance.usdt] = [1,5000,3000]
-			bot.MongoClient = mock.MongoClient;
-			bot.DB = bot.database();
-			bot.bittrexSocketStatus = true;
-			bot.bittrexKill = true;
-			var message = {}
-			var localMarket = mock.bittrexArbitrage1[1]
-			var Transactions = mock.bittrexArbitrage1[2]
-			var strategy = mock.bittrexArbitrage1[3]
-			var e1 = "xvg"
-			var u2 = "usdt"
-			var b3 = "btc"		
-			message.utf8Data = '{M: "USDT-BTC","N": 6136,"Z": [{"TY": 0,"R": 9101.28710053,"Q": 0.68329490	},{"TY": 1,"R": 8552.00000000,"Q": 0.0}],"S": [],"f": []}'
-			let buffer = Buffer.from(message.utf8Data,'utf8');
-			message = JSON.stringify({M:[{M:'uE',A:[zlib.deflateRawSync(buffer).toString("base64")]}]})
 			var client = bot.bittrexStream();
-			var trades = client.serviceHandlers.messageReceived(message);
+			var trades = client.serviceHandlers.messageReceived(null);
 			assert.equal(trades,false);
+			bot.bittrexKill=true;
 			client.serviceHandlers = {connected:()=>{
 				client.end();
 			}}
