@@ -1013,6 +1013,7 @@ describe('Bittrex', function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
 			var addOrder = mock.bittrexUserEvents[0];
 			bot.bittrexProcessTime = 1
+			bot.bittrexInProcess = true;
 			assert(bot.bittrexParseUserEvent(addOrder));
 		});
 		it('Should update the status of the order in the database and return true',function() {
