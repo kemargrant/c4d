@@ -835,7 +835,7 @@ describe('Binance', function() {
 			var list = binanceBot.binanceMonitor([{pair1:"ltcbtc",pair2:"ltcusdt",pair3:"btcusdt"}]);
 			list.forEach((client)=>{
 				client.onclose = null;
-				try{client.terminate()}catch(e){console.log(e)}
+				try{client.close()}catch(e){console.log(e)}
 			})
 			assert(list.length > 2);
 		});
@@ -849,19 +849,30 @@ describe('Binance', function() {
 			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
 			assert(!client);
 		});
-		it('Should return a different websocket client',function(done) {
-			this.timeout(6000);
+		it('Should return a setTimeout Object',function() {
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			binanceBot.broadcastMessage = function(){};
 			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
 			client.onopen = ()=>{client.close()}
-			var prev = client._req;
 			var current = client.onclose()
 			current.onopen = ()=>{current.close()}
-			assert(current._req !== client._req);
+			assert(Number(current._idleStart));
 			binanceBot.binanceKill = true;
-			done();
 		});
+	it('Should rerun binanceStream if closed',function(done) {
+			this.timeout(3000)
+			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
+			binanceBot.broadcastMessage = function(){};
+			var client = binanceBot.binanceStream("ltcbtc","ltcbtc");
+			binanceBot.binanceStream =()=>{
+				binanceBot.binanceKill = true;
+				client.close();
+				assert(binanceBot.binanceKill);
+				done();
+			}
+			binanceBot.binanceKill = false;
+			client.onopen = ()=>{client.terminate()}	
+		});		
 		it('Should catch error processing message',function() {
 			var binanceBot = new CryptoBot.bot(mock.mockSettings1);
 			binanceBot.broadcastMessage = function(){};
