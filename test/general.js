@@ -218,11 +218,25 @@ describe('General Functions', function() {
 		});
 	});		
 	describe('#Send Email', function() {
-		return it('Should send an email message', async function() {
+		it('Should send an email message', async function() {
 			bot.email = mock.email;
 			var val = await bot.sendEmail("Hello World");
 			assert(val);			
 		});
+		it('Should return false(email Error)',async function() {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.email ={
+				server:{
+					connect:function(){return{
+						send:function(message,cb){
+							cb(new Error("Test sending email error"),null);
+						}
+					}}
+				}
+			}
+			var val = await bot.sendEmail("Hello World");
+			assert(!val);			
+		});		
 	});
 	
 	describe('#Should send Slack message', function() {
