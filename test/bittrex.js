@@ -120,11 +120,28 @@ describe('Bittrex', function() {
 	});	
 
 	describe('#Place and Remove Order', function() {
-		it('Should place and order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
+		it('Should place an order for 1.00 btcusdt @ 20.00 and return a object with same symbol', async function() {
 			var val = await bot.bittrexTrade("buy","USDT-BTC",1,20.00);
 			var val2 = await bot.bittrexCancelOrder(val);
 			assert.equal(val2.success,true);
 		});
+		it('Should place an order for 1.00 btcusdt @ 20.00 and save it in the db', function(done) {
+			var bot = new CryptoBot.bot(mock.mockSettings1);
+			bot.MongoClient = mock.MongoClient;
+			bot.sendEmail = fauxEmail;
+			bot.DB = bot.database();
+			bot.bittrexProcessTime = 1;
+			bot.bittrexAPI = function(){return new Promise((resolve,reject)=>{
+				return resolve({uuid:"not-a-real-uuid"});
+			})}
+			bot.saveDB = function(){
+				assert(true)
+				bot.saveDB = function(){};
+				done()
+			}
+			bot.bittrexTrade("buy","USDT-BTC",1,20.00);
+		});
+		
 	});	
 
 	describe('#Trades', function() {
