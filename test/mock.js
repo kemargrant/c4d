@@ -176,7 +176,7 @@ var bittrexUserEvent1 ={
   o: 
    { U: 'fd15d-9eb60',
      I: 67874,
-     OU: '49a95',
+     OU: 'fd15d-9eb60',
      E: 'BTC-LTC',
      OT: 'LIMIT_SELL',
      Q: 10,
@@ -202,7 +202,7 @@ var bittrexUserEvent2 ={
   o: 
    { U: 'fd15d-9eb60',
      I: 67874,
-     OU: '49a95',
+     OU: 'fd15d-9eb60',
      E: 'BTC-LTC',
      OT: 'LIMIT_SELL',
      Q: 10,

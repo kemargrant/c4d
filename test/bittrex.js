@@ -1009,15 +1009,8 @@ describe('Bittrex', function() {
 		});
 	});	
 	describe('#ParseUserEvent - execution', function() {
-		it('Should add new order in database and return true',function() {
+		it('Should broadcastMessage and return true',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			bot.MongoClient = mock.MongoClient;
-			bot.DB = bot.database();
-			bot.bittrexInProcess = {}
-			bot.bittrexInProcess = true;
-			bot.bittrexOrders = []
-			bot.bittrexProcessTime = 1
-			bot.bittrexTradesMade = 0
 			var addOrder = mock.bittrexUserEvents[0];
 			assert(bot.bittrexParseUserEvent(addOrder));
 		});
