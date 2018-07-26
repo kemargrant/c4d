@@ -146,8 +146,8 @@ Bot settings are controlled by the 'config.json' file
 | Bittrex.pair1 | BTC- your target currency | String
 | Bittrex.pair2 | “USDT-BTC” (Required) | String
 | Bittrex.pair3 |  USDT-  your target currency| String
-| Bittrex.percentage1 | Percentage of XXX currency to use when performing trades (Default 100%)| Number
-| Bittrex.percentage2 | Percentage of BTC to use when performing BTC=>BTC trade (Default 50%) | Number
+| Bittrex.btcAmount | Amount of BTC to use in a trade (Default 0.001)| Number
+| Bittrex.xxxAmount | Amount of XXX to use when performing XXX=>XXX trade (Default 0.001) | Number
 | Bittrex.saneTrades | Perform arbitrage between upper and lower limits (Prevents trading during flash crashes...probably) | Boolean
 | Bittrex.upperLimit | Upper percentage limit when saneTrades is true | Number
 | Bittrex.viewBook | View Bittrex order book in c4dc client (Default false)| Boolean
