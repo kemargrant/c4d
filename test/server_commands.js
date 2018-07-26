@@ -136,11 +136,11 @@ describe('Bittrex Server Commands (Offline)', function() {
 			assert.equal(bot.upperLimit,99)
 		});
 	});		
-	describe('#update_percentage', function() {
-		it('Should change percentage of Bittrex balance used', function() {
+	describe('#update_amount', function() {
+		it('Should change Bittrex currencies used', function() {
 			bot.p1 = 10;
 			bot.p2 = 11;
-			bot.serverCommand(encrypt({'command':'update_percentage','percentage1':50,'percentage2':99}));
+			bot.serverCommand(encrypt({'command':'update_amount','xxxAmount':50,'btcAmount':99}));
 			assert(bot.p1 === 50 && bot.p2 === 99);
 		});
 	});		
