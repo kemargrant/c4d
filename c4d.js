@@ -41,8 +41,8 @@ function CryptoBot(Settings){
 	this.lowerLimit = Settings.Bittrex.lowerLimit
 	this.upperLimit = Settings.Bittrex.upperLimit;
 	this.swingPercentage = Settings.Swing.swing;
-	this.p1 = Settings.Bittrex.percentage1;
-	this.p2 = Settings.Bittrex.percentage2;
+	this.p1 = Settings.Bittrex.xxxAmount;
+	this.p2 = Settings.Bittrex.btcAmount;
 	//Binance Settings
 	this.binanceApiKey = Settings.Binance.apikey;
 	this.binanceApiSecret = Settings.Binance.secretkey;
@@ -1230,7 +1230,7 @@ CryptoBot.prototype.bittrexDepthPure = function(pair){
    * @return {String} Returns a string message
    */
 CryptoBot.prototype.bittrexFormatMessage = function(e1,u2,b3,_e1,a,b,c,percentage,Transactions){
-	Transactions[e1] = percentage < 100 ? Number((this.balance[e1] * this.p1).toFixed(8)) : Number((this.balance[e1] * this.p2).toFixed(8))
+	Transactions[e1] = percentage < 100 ? Number((this.p1).toFixed(8)) : Number((this.p2).toFixed(8))
 	Transactions[u2] = 0.9975*Transactions[e1] * b;
 	Transactions[b3] = 0.9975*(Transactions[u2]/c);	
 	Transactions[_e1] =  percentage < 100 ? Number(((Transactions[b3]/a) * 0.9975).toFixed(8)) : Number(((Transactions[b3]*a) * 0.9975).toFixed(8));
@@ -2370,9 +2370,9 @@ CryptoBot.prototype.serverCommand = function(message,ws){
 			this.vibrate = message.bool;
 			this.log("Swing Trade:",this.vibrate);
 		}		
-		if(message.command === "update_percentage"){
-			this.p1 = message.percentage1;
-			this.p2 = message.percentage2;
+		if(message.command === "update_amount"){
+			this.p1 = message.xxxAmount;
+			this.p2 = message.btcAmount;
 		}
 		if(message.command === "upperLimit"){
 			this.upperLimit = message.limit;

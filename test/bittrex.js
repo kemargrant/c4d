@@ -628,9 +628,9 @@ describe('Bittrex', function() {
 		bot.sendEmail = fauxEmail;
 		bot.https = mock.https;
 		bot.viewBittrexBook = true;
+		bot.p1 = 50
+		bot.p2 = 1
 		[bot.balance.btc ,bot.balance.xvg,bot.balance.usdt] = [1,5000,3000]
-		bot.p1 = 0.01;
-		bot.p2 = 1;
 		it('Should return valid trades (converting percentage to < 100%)',function() {
 			var message = mock.bittrexArbitrage1[0]
 			var localMarket = mock.bittrexArbitrage1[1]
@@ -648,8 +648,6 @@ describe('Bittrex', function() {
 			//
 			var trades = bot.bittrexArbitrage(localMarket,Transactions,strategy,"BTC-XVG","USDT-BTC","USDT-XVG","xvg","_xvg","usdt","btc","_btc")[0]
 			var validTrades = [ [ 'sell', 'USDT-BTC', 0.00047462, 7002 ],[ 'buy', 'USDT-XVG', '50.00000000', 0.0668 ],[ 'sell', 'BTC-XVG', '50.00000000', 0.00000946 ] ]
-
-			console.log("------------>",)
 			assert.equal(JSON.stringify(validTrades),JSON.stringify(trades));
 			
 		});
@@ -659,8 +657,7 @@ describe('Bittrex', function() {
 			bot.https = mock.https;
 			bot.viewBittrexBook = true;
 			[bot.balance.btc ,bot.balance.xvg,bot.balance.usdt] = [2,7000,9000]
-			bot.p1 = 0.01;
-			bot.p2 = 0.1;
+			bot.p1 = 70;
 			bot.saneTrades = false;
 			bot.liquidTrades = false;
 			var message = mock.bittrexArbitrage5[0]
@@ -692,7 +689,6 @@ describe('Bittrex', function() {
 			var e1 = "xvg"
 			var u2 = "usdt"
 			var b3 = "btc"
-			bot.p1 = 1
 			bot.p2 = 0.0046
 			//
 			message = JSON.parse(message.utf8Data);
@@ -925,16 +921,16 @@ describe('Bittrex', function() {
 	describe('#Format Message', function() {
 		it('Should format Transactions object and return a message (>100)',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			bot.balance.btc = 0.00202041
-			bot.p2 = 1
+			//bot.balance.btc = 0.00202041
+			bot.p2 = 0.00202041
 			var f_message = bot.bittrexFormatMessage('btc','usdt','xxx','_btc',0.10062088,8109.9999999,807.4,101.070,bot.Transactions);
 			var message = "Bittrex Bot:101.070%\n0.00202041btc => 16.34456129usdt @8109.9999999\n16.34456129usdt => 0.02019284xxx @807.4\n0.02019284xxx => 0.00202674btc @0.10062088"
 			assert.equal(f_message,message);
 		});
 		it('Should format Transactions object and return a message (<100)',function() {
 			var bot = new CryptoBot.bot(mock.mockSettings1);
-			bot.balance.xxx = 0.02087774
-			bot.p1 = 1
+			//bot.balance.xxx = 0.02087774
+			bot.p1 = 0.02087774
 			var f_message = bot.bittrexFormatMessage('xxx','usdt','btc','_xxx',0.09649,889.1,9135,99.138,bot.Transactions);
 			var message = "Bittrex Bot:99.138%\n0.02087774xxx => 18.51599264usdt @889.1\n18.51599264usdt => 0.00202186btc @9135\n0.00202186btc => 0.02090172xxx @0.09649";
 			assert.equal(f_message,message);
