@@ -3,7 +3,6 @@ var https = require('https');
 var crypto = require("crypto-js");
 var WebSocket = require('ws');
 
-//1)Get Account Information
 /**
    * Get Binance Account Balance.
    * @method binanceAccount
