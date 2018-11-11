@@ -20,7 +20,7 @@ function main(){
 					return bot.binanceListenUser();
 				}
 			}).catch((e)=>{
-				this.log(e);
+				bot.log(e);
 			})
 			if(bot.bittrexSocketConnection){
 				bot.bittrexStream()
