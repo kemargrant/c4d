@@ -609,7 +609,7 @@ engine.precision = function(pairData){
 				if(allPairs.indexOf(info.symbols[i].symbol) > -1 ){
 					index = info.symbols[i].symbol;
 					filter = info.symbols[i];
-					exchangeData[index] = [getPrec(filter.filters[0].tickSize),getPrec(filter.filters[1].minQty),Number(filter.filters[2].minNotional)]			
+					exchangeData[index] = [getPrec(filter.filters[0].tickSize),getPrec(filter.filters[2].minQty),Number(filter.filters[3].minNotional)]			
 				}
 			}		
 			return resolve(exchangeData); 
